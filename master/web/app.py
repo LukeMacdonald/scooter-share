@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_site import site
+from admin_site import admin
 from database.database_manager import init_db
 from database.api import db_api
 import os
@@ -17,7 +17,7 @@ def create_app():
     
     init_db(app)
     
-    app.register_blueprint(site)
+    app.register_blueprint(admin)
     app.register_blueprint(db_api)
     
     return app
