@@ -19,3 +19,7 @@ def init_db(app):
 
     # Initialize SQLAlchemy extension
     db.init_app(app)
+    
+     # Create all database tables
+    with app.app_context():
+        db.create_all()

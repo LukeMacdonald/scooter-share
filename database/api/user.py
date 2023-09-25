@@ -1,7 +1,8 @@
 from flask import Flask, Blueprint, request, jsonify
 from passlib.hash import sha256_crypt
-from models.user import User
+from models import User
 from database import db
+
 
 user_api = Blueprint("user_api", __name__)
 
@@ -21,7 +22,8 @@ def get_users():
             "username": user.username, 
             "email": user.email, 
             "first_name": user.first_name, 
-            "last_name": user.last_name
+            "last_name": user.last_name,
+            "role": user.role
         } 
         for user in users]
     return jsonify(result)
@@ -45,7 +47,8 @@ def get_user(id):
             "username": user.username, 
             "email": user.email, 
             "first_name": user.first_name, 
-            "last_name": user.last_name
+            "last_name": user.last_name,
+            "role": user.role
         }
         return jsonify(result)
     else:
@@ -69,6 +72,7 @@ def add_user():
         email=data.get("email"),
         first_name=data.get("first_name"),
         last_name=data.get("last_name"),
+        role=data.get("role")  # Include the usertype in the creation
     )
 
     db.session.add(new_user)
@@ -79,7 +83,8 @@ def add_user():
         "username": new_user.username, 
         "email": new_user.email, 
         "first_name": new_user.first_name, 
-        "last_name": new_user.last_name
+        "last_name": new_user.last_name,
+        "role": new_user.role  # Include the usertype in the response
     }
     
     return jsonify(result), 201

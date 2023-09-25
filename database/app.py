@@ -1,3 +1,5 @@
+from config import HOST, USER, PASSWORD, NAME
+from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 from database import init_db
 from api.user import user_api
@@ -10,9 +12,11 @@ def create_app():
         Flask: The configured Flask application instance.
     """
     app = Flask(__name__)
-
-    # Initialize SQLAlchemy extension
+    
     init_db(app)
+
+    # # Initialize SQLAlchemy extension
+    # init_db(app)
     
     # Register blueprints
     app.register_blueprint(user_api)
