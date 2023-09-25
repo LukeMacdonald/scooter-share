@@ -1,0 +1,39 @@
+body{
+    background-color: #222831;
+}
+.login-header{
+    margin: 2rem 0 3rem 0;
+}
+.login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(238, 238, 238);
+    border-radius: 5px;
+    height: 100vh;
+
+}
+.form-container{
+    width: 100%;
+    text-align: center;
+
+}
+.button-custom {
+    width: 60%;
+    height: 3rem;
+    margin: 2rem auto 3rem auto;
+}
+
+.form-control {
+    width: 70%;
+    height: 3rem; 
+    margin: 0 auto;
+    margin-bottom: 2rem; /* Add some spacing */
+}
+.error-message{
+    color: red; 
+    font-weight: bold; 
+    font-style: italic; 
+    font-size: 0.9rem
+}
