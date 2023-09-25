@@ -1,40 +1,30 @@
-from flask import Flask, Blueprint, request, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
-import os, requests, json
+from flask import Flask
+from flask_site import site
+from database.database_manager import init_db
+from database.api import db_api
+import os
 
-app = Flask(__name__)
 
-@app.route("/")
-def root():
-    return "Good morning everyone!"
+def create_app():
+    """
+    Create and configure the Flask application.
 
-@app.route("/register")
-def register():
+    Returns:
+        Flask: The configured Flask application instance.
+    """
+    app = Flask(__name__)
+    # basedir = os.path.abspath(os.path.dirname(__file__))
+    
+    init_db(app)
+    
+    app.register_blueprint(site)
+    app.register_blueprint(db_api)
+    
+    return app
 
-    try:
-        data = {
-            #Auto assign an id?
-            'username': request.form.get('username'),
-            'email': request.form.get('email'),
-            'password': request.form.get('password'),
-            'first_name': request.form.get('first_name'),
-            'last_name': request.form.get('last_name')
-        }
-        response = requests.post(path='/user', json=data)
 
-    except Exception as e:
-        print(e)
-
-@app.route("/login_user")
-def login_user():
-    id = request.form.get('id')
-    password = request.form.get('password')
-    login_type = request.form.get('login_type')
-    try:
-        response = requests.get('/user/{}'.format(id))
-
-        # direct to page corresponding to login type if successful
-
-    except Exception as e:
-        print(e)
+if __name__ == '__main__':
+    flask_app = create_app() 
+    
+    # Only allow access from the specific host (replace '127.0.0.1' with your desired host)
+    flask_app.run(host='127.0.0.1', port=5000, debug=True)
