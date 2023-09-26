@@ -28,10 +28,25 @@ def maps():
 @admin.route("/admin/scooter/add")
 def add_scooter():
     pass
+
+@admin.route("/admin/scooter/edit")
+def edit_scooter():
+    pass
+
 @admin.route("/admin/scooter/delete")
 def delete_scooter():
     pass
 
 @admin.route("/admin/scooter/usage")
 def scooter_usage():
+    pass
+
+@admin.route("/admin/customer/add")
+def add_customer():
+    pass
+@admin.route("/admin/customer/delete")
+def delete_customer():
+    pass
+@admin.route("/admin/customer/edit")
+def edit_customer():
     pass
