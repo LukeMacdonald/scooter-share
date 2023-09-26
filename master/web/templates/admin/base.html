@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>{% block title %}Home{% endblock %}</title>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3 sidebar-container">
+                <h2 style="margin-top: 2rem; text-align:center">Admin Portal</h2>
+                <hr style="border-top: 1px solid #fff;"/>
+                <div class="sidebar-link-container">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <h5><a class="nav-link {% if request.path == url_for('admin.home') %}active{% endif %}" href="{{ url_for('admin.home') }}">Home</a></h5>
+                    </li>
+                    <li class="nav-item">
+                        <div class="dropdown">
+                            <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Manage Scooters
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="manageScootersDropdown">
+                                <li><a class="dropdown-item {% if request.path == url_for('admin.home') %}active{% endif %}" href="{{ url_for('admin.home') }}">Manage All Scooters</a></li>
+                                <li><a class="dropdown-item {% if request.path == url_for('admin.home') %}active{% endif %}" href="{{ url_for('admin.home') }}">Add New Scooter</a></li>
+                                <li><a class="dropdown-item {% if request.path == url_for('admin.home') %}active{% endif %}" href="{{ url_for('admin.home') }}">Remove Scooter</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <h5><a class="nav-link {% if request.path == url_for('admin.maps') %}active{% endif %}" href="{{ url_for('admin.maps') }}">View Scooter Locations</a></h5>
+                    </li>
+                    <li class="nav-item">
+                        <h5><a class="nav-link {% if request.path == url_for('admin.calendar') %}active{% endif %}" href="{{ url_for('admin.calendar') }}">View Scooter Book History</a></h5>
+                    </li>
+                    <li class="nav-item">
+                        <h5><a class="nav-link {% if request.path == url_for('admin.calendar') %}active{% endif %}" href="{{ url_for('admin.calendar') }}">View Scooter Usage History</a></h5>
+                    </li>
+                </ul>
+            </div>
+            </div>
+
+            <div class="col-md-9 col-sm-8" style="margin: 2rem 0;">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCI9KBPlHOzx9z7dp41LNbzpYaVn3qqgNY&callback=initMap&libraries=&v=weekly" defer></script>
+    <script src="{{ url_for('static', filename='js/maps.js') }}" charset="utf-8"></script>
+</body>
+</html>
+
+
