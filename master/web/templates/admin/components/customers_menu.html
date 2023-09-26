@@ -1,0 +1,15 @@
+<li class="nav-item">
+    <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="collapse" data-bs-target="#manageCustomersDropdown" style="text-align: left; width: 100%; font-size: 1.25rem; color: white; margin-top: 0.75rem;">
+        <i class="fa-solid fa-user" style="margin-right: 1rem;"></i> Customers
+    </a>
+    <div class="collapse show" id="manageCustomersDropdown">
+        <ul class="nav flex-column" style="margin-left: 3rem;">
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == url_for('admin.add_scooter') %}active{% endif %}" href="{{ url_for('admin.home') }}">Manage Customers</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == url_for('admin.add_scooter') %}active{% endif %}" href="{{ url_for('admin.home') }}">View Top-Up History</a>
+            </li>
+        </ul>
+    </div>
+</li>

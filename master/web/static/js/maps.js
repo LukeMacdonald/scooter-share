@@ -12,9 +12,25 @@ function initMap() {
         zoomControl: true,
         streetViewControl: false
     });
+
+
+     // Create a custom icon with a specific size
+     const customIcon = {
+        url: "https://cdn-icons-png.flaticon.com/512/1819/1819598.png",
+        scaledSize: new google.maps.Size(32, 32) // Set the size here (width, height)
+    };
+
     new google.maps.Marker({
         position: myLatLng,
         map,
-        title: "My location"
+        title: "My location",
+        icon: customIcon
+    });
+
+    new google.maps.Marker({
+        position: {lat:-37.86616061413071, lng: 144.6228517415038 },
+        map,
+        title: "Pin 2",
+        icon: customIcon
     });
 }

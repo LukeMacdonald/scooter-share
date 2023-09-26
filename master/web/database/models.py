@@ -23,7 +23,8 @@ class Scooter(db.Model):
 
     ScooterID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Make = db.Column(db.String(100), nullable=False)
-    Location = db.Column(db.String(255), nullable=False)
+    Longitude = db.Column(db.Float(precision=6), nullable=False)  
+    Latitude = db.Column(db.Float(precision=6), nullable=False)  
     RemainingPower = db.Column(db.Float(precision=2), nullable=False)
     CostPerTime = db.Column(db.Float(precision=2), nullable=False)
 

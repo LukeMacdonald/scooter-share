@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, render_template, session,request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for
 
 admin = Blueprint("admin", __name__)
 
@@ -19,11 +19,11 @@ def home():
 
 @admin.route("/admin/home/calendar")
 def calendar():
-    return render_template("admin/calender.html")
+    return render_template("admin/bookings.html")
 
 @admin.route("/admin/home/maps")
 def maps():
-    return render_template("admin/maps.html")
+    return render_template("admin/locations.html")
 
 @admin.route("/admin/scooter/add")
 def add_scooter():
