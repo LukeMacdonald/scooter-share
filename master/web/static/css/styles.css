@@ -1,5 +1,7 @@
-body{
-    background-color: #222831;
+
+.home-section{
+    width: 75%;
+    margin: 2rem auto;
 }
 .login-header{
     margin: 2rem 0 3rem 0;
@@ -36,4 +38,37 @@ body{
     font-weight: bold; 
     font-style: italic; 
     font-size: 0.9rem
+}
+#gmp-map {
+    height: 90vh;   
+}
+a {
+    text-decoration: none;
+    color: white;
+}
+.nav-link.active {
+    background-color: #1ea3f6; /* Highlight color */
+    color: white; /* Text color */
+    border-radius: 5px 0 0 5px;
+}
+.nav-link.active:hover {
+    background-color: #1ea3f6; /* Highlight color */
+    color: white; /* Text color */
+    border-radius: 5px 0 0 5px;
+}
+.sidebar-container{
+    min-height: 100vh; 
+    background-color: #222831; 
+    color: white; 
+    padding-right:0;
+    padding-left:0;
+}
+.sidebar-link-container{
+    margin-left: 1rem;
+    margin-top: 2rem
+}
+.nav-link:hover {
+    background-color: #6baad1; /* Highlight color */
+    color: white; /* Text color */
+    border-radius: 5px 0 0 5px;
 }

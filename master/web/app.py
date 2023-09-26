@@ -20,6 +20,8 @@ def create_app():
     app.register_blueprint(admin)
     app.register_blueprint(db_api)
     
+    
+    
     return app
 
 
