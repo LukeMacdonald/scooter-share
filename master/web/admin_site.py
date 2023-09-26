@@ -24,3 +24,14 @@ def calendar():
 @admin.route("/admin/home/maps")
 def maps():
     return render_template("admin/maps.html")
+
+@admin.route("/admin/scooter/add")
+def add_scooter():
+    pass
+@admin.route("/admin/scooter/delete")
+def delete_scooter():
+    pass
+
+@admin.route("/admin/scooter/usage")
+def scooter_usage():
+    pass

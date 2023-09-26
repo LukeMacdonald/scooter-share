@@ -14,7 +14,6 @@
     background-color: rgb(238, 238, 238);
     border-radius: 5px;
     height: 100vh;
-
 }
 .form-container{
     width: 100%;
@@ -42,7 +41,7 @@
 #gmp-map {
     height: 90vh;   
 }
-a {
+.nav-link {
     text-decoration: none;
     color: white;
 }
@@ -58,13 +57,13 @@ a {
 }
 .sidebar-container{
     min-height: 100vh; 
-    background-color: #222831; 
+    background-color: #1B262C; 
     color: white; 
     padding-right:0;
     padding-left:0;
 }
 .sidebar-link-container{
-    margin-left: 1rem;
+    margin-left: 2rem;
     margin-top: 2rem
 }
 .nav-link:hover {
