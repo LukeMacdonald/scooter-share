@@ -21,20 +21,24 @@ def register():
             'first_name': request.form.get('first_name'),
             'last_name': request.form.get('last_name')
         }
-        response = requests.post(path='/user', json=data)
+        response = requests.post(path='http://localhost:5000/user', json=data)
 
     except Exception as e:
         print(e)
 
-@app.route("/login_user")
+@app.route("/login")
 def login_user():
-    id = request.form.get('id')
+    username = request.form.get('username')
     password = request.form.get('password')
-    login_type = request.form.get('login_type')
-    try:
-        response = requests.get('/user/{}'.format(id))
 
-        # direct to page corresponding to login type if successful
+    try:
+        response = requests.get(path='http://localhost:5000/user/{}'.format(username))
+
+        # check that corresponding username and password are correct
+        response("username")
+        if(sha256_crypt.verify(password, hashedPassword))
+
+        # direct to page corresponding to user type if successful
 
     except Exception as e:
         print(e)
