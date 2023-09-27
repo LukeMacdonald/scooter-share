@@ -14,6 +14,7 @@ class User(db.Model):
     first_name = db.Column(db.String(255), nullable=False)
     last_name = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum('customer', 'engineer', 'admin'), nullable=False)
+    phone_number = db.Column(db.String(12))
 
 class Scooter(db.Model):
     """
@@ -27,6 +28,7 @@ class Scooter(db.Model):
     Latitude = db.Column(db.Float(precision=6), nullable=False)  
     RemainingPower = db.Column(db.Float(precision=2), nullable=False)
     CostPerTime = db.Column(db.Float(precision=2), nullable=False)
+    Status = db.Column(db.Enum('available', 'occupying', 'maintenance','repaired'), nullable=False)
 
 class Booking(db.Model):
     """
