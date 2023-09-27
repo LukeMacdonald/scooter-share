@@ -5,10 +5,10 @@
     <div class="collapse show" id="manageCustomersDropdown">
         <ul class="nav flex-column" style="margin-left: 3rem;">
             <li class="nav-item">
-                <a class="nav-link {% if request.path == url_for('admin.add_scooter') %}active{% endif %}" href="{{ url_for('admin.home') }}">Manage Customers</a>
+                <a class="nav-link {% if request.path == url_for('admin.customers_info') %}active{% endif %}" href="{{ url_for('admin.home') }}">View Customers Information</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.path == url_for('admin.add_scooter') %}active{% endif %}" href="{{ url_for('admin.home') }}">View Top-Up History</a>
+                <a class="nav-link {% if request.path == url_for('admin.manage_customers') %}active{% endif %}" href="{{ url_for('admin.home') }}">Manage Customers</a>
             </li>
         </ul>
     </div>

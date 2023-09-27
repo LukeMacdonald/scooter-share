@@ -3,50 +3,34 @@ from flask import Blueprint, render_template, request, redirect, url_for
 admin = Blueprint("admin", __name__)
 
 # Client webpage.
-@admin.route("/admin")
+@admin.route("/")
 def index():
     return render_template("login.html")
 
 @admin.route("/admin/login", methods=['POST'])
-def login():
-    print(request.form.get('email'))
+def login(): 
     # Perform login logic
     return redirect(url_for('admin.home'))
     
-@admin.route("/admin/home")
+@admin.route("/home")
 def home():
-    return render_template("admin/home.html")
+    return render_template("admin/pages/home.html")
 
-@admin.route("/admin/home/calendar")
-def calendar():
-    return render_template("admin/bookings.html")
+@admin.route("/scooter/bookings")
+def bookings():
+    return render_template("admin/pages/bookings.html")
 
-@admin.route("/admin/home/maps")
-def maps():
-    return render_template("admin/locations.html")
+@admin.route("/scooters/manage")
+def manage_scooters():
+    return render_template("admin/pages/home.html")
 
-@admin.route("/admin/scooter/add")
-def add_scooter():
-    pass
-
-@admin.route("/admin/scooter/edit")
-def edit_scooter():
-    pass
-
-@admin.route("/admin/scooter/delete")
-def delete_scooter():
-    pass
-
-@admin.route("/admin/scooter/usage")
+@admin.route("/scooters/usage")
 def scooter_usage():
-    pass
+    return render_template("admin/pages/home.html")
 
-@admin.route("/admin/customer/add")
-def add_customer():
-    pass
-@admin.route("/admin/customer/delete")
-def delete_customer():
-    pass
-@admin.route("/admin/customer/edit")
-def edit_customer():
-    pass
+@admin.route("/customers/manage")
+def manage_customers():
+    return render_template("admin/pages/home.html")
+@admin.route("/customers/info")
+def customers_info():
+   return render_template("admin/pages/home.html") 
