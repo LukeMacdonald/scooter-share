@@ -47,6 +47,7 @@ class Handler(socketserver.StreamRequestHandler):
             if message["name"] in _actions:
                 response = _actions[message["name"]](self, message)
                 self.wfile.write(json.dumps(response).encode() + b"\n")
+                self.wfile.flush()
             else:
                 return
 
