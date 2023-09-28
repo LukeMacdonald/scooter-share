@@ -1,18 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-import os, requests, json, sys
-
-
-# Get the path of the parent directory
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-# Add the parent directory to sys.path
-sys.path.append(parent_dir)
-# Now you can import the module
 from agent_common import comms
-# Restoring sys.path to its original state (optional)
-sys.path.remove(parent_dir)
 
 user = Blueprint("user", __name__)
 
+# connection = comms.Connection()
 
 @user.route("/")
 def login():

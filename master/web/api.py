@@ -1,8 +1,6 @@
-from flask import Flask, Blueprint, request, jsonify, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
+from flask import Flask
 from passlib import sha256_crypt
-import os, requests, json
+import requests
 
 app = Flask(__name__)
 

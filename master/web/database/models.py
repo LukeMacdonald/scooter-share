@@ -1,4 +1,4 @@
-from database.database_manager import db
+from master.web.database.database_manager import db
 from sqlalchemy.orm import relationship
 
 class User(db.Model):

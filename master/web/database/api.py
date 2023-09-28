@@ -1,7 +1,7 @@
 from flask import Flask, Blueprint, request, jsonify
 from passlib.hash import sha256_crypt
-from database.models import User
-from database.database_manager import db
+from master.web.database.models import User
+from master.web.database.database_manager import db
 
 
 db_api = Blueprint("db_api", __name__)

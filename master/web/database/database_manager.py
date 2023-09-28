@@ -1,4 +1,4 @@
-from database.config import HOST, USER, PASSWORD, NAME
+from master.web.database.config import HOST, USER, PASSWORD, NAME
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
