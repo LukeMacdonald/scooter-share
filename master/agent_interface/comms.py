@@ -16,7 +16,10 @@ def action(name, states):
         def wrapper(handler, message):
             if handler.state not in states:
                 raise ValueError(f"Handler should be in one of the states in {states}, not {handler.state}.")
-            return function(handler, message)
+            try:
+                return function(handler, message)
+            except Exception as e:
+                return {"error": str(e)}
         _actions[name] = wrapper
         return wrapper
     return inner
