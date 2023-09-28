@@ -28,8 +28,10 @@ def fetch_scooter_locations():
             sendJson(s, message_to_server)
             while True:
                 data = recvJson(s)
-                if "Message" in data:
-                    return data["Message"]
+                if "error" in data:
+                    raise Exception(data['error'])
+                elif "data" in data:
+                    return data["data"]
     except Exception as error:
         print(f"An unexpected error occurred: {str(error)}")
     return None
@@ -42,8 +44,10 @@ def update_scooter_status(id):
             sendJson(s, message_to_server)
             while True:
                 data = recvJson(s)
-                if "Message" in data:
-                    return data["Message"]
+                if "error" in data:
+                    raise Exception(data['error'])
+                elif "data" in data:
+                    return data["data"]
     except Exception as error:
         print(f"An unexpected error occurred: {str(error)}")  
 
@@ -67,10 +71,6 @@ def scooter_locations():
         Flask response: The reported scooters location page with Google Maps displayed.
     """
     scooter_data = fetch_scooter_locations()
-
-    # if scooter_data is not None:
-    #     print(scooter_data)
-    #     print()
     
     return render_template("engineer/pages/locations.html", scooter_data=scooter_data)
 
@@ -83,5 +83,4 @@ def update_repair_report():
 def scooter_fixed():
     scooter_id = request.form.get("scooter_id")
     update_scooter_status(scooter_id)
-    print(scooter_id)
     return redirect(url_for("engineer.update_repair_report"))

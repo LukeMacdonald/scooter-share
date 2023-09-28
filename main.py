@@ -47,12 +47,12 @@ def run_socket(port, user_type):
                 data = recvJson(conn)
                 if "name" in data:
                     if user_type == "engineer":
-                        message = fetchEngineerData(data["name"],data)
+                        response = fetchEngineerData(data["name"],data)
                     elif user_type == "customer":
                         pass
                     else:
                         pass
-                sendJson(conn, { "Message": message })
+                sendJson(conn, response)
                     
 if __name__ == '__main__':
     master_app = threading.Thread(target=run_master)

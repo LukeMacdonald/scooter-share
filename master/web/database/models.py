@@ -7,6 +7,7 @@ such as users, scooters, bookings, repairs, and user balances.
 """
 from sqlalchemy.orm import relationship
 from master.web.database.database_manager import db
+from enum import Enum
 
 class User(db.Model):
     """
@@ -37,6 +38,12 @@ class Scooter(db.Model):
     remaining_power = db.Column(db.Float(precision=2), nullable=False)
     cost_per_time = db.Column(db.Float(precision=2), nullable=False)
     status = db.Column(db.Enum('available', 'occupying', 'maintenance','repaired'), nullable=False)
+
+class ScooterStatus(Enum):
+    AVAILABLE = 'available'
+    OCCUPYING = 'occupying'
+    MAINTENANCE = 'maintenance'
+    REPAIRED = 'repaired'
 
 class Booking(db.Model):
     """

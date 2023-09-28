@@ -1,22 +1,44 @@
 import requests
+from requests.exceptions import RequestException
+from master.web.database.models import ScooterStatus
 
-def fetchAllScooters():
-    pass
 def fetchAllReportedScooters():
-    response = requests.get("http://localhost:5000/scooters/maintenance", timeout=5)
-    return response.json()
+    try:
+        url = "http://localhost:5000/scooters/maintenance"
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        return {"data": response.json()}
+    except RequestException as req_error:
+        return {"error": f"Request error while fetching reported scooters: {req_error}" }
+    except ValueError as json_error:
+        return {"error": f"JSON decoding error while processing response: {json_error}" }
+    except Exception as error:
+        return {"error": f"An unexpected error occurred: {error}" }
+
 def updateScooterStatus(scooterID):
-    response = requests.get(f"http://localhost:5000/scooters/{scooterID}", timeout=5)
-    user = response.json();
-    user["status"] = "available"
-    response = requests.put(f"http://localhost:5000/scooters/{scooterID}",json=user)
-    return user
+    try:
+        
+        scooter_url = f"http://localhost:5000/scooters/{scooterID}"
+        response = requests.get(scooter_url, timeout=5)
+        response.raise_for_status()
+        scooter_data = response.json()
+
+      
+        scooter_data["status"] = ScooterStatus.AVAILABLE.value
+
+      
+        response = requests.put(scooter_url, json=scooter_data, timeout=5)
+        response.raise_for_status()
+
+        return {"data": response.json()}
+    except RequestException as error:
+        return {"error": f"An error occurred while updating scooter status: {error}" }
+    except Exception as error:
+        return {"error": f"An unexpected error occurred: {error}" }
 
 def fetchEngineerData(request, options):
     if request == "locations":
-       return fetchAllReportedScooters() 
-    elif request  == "repair-fixed":
-        print(options)
+        return fetchAllReportedScooters()
+    elif request == "repair-fixed":
         return updateScooterStatus(options["id"])
-    elif request == 'scooters-info':
-        print("Fetching all scooter information") 
+        
