@@ -18,17 +18,28 @@ function initMap() {
         scaledSize: new google.maps.Size(32, 32)
     };
 
-    new google.maps.Marker({
-        position: myLatLng,
-        map,
-        title: "My location",
-        icon: customIcon
-    });
+     // Iterate over scooter data and create markers
+     for (let i = 0; i < scooterData.length; i++) {
+        const scooter = scooterData[i];
+        new google.maps.Marker({
+            position: { lat: scooter.Latitude, lng: scooter.Longitude },
+            map,
+            title: "Scooter ID: " + scooter.ScooterID,
+            icon: customIcon
+        });
+    }
 
-    new google.maps.Marker({
-        position: {lat:-37.86616061413071, lng: 144.6228517415038 },
-        map,
-        title: "Pin 2",
-        icon: customIcon
-    });
+    // new google.maps.Marker({
+    //     position: myLatLng,
+    //     map,
+    //     title: "My location",
+    //     icon: customIcon
+    // });
+
+    // new google.maps.Marker({
+    //     position: {lat:-37.86616061413071, lng: 144.6228517415038 },
+    //     map,
+    //     title: "Pin 2",
+    //     icon: customIcon
+    // });
 }

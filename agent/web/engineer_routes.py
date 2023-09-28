@@ -48,4 +48,4 @@ def scooter_locations():
         print(scooter_data)
         print()
     
-    return render_template("engineer/pages/locations.html")
+    return render_template("engineer/pages/locations.html", scooter_data=scooter_data)

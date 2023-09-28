@@ -6,4 +6,33 @@
     <h2>Scooter Locations:</h2>
     <div id="gmp-map"></div>
     <br>
+    
+    <table class="table table-striped" style="width:75%; margin: 0 auto">
+        <thead>
+            <tr>
+                <th>Scooter ID</th>
+                <th>Make</th>
+                <th>Location</th>
+                <th>Status</th>
+                <!-- Add more table headers for additional fields as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% if scooter_data %}
+                {% for scooter in scooter_data %}
+                    <tr>
+                        <td>{{scooter.ScooterID}}
+                        <td>{{ scooter.Make }}</td>
+                        <td>({{ scooter.Latitude }},{{ scooter.Longitude }})</td>
+                        <td>{{ scooter.Status }}</td>
+                        <!-- Add more table cells for additional fields as needed -->
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4">No scooter data available.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
 {% endblock %}
