@@ -15,13 +15,13 @@ def get_all_scooters():
     scooters = Scooter.query.all()
     result = [
         {
-            'ScooterID': scooter.scooter_id,
+            'ScooterID': scooter.id,
             'Make': scooter.make,
             'Longitude': scooter.longitude,
             'Latitude': scooter.latitude,
             'RemainingPower': scooter.remaining_power,
             'CostPerTime': scooter.cost_per_time,
-            'Status': scooter.status
+            'status': scooter.status
         }
         for scooter in scooters
     ]
@@ -41,13 +41,13 @@ def get_scooter(scooter_id):
     scooter = Scooter.query.get(scooter_id)
     if scooter:
         result = {
-            'ScooterID': scooter.scooter_id,
+            'ScooterID': scooter.id,
             'Make': scooter.make,
             'Longitude': scooter.longitude,
             'Latitude': scooter.latitude,
             'RemainingPower': scooter.remaining_power,
             'CostPerTime': scooter.cost_per_time,
-            'Status': scooter.status
+            'status': scooter.status
         }
         return jsonify(result)
     else:
@@ -72,7 +72,7 @@ def update_scooter(scooter_id):
         scooter.latitude = data['Latitude']
         scooter.remaining_power = data['RemainingPower']
         scooter.cost_per_time = data['CostPerTime']
-        scooter.status = data['Status']
+        scooter.status = data['status']
         db.session.commit()
         return jsonify({'message': 'Scooter updated successfully'})
     else:
@@ -105,17 +105,17 @@ def get_maintenance_scooters():
     Returns:
         JSON response with a list of maintenance scooters or a "No maintenance scooters found" message.
     """
-    maintenance_scooters = Scooter.query.filter_by(Status='maintenance').all()
+    maintenance_scooters = Scooter.query.filter_by(status='maintenance').all()
     if maintenance_scooters:
         result = [
             {
-                'ScooterID': scooter.ScooterID,
-                'Make': scooter.Make,
-                'Longitude': scooter.Longitude,
-                'Latitude': scooter.Latitude,
-                'RemainingPower': scooter.RemainingPower,
-                'CostPerTime': scooter.CostPerTime,
-                'Status': scooter.Status
+                'ScooterID': scooter.id,
+                'Make': scooter.make,
+                'Longitude': scooter.longitude,
+                'Latitude': scooter.latitude,
+                'RemainingPower': scooter.remaining_power,
+                'CostPerTime': scooter.cost_per_time,
+                'status': scooter.status
             }
             for scooter in maintenance_scooters
         ]

@@ -12,7 +12,7 @@ def scooterData():
                 "Longitude": 144.963,
                 "Make": "Scooter Make 1",
                 "RemainingPower": 75.5,
-                "Status": "available"
+                "status": "available"
             },
             {
                 "CostPerTime": 9.99,
@@ -20,7 +20,7 @@ def scooterData():
                 "Longitude": 144.978,
                 "Make": "Scooter Make 2",
                 "RemainingPower": 85.0,
-                "Status": "occupying"
+                "status": "occupying"
             },
             {
                 "CostPerTime": 12.5,
@@ -28,7 +28,7 @@ def scooterData():
                 "Longitude": 144.981,
                 "Make": "Scooter Make 3",
                 "RemainingPower": 50.25,
-                "Status": "maintenance"
+                "status": "maintenance"
             },
             {
                 "CostPerTime": 10.99,
@@ -36,7 +36,7 @@ def scooterData():
                 "Longitude": 144.984,
                 "Make": "Scooter Make 1",
                 "RemainingPower": 75.5,
-                "Status": "available"
+                "status": "available"
             },
             {
                 "CostPerTime": 9.99,
@@ -44,7 +44,7 @@ def scooterData():
                 "Longitude": 144.965,
                 "Make": "Scooter Make 2",
                 "RemainingPower": 85.0,
-                "Status": "occupying"
+                "status": "occupying"
             },
             {
                 "CostPerTime": 12.5,
@@ -52,7 +52,7 @@ def scooterData():
                 "Longitude": 144.99,
                 "Make": "Scooter Make 3",
                 "RemainingPower": 50.25,
-                "Status": "maintenance"
+                "status": "maintenance"
             }
         ]
 
@@ -63,7 +63,7 @@ def scooterData():
                 latitude=data["Latitude"],
                 remaining_power=data["RemainingPower"],
                 cost_per_time=data["CostPerTime"],
-                status=data["Status"]
+                status=data["status"]
             )
 
             # Add the scooter to the session

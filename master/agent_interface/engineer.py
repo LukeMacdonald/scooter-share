@@ -5,7 +5,7 @@ def fetchAllScooters():
 def fetchAllReportedScooters():
     response = requests.get("http://localhost:5000/scooters/maintenance", timeout=5)
     return response.json()
-def updateScooterStatus():
+def updateScooterstatus():
     pass
 
 def fetchEngineerData(request, options):
