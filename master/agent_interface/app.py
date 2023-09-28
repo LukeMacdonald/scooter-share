@@ -1,4 +1,4 @@
-import comms
+from master.agent_interface import comms
 
 """
 A little test of the state machine setup.
@@ -14,5 +14,5 @@ def bye(handler, message):
     handler.state = "start"
     return "Goodbye!"
 
-if __name__ == "__main__":
+def run_agent_server():
     comms.run(12345)

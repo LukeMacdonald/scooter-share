@@ -22,7 +22,7 @@ def init_db(app):
         None
     """
     # Load configuration
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://{USER}:{PASSWORD}@{HOST}/{NAME}""
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://{USER}:{PASSWORD}@{HOST}/{NAME}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False  # Disable modification tracking
 
     # Initialize SQLAlchemy extension
