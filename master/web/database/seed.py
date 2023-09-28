@@ -5,37 +5,69 @@ def seedData():
 
 def scooterData():
     if not Scooter.query.first():
+        scooter_data = [
+            {
+                "CostPerTime": 10.99,
+                "Latitude": -37.8136,
+                "Longitude": 144.963,
+                "Make": "Scooter Make 1",
+                "RemainingPower": 75.5,
+                "Status": "available"
+            },
+            {
+                "CostPerTime": 9.99,
+                "Latitude": -37.815,
+                "Longitude": 144.978,
+                "Make": "Scooter Make 2",
+                "RemainingPower": 85.0,
+                "Status": "occupying"
+            },
+            {
+                "CostPerTime": 12.5,
+                "Latitude": -37.807,
+                "Longitude": 144.981,
+                "Make": "Scooter Make 3",
+                "RemainingPower": 50.25,
+                "Status": "maintenance"
+            },
+            {
+                "CostPerTime": 10.99,
+                "Latitude": -37.8078,
+                "Longitude": 144.984,
+                "Make": "Scooter Make 1",
+                "RemainingPower": 75.5,
+                "Status": "available"
+            },
+            {
+                "CostPerTime": 9.99,
+                "Latitude": -37.8183,
+                "Longitude": 144.965,
+                "Make": "Scooter Make 2",
+                "RemainingPower": 85.0,
+                "Status": "occupying"
+            },
+            {
+                "CostPerTime": 12.5,
+                "Latitude": -37.8072,
+                "Longitude": 144.99,
+                "Make": "Scooter Make 3",
+                "RemainingPower": 50.25,
+                "Status": "maintenance"
+            }
+        ]
 
-        # Create and add scooters to the database session
-        scooter1 = Scooter(
-            Make="Scooter Make 1",
-            Longitude=123.456789,
-            Latitude=45.678901,
-            RemainingPower=75.5,
-            CostPerTime=10.99,
-            Status="available"
-        )
+        for data in scooter_data:
+            scooter = Scooter(
+                Make=data["Make"],
+                Longitude=data["Longitude"],
+                Latitude=data["Latitude"],
+                RemainingPower=data["RemainingPower"],
+                CostPerTime=data["CostPerTime"],
+                Status=data["Status"]
+            )
 
-        scooter2 = Scooter(
-            Make="Scooter Make 2",
-            Longitude=123.789012,
-            Latitude=45.123456,
-            RemainingPower=85.0,
-            CostPerTime=9.99,
-            Status="occupying"
-        )
+            # Add the scooter to the session
+            db.session.add(scooter)
 
-        scooter3 = Scooter(
-            Make="Scooter Make 3",
-            Longitude=124.567890,
-            Latitude=46.789012,
-            RemainingPower=50.25,
-            CostPerTime=12.50,
-            Status="maintenance"
-        )
-
-        # Add the scooters to the session and commit the changes to the database
-        db.session.add(scooter1)
-        db.session.add(scooter2)
-        db.session.add(scooter3)
+        # Commit the changes to the database
         db.session.commit()
