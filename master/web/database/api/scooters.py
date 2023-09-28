@@ -96,3 +96,29 @@ def delete_scooter(scooter_id):
         return jsonify({'message': 'Scooter deleted successfully'})
     else:
         return jsonify({'message': 'Scooter not found'}), 404
+
+@scooter_api.route("/scooters/maintenance", methods=["GET"])
+def get_maintenance_scooters():
+    """
+    Get a list of scooters with the status set to "maintenance."
+
+    Returns:
+        JSON response with a list of maintenance scooters or a "No maintenance scooters found" message.
+    """
+    maintenance_scooters = Scooter.query.filter_by(Status='maintenance').all()
+    if maintenance_scooters:
+        result = [
+            {
+                'ScooterID': scooter.ScooterID,
+                'Make': scooter.Make,
+                'Longitude': scooter.Longitude,
+                'Latitude': scooter.Latitude,
+                'RemainingPower': scooter.RemainingPower,
+                'CostPerTime': scooter.CostPerTime,
+                'Status': scooter.Status
+            }
+            for scooter in maintenance_scooters
+        ]
+        return jsonify(result)
+    else:
+        return jsonify({'message': 'No maintenance scooters found'}), 404

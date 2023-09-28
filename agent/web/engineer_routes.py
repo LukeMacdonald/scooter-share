@@ -29,7 +29,7 @@ def fetch_scooter_locations():
             while True:
                 data = recvJson(s)
                 if "Message" in data:
-                    return data["Message"]["data"]
+                    return data["Message"]
     except Exception as error:
         print(f"An unexpected error occurred: {str(error)}")
     return None

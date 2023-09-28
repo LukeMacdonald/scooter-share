@@ -1,7 +1,10 @@
+import requests
+
 def fetchAllScooters():
     pass
 def fetchAllReportedScooters():
-    return {"data": "Looking for locations of all reported scooters"}
+    response = requests.get("http://localhost:5000/scooters/maintenance", timeout=5)
+    return response.json()
 def updateScooterStatus():
     pass
 
