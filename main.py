@@ -1,55 +1,63 @@
 """
 Main Module for Running Flask Master and Agent Applications in Separate Threads.
 """
-import threading, socket
+import threading
+import socket
 from agent.web.app import create_agent_app
-from master.web.app import create_master_app
-from master.agent_interface.comms import run
 from agent_common.socket_utils import recvJson, sendJson
+from master.web.app import create_master_app
+from master.agent_interface.engineer import fetchEngineerData
 
 PUBLIC_HOST = '0.0.0.0'
 PRIVATE_HOST= '127.0.0.1'
+MASTER_PORT = 5000
+AGENT_PORT = 5001
+ENGINEER_SOCKET_PORT = 63000
 
 def run_master():
     """
     Function to run the Flask master application.
     """
     master = create_master_app()
-    master.run(host=PRIVATE_HOST, port=5000, debug=False, threaded=False)
+    master.run(host=PRIVATE_HOST, port=MASTER_PORT, debug=False, threaded=False)
 
 def run_agent():
     """
     Function to run the Flask agent application.
     """
     agent = create_agent_app()
-    agent.run(host=PUBLIC_HOST, port=5001, debug=False, threaded=True)
+    agent.run(host=PUBLIC_HOST, port=AGENT_PORT, debug=False, threaded=True)
 
-def run_socket(PORT):
+def run_socket(port, user_type):
+    """
+    Function to run a socket server for communication between master and agent.
+    
+    Args:
+        PORT (int): The port number for the socket server.
+        USER_TYPE (str): The type of user (e.g., 'engineer' or 'customer').
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        ADDRESS = (PUBLIC_HOST, PORT)
-        s.bind(ADDRESS)
+        address = (PUBLIC_HOST, port)
+        s.bind(address)
         s.listen()
-        print("Listening on {}...".format(ADDRESS))
         while True:
-            print("Waiting for Agent Pi...")
             conn, addr = s.accept()
             with conn:
-                print("Connected to {}".format(addr))
-                print()
+                print(f"Receiving connection from: {addr}")
                 data = recvJson(conn)
                 if "name" in data:
-                    if data["name"] == "locations":
-                        print("Looking for locations of all reported scooters")
-                    elif data["name"] == "report-repair":
-                        print("Engineering is reporting repair")
-                    elif data['name'] == 'scooters-info':
-                        print("Fetching all scooter information")     
-                sendJson(conn, { "Message": data })
+                    if user_type == "engineer":
+                        message = fetchEngineerData(data["name"],[])
+                    elif user_type == "customer":
+                        pass
+                    else:
+                        pass
+                sendJson(conn, { "Message": message })
                     
 if __name__ == '__main__':
     master_app = threading.Thread(target=run_master)
     agent_app = threading.Thread(target=run_agent)
-    engineer_socket = threading.Thread(target=run_socket, args=(63000,)) 
+    engineer_socket = threading.Thread(target=run_socket, args=(ENGINEER_SOCKET_PORT,'engineer',))
     agent_app.start()
     master_app.start()
     engineer_socket.start()
