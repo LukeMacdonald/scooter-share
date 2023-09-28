@@ -1,4 +1,11 @@
-from flask import Flask, Blueprint, request, jsonify
+"""
+Database API Blueprint
+
+This blueprint defines routes for interacting with the user database.
+It provides endpoints for retrieving, adding, updating, and deleting user records.
+
+"""
+from flask import Blueprint, request, jsonify
 from passlib.hash import sha256_crypt
 from master.web.database.models import User
 from master.web.database.database_manager import db
@@ -29,8 +36,8 @@ def get_users():
     return jsonify(result)
 
 # Endpoint to get user by id.
-@db_api.route("/user/<int:id>", methods=["GET"])
-def get_user(id):
+@db_api.route("/user/<int:user_id>", methods=["GET"])
+def get_user(user_id):
     """
     Get a user by their ID.
 
@@ -40,7 +47,7 @@ def get_user(id):
     Returns:
         JSON response with the user object or a "User not found" message.
     """
-    user = User.query.get(id)
+    user = User.query.get(user_id)
     if user:
         result = {
             "id": user.id, 
@@ -65,7 +72,6 @@ def add_user():
     """
     data = request.json
     password_hash = sha256_crypt.hash(data.get("password"))
-    
     new_user = User(
         username=data.get("username"),
         password=password_hash,
@@ -86,12 +92,11 @@ def add_user():
         "last_name": new_user.last_name,
         "role": new_user.role  # Include the usertype in the response
     }
-    
     return jsonify(result), 201
 
 # Endpoint to update user.
-@db_api.route("/user/<int:id>", methods=["PUT"])
-def update_user(id):
+@db_api.route("/user/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
     """
     Update a user by their ID.
 
@@ -101,7 +106,7 @@ def update_user(id):
     Returns:
         JSON response with the updated user object or a "User not found" message.
     """
-    user = User.query.get(id)
+    user = User.query.get(user_id)
     if user:
         data = request.json
         user.username = data.get("username")
@@ -125,8 +130,8 @@ def update_user(id):
         return jsonify({"message": "User not found"}), 404
 
 # Endpoint to delete user.
-@db_api.route("/user/<int:id>", methods=["DELETE"])
-def delete_user(id):
+@db_api.route("/user/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
     """
     Delete a user by their ID.
 
@@ -136,7 +141,7 @@ def delete_user(id):
     Returns:
         JSON response with the deleted user object or a "User not found" message.
     """
-    user = User.query.get(id)
+    user = User.query.get(user_id)
     if user:
         db.session.delete(user)
         db.session.commit()

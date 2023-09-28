@@ -1,15 +1,6 @@
 """
 Blueprint for Admin Routes
 
-Routes:
-    - `/`: Display the login page for admin.
-    - `/admin/login` (POST): Handle the admin login form submission.
-    - `/home`: Display the admin home page.
-    - `/scooter/bookings`: Display the admin page for scooter bookings.
-    - `/scooters/manage`: Display the admin page for managing scooters.
-    - `/scooters/usage`: Display the admin page for scooter usage statistics.
-    - `/customers/manage`: Display the admin page for managing customers.
-    - `/customers/info`: Display the admin page for customer information.
 """
 from flask import Blueprint, render_template, redirect, url_for
 

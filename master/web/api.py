@@ -1,31 +1,77 @@
-from flask import Flask
-from passlib import sha256_crypt
+"""
+API Blueprint
+
+"""
+from requests.exceptions import RequestException, Timeout
+from flask import Blueprint, request, jsonify
+from passlib.hash import sha256_crypt
 import requests
 
-app = Flask(__name__)
+api = Blueprint("api", __name__)
 
-@app.route("/")
+@api.route("/")
 def root():
-    return "Good morning everyone!"
+    """
+    Root route.
 
-@app.route("/register")
-def register(data):
+    Returns:
+        str: A greeting message.
+    """
+    return "Good morning, everyone!"
 
+@api.route("/register", methods=["POST"])
+def register():
+    """
+    Register a user.
+
+    This route expects a JSON request with a "username" and "password" field.
+    It hashes the password and sends a registration request to an external server.
+
+    Returns:
+        jsonify: A JSON response indicating the registration status.
+    """
     try:
-        response = requests.post(path='http://localhost:5000/user', json=data)
+        data = request.json  # Get JSON data from the request
+        username = data.get("username")
+        password = data.get("password")
 
-    except Exception as e:
-        print(e)
+        # You should hash the password before sending it to the server
+        hashed_password = sha256_crypt.hash(password)
 
-@app.route("/login")
-def login_user(username, password):
+        response = requests.post('http://localhost:5000/user', json={"username": username, "password": hashed_password}, timeout=10)
 
+        return jsonify({"message": response["message"]})
+
+    except RequestException as error:
+        print(error)
+        return jsonify({"error": "Registration failed"}), 500  # Return an error response
+
+@api.route("/login", methods=["POST"])
+def login_user():
+    """
+    Login a user.
+
+    This route expects a JSON request with a "username" and "password" field.
+    It sends a login request to an external server and verifies the user's credentials.
+
+    Returns:
+        jsonify: A JSON response indicating the login status and user type.
+    """
     try:
-        response = requests.get(path='http://localhost:5000/user/{}'.format(username))
+        data = request.json  # Get JSON data from the request
+        username = data.get("username")
+        password = data.get("password")
 
-        # if username exists and 
-        if(sha256_crypt.verify(password, hashedPassword)):
-            # send confirmation and user type to the agent
+        response = requests.get(f'http://localhost:5000/user/{username}', timeout=10)
+        user_data = response.json()
 
-    except Exception as e:
-        print(e)
+        # Check if the username exists and verify the password
+        if "password" in user_data and sha256_crypt.verify(password, user_data["password"]):
+            # Send confirmation and user type to the agent
+            return jsonify({"message": "Login successful", "user_type": user_data.get("user_type")})
+
+        return jsonify({"error": "Login failed"}), 401  # Unauthorized
+
+    except (RequestException, Timeout) as error:
+        print(error)
+        return jsonify({"error": "Login failed"}), 500  # Return an error response

@@ -1,7 +1,12 @@
+"""
+Agent Application Module
+
+This module provides functions to create and configure a Flask application
+for the agent, including the registration of user routes.
+
+"""
 from flask import Flask
 from agent.web.user_routes import user
-from agent_common import comms
-
 def create_agent_app():
     """
     Create and configure the Flask application.

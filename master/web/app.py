@@ -1,3 +1,10 @@
+"""
+Master Application
+
+This module provides a function to create and configure the Flask application for the master pi.
+It initializes the database and registers blueprints for the admin site and database API.
+
+"""
 from flask import Flask
 from master.web.admin_site import admin
 from master.web.database.database_manager import init_db

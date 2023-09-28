@@ -1,5 +1,12 @@
-from master.web.database.database_manager import db
+"""
+Database Models
+
+This module defines SQLAlchemy models representing various entities in the system,
+such as users, scooters, bookings, repairs, and user balances.
+
+"""
 from sqlalchemy.orm import relationship
+from master.web.database.database_manager import db
 
 class User(db.Model):
     """

@@ -1,5 +1,13 @@
-from master.web.database.config import HOST, USER, PASSWORD, NAME
+"""
+Database Configuration and Initialization
+
+This module contains code for configuring and initializing the Flask-SQLAlchemy extension.
+It establishes a connection to the MySQL database and creates the necessary database tables.
+
+"""
 from flask_sqlalchemy import SQLAlchemy
+from master.web.database.config import HOST, USER, PASSWORD, NAME
+
 
 db = SQLAlchemy()
 
@@ -19,7 +27,6 @@ def init_db(app):
 
     # Initialize SQLAlchemy extension
     db.init_app(app)
-    
      # Create all database tables
     with app.app_context():
         db.create_all()

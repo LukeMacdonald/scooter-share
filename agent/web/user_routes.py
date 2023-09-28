@@ -1,5 +1,12 @@
+"""
+User Routes Blueprint
+
+This blueprint defines routes related to user management, including login, signup,
+and role-based redirections to customer and engineer home pages.
+
+"""
 from flask import Blueprint, render_template, request, redirect, url_for
-from agent_common import comms
+# from agent_common import comms
 
 user = Blueprint("user", __name__)
 
