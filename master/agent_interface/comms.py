@@ -51,6 +51,12 @@ class Handler(socketserver.StreamRequestHandler):
             else:
                 return
 
+class ReusingThreadingTCPServer(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+
 def run(port):
-    server = socketserver.ThreadingTCPServer(("0.0.0.0", port), Handler)
-    server.serve_forever()
+    server = ReusingThreadingTCPServer(("0.0.0.0", port), Handler)
+    try:
+        server.serve_forever()
+    finally:
+        server.shutdown()

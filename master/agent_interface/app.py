@@ -1,18 +1,25 @@
 from master.agent_interface import comms
+from master.database.models import User
+from master.database.database_manager import db
+from passlib.hash import sha256_crypt
 
-"""
-A little test of the state machine setup.
-The client can only send hello then bye then hello then ...
-"""
+app = None
 
-@comms.action("hello", ["start"])
-def hello(handler, message):
-    handler.state = "greeted"
-    return "Hello!"
-@comms.action("bye", ["greeted"])
-def bye(handler, message):
-    handler.state = "start"
-    return "Goodbye!"
+@comms.action("register", ["start"])
+def register(handler, message):
+    password_hash = sha256_crypt.hash(message["password"])
+    user = User(username=message["username"],
+                password=password_hash,
+                email=message["email"],
+                first_name=message["first_name"],
+                last_name=message["last_name"],
+                role="customer")
+    with app.app_context():
+        db.session.add(user)
+        db.session.commit()
+    return {}
 
-def run_agent_server():
+def run_agent_server(master):
+    global app
+    app = master
     comms.run(12345)
