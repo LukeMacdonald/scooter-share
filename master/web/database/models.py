@@ -30,7 +30,7 @@ class Scooter(db.Model):
     """
     __tablename__ = 'scooters'
 
-    scooter_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     make = db.Column(db.String(100), nullable=False)
     longitude = db.Column(db.Float(precision=6), nullable=False)  
     latitude = db.Column(db.Float(precision=6), nullable=False)  

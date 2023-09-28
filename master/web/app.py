@@ -22,7 +22,7 @@ def create_master_app():
     Returns:
         Flask: The configured Flask application instance.
     """
-    app = Flask(__name__)    
+    app = Flask(__name__)   
     init_db(app)
     app.register_blueprint(admin)
     app.register_blueprint(users_api)
