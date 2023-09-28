@@ -5,9 +5,8 @@ This module defines the routes and views related to the engineer's functionality
 
 """
 from flask import Blueprint, render_template
-from agent_common.comms import Connection
 from agent_common.socket_utils import sendJson, recvJson
-import socket, json
+import socket
 
 
 engineer = Blueprint("engineer", __name__)
