@@ -7,7 +7,7 @@ It initializes the database and registers blueprints for the admin site and data
 """
 from flask import Flask
 from master.web.admin_site import admin
-from master.web.database.database_manager import init_db
+from master.database.database_manager import init_db
 from master.web.database.api import db_api
 
 

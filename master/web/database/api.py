@@ -7,8 +7,8 @@ It provides endpoints for retrieving, adding, updating, and deleting user record
 """
 from flask import Blueprint, request, jsonify
 from passlib.hash import sha256_crypt
-from master.web.database.models import User
-from master.web.database.database_manager import db
+from master.database.models import User
+from master.database.database_manager import db
 
 
 db_api = Blueprint("db_api", __name__)

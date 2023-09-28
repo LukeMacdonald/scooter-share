@@ -6,7 +6,7 @@ such as users, scooters, bookings, repairs, and user balances.
 
 """
 from sqlalchemy.orm import relationship
-from master.web.database.database_manager import db
+from master.database.database_manager import db
 
 class User(db.Model):
     """
