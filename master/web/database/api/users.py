@@ -162,3 +162,16 @@ def delete_user(user_id):
         return jsonify(result)
     else:
         return jsonify({"message": "User not found"}), 404
+
+@users_api.route("/engineer_emails", methods=["GET"])
+def get_engineer_emails():
+    """
+    Get email addresses of users with the "engineer" role.
+
+    Returns:
+        JSON response with a list of email addresses.
+    """
+    engineer_users = User.query.filter_by(role="engineer").all()
+    engineer_emails = [user.email for user in engineer_users]
+    
+    return jsonify(engineer_emails)

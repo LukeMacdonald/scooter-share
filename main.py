@@ -47,7 +47,7 @@ def run_socket(port, user_type):
                 data = recvJson(conn)
                 if "name" in data:
                     if user_type == "engineer":
-                        message = fetchEngineerData(data["name"],[])
+                        message = fetchEngineerData(data["name"],data)
                     elif user_type == "customer":
                         pass
                     else:
@@ -56,8 +56,8 @@ def run_socket(port, user_type):
                     
 if __name__ == '__main__':
     master_app = threading.Thread(target=run_master)
-    agent_app = threading.Thread(target=run_agent)
-    engineer_socket = threading.Thread(target=run_socket, args=(ENGINEER_SOCKET_PORT,'engineer',))
-    agent_app.start()
     master_app.start()
+    agent_app = threading.Thread(target=run_agent)
+    agent_app.start()
+    engineer_socket = threading.Thread(target=run_socket, args=(ENGINEER_SOCKET_PORT,'engineer',))
     engineer_socket.start()
