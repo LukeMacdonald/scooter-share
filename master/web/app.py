@@ -12,7 +12,7 @@ from master.web.database.api.users import users_api
 from master.web.database.api.scooters import scooter_api
 from master.web.database.api.bookings import booking_api
 from master.web.database.api.repairs import repairs_api
-
+from master.web.database.api.transactions import transaction_api
 
 
 def create_master_app():
@@ -29,4 +29,5 @@ def create_master_app():
     app.register_blueprint(scooter_api)
     app.register_blueprint(booking_api)
     app.register_blueprint(repairs_api)
+    app.register_blueprint(transaction_api)
     return app
