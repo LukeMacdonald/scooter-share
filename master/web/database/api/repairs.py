@@ -9,10 +9,10 @@ def get_repairs():
     repairs = Repairs.query.all()
     result = [
         {
-            "RepairID": repair.RepairID,
-            "ScooterID": repair.ScooterID,
-            "Report": repair.Report,
-            "Status": repair.Status
+            "RepairID": repair.id,
+            "ScooterID": repair.scooter_id,
+            "Report": repair.report,
+            "Status": repair.status
         }
         for repair in repairs
     ]
@@ -23,10 +23,10 @@ def get_repair(repair_id):
     repair = Repairs.query.get(repair_id)
     if repair:
         result = {
-            "RepairID": repair.RepairID,
-            "ScooterID": repair.ScooterID,
-            "Report": repair.Report,
-            "Status": repair.Status
+            "RepairID": repair.id,
+            "ScooterID": repair.scooter_id,
+            "Report": repair.report,
+            "Status": repair.status
         }
         return jsonify(result)
     else:
@@ -34,13 +34,13 @@ def get_repair(repair_id):
 
 @repairs_api.route("/repairs/scooter/<int:scooter_id>", methods=["GET"])
 def get_first_repair_by_scooter(scooter_id):
-    repair = Repairs.query.filter_by(ScooterID=scooter_id).first()
+    repair = Repairs.query.filter_by(scooter_id=scooter_id).first()
     if repair:
         result = {
-            "RepairID": repair.RepairID,
-            "ScooterID": repair.ScooterID,
-            "Report": repair.Report,
-            "Status": repair.Status
+            "RepairID": repair.id,
+            "ScooterID": repair.scooter_id,
+            "Report": repair.report,
+            "Status": repair.status
         }
         return jsonify(result)
     else:
@@ -50,19 +50,19 @@ def get_first_repair_by_scooter(scooter_id):
 def add_repair():
     data = request.json
     new_repair = Repairs(
-        ScooterID=data.get("ScooterID"),
-        Report=data.get("Report"),
-        Status=data.get("Status")
+        scooter_id=data.get("ScooterID"),
+        report=data.get("Report"),
+        status=data.get("Status")
     )
 
     db.session.add(new_repair)
     db.session.commit()
 
     result = {
-        "RepairID": new_repair.RepairID,
-        "ScooterID": new_repair.ScooterID,
-        "Report": new_repair.Report,
-        "Status": new_repair.Status
+        "RepairID": new_repair.id,
+        "ScooterID": new_repair.scooter_id,
+        "Report": new_repair.report,
+        "Status": new_repair.status
     }
     return jsonify(result), 201
 
@@ -71,17 +71,17 @@ def update_repair(repair_id):
     repair = Repairs.query.get(repair_id)
     if repair:
         data = request.json
-        repair.ScooterID = data.get("ScooterID")
-        repair.Report = data.get("Report")
-        repair.Status = data.get("Status")
+        repair.scooter_id = data.get("ScooterID")
+        repair.report = data.get("Report")
+        repair.status = data.get("Status")
 
         db.session.commit()
 
         result = {
-            "RepairID": repair.RepairID,
-            "ScooterID": repair.ScooterID,
-            "Report": repair.Report,
-            "Status": repair.Status
+            "RepairID": repair.id,
+            "ScooterID": repair.scooter_id,
+            "Report": repair.report,
+            "Status": repair.status
         }
         return jsonify(result)
     else:
@@ -94,10 +94,10 @@ def delete_repair(repair_id):
         db.session.delete(repair)
         db.session.commit()
         result = {
-            "RepairID": repair.RepairID,
-            "ScooterID": repair.ScooterID,
-            "Report": repair.Report,
-            "Status": repair.Status
+            "RepairID": repair.id,
+            "ScooterID": repair.scooter_id,
+            "Report": repair.report,
+            "Status": repair.status
         }
         return jsonify(result)
     else:

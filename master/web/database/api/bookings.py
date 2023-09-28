@@ -9,11 +9,11 @@ def get_bookings():
     bookings = Booking.query.all()
     result = [
         {
-            "BookingID": booking.BookingID,
-            "UserID": booking.UserID,
-            "ScooterID": booking.ScooterID,
-            "Time": booking.Time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.Status
+            "BookingID": booking.id,
+            "UserID": booking.user_id,
+            "ScooterID": booking.scooter_id,
+            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "Status": booking.status
         }
         for booking in bookings
     ]
@@ -24,11 +24,11 @@ def get_booking(booking_id):
     booking = Booking.query.get(booking_id)
     if booking:
         result = {
-            "BookingID": booking.BookingID,
-            "UserID": booking.UserID,
-            "ScooterID": booking.ScooterID,
-            "Time": booking.Time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.Status
+            "BookingID": booking.id,
+            "UserID": booking.user_id,
+            "ScooterID": booking.scooter_id,
+            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "Status": booking.status
         }
         return jsonify(result)
     else:
@@ -38,21 +38,21 @@ def get_booking(booking_id):
 def add_booking():
     data = request.json
     new_booking = Booking(
-        UserID=data.get("UserID"),
-        ScooterID=data.get("ScooterID"),
-        Time=data.get("Time"),
-        Status=data.get("Status")
+        user_id=data.get("UserID"),
+        scooter_id=data.get("ScooterID"),
+        time=data.get("Time"),
+        status=data.get("Status")
     )
 
     db.session.add(new_booking)
     db.session.commit()
 
     result = {
-        "BookingID": new_booking.BookingID,
-        "UserID": new_booking.UserID,
-        "ScooterID": new_booking.ScooterID,
-        "Time": new_booking.Time.strftime("%Y-%m-%d %H:%M:%S"),
-        "Status": new_booking.Status
+        "BookingID": new_booking.id,
+        "UserID": new_booking.user_id,
+        "ScooterID": new_booking.scooter_id,
+        "Time": new_booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+        "Status": new_booking.status
     }
     return jsonify(result), 201
 
@@ -62,19 +62,19 @@ def update_booking(booking_id):
     booking = Booking.query.get(booking_id)
     if booking:
         data = request.json
-        booking.UserID = data.get("UserID")
-        booking.ScooterID = data.get("ScooterID")
-        booking.Time = data.get("Time")
-        booking.Status = data.get("Status")
+        booking.user_id = data.get("UserID")
+        booking.scooter_id = data.get("ScooterID")
+        booking.time = data.get("Time")
+        booking.status = data.get("Status")
 
         db.session.commit()
 
         result = {
-            "BookingID": booking.BookingID,
-            "UserID": booking.UserID,
-            "ScooterID": booking.ScooterID,
-            "Time": booking.Time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.Status
+            "BookingID": booking.id,
+            "UserID": booking.user_id,
+            "ScooterID": booking.scooter_id,
+            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "Status": booking.status
         }
         return jsonify(result)
     else:
@@ -88,11 +88,11 @@ def delete_booking(booking_id):
         db.session.delete(booking)
         db.session.commit()
         result = {
-            "BookingID": booking.BookingID,
-            "UserID": booking.UserID,
-            "ScooterID": booking.ScooterID,
-            "Time": booking.Time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.Status
+            "BookingID": booking.id,
+            "UserID": booking.user_id,
+            "ScooterID": booking.scooter_id,
+            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "Status": booking.status
         }
         return jsonify(result)
     else:
