@@ -11,10 +11,11 @@
         <thead>
             <tr>
                 <th>Scooter ID</th>
-                <th>Make</th>
-                <th>Location</th>
                 <th>Status</th>
-                <!-- Add more table headers for additional fields as needed -->
+                <th>Make</th>
+                <th>Power Remaining</th>
+                <th>Location</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -22,10 +23,10 @@
                 {% for scooter in scooter_data %}
                     <tr>
                         <td>{{scooter.ScooterID}}
+                        <td>{{ scooter.Status }}</td> 
                         <td>{{ scooter.Make }}</td>
+                        <td>{{scooter.RemainingPower}}%<td>
                         <td>({{ scooter.Latitude }},{{ scooter.Longitude }})</td>
-                        <td>{{ scooter.Status }}</td>
-                        <!-- Add more table cells for additional fields as needed -->
                     </tr>
                 {% endfor %}
             {% else %}
