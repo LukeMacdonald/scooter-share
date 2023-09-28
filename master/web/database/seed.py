@@ -58,12 +58,12 @@ def scooterData():
 
         for data in scooter_data:
             scooter = Scooter(
-                Make=data["Make"],
-                Longitude=data["Longitude"],
-                Latitude=data["Latitude"],
-                RemainingPower=data["RemainingPower"],
-                CostPerTime=data["CostPerTime"],
-                Status=data["Status"]
+                make=data["Make"],
+                longitude=data["Longitude"],
+                latitude=data["Latitude"],
+                remaining_power=data["RemainingPower"],
+                cost_per_time=data["CostPerTime"],
+                status=data["Status"]
             )
 
             # Add the scooter to the session

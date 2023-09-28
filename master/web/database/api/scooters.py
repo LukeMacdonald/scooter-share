@@ -15,13 +15,13 @@ def get_all_scooters():
     scooters = Scooter.query.all()
     result = [
         {
-            'ScooterID': scooter.ScooterID,
-            'Make': scooter.Make,
-            'Longitude': scooter.Longitude,
-            'Latitude': scooter.Latitude,
-            'RemainingPower': scooter.RemainingPower,
-            'CostPerTime': scooter.CostPerTime,
-            'Status': scooter.Status
+            'ScooterID': scooter.scooter_id,
+            'Make': scooter.make,
+            'Longitude': scooter.longitude,
+            'Latitude': scooter.latitude,
+            'RemainingPower': scooter.remaining_power,
+            'CostPerTime': scooter.cost_per_time,
+            'Status': scooter.status
         }
         for scooter in scooters
     ]
@@ -41,13 +41,13 @@ def get_scooter(scooter_id):
     scooter = Scooter.query.get(scooter_id)
     if scooter:
         result = {
-            'ScooterID': scooter.ScooterID,
-            'Make': scooter.Make,
-            'Longitude': scooter.Longitude,
-            'Latitude': scooter.Latitude,
-            'RemainingPower': scooter.RemainingPower,
-            'CostPerTime': scooter.CostPerTime,
-            'Status': scooter.Status
+            'ScooterID': scooter.scooter_id,
+            'Make': scooter.make,
+            'Longitude': scooter.longitude,
+            'Latitude': scooter.latitude,
+            'RemainingPower': scooter.remaining_power,
+            'CostPerTime': scooter.cost_per_time,
+            'Status': scooter.status
         }
         return jsonify(result)
     else:
@@ -67,12 +67,12 @@ def update_scooter(scooter_id):
     scooter = Scooter.query.get(scooter_id)
     if scooter:
         data = request.get_json()
-        scooter.Make = data['Make']
-        scooter.Longitude = data['Longitude']
-        scooter.Latitude = data['Latitude']
-        scooter.RemainingPower = data['RemainingPower']
-        scooter.CostPerTime = data['CostPerTime']
-        scooter.Status = data['Status']
+        scooter.make = data['Make']
+        scooter.longitude = data['Longitude']
+        scooter.latitude = data['Latitude']
+        scooter.remaining_power = data['RemainingPower']
+        scooter.cost_per_time = data['CostPerTime']
+        scooter.status = data['Status']
         db.session.commit()
         return jsonify({'message': 'Scooter updated successfully'})
     else:

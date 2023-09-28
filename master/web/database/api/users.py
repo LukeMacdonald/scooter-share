@@ -1,10 +1,3 @@
-"""
-Database API Blueprint
-
-This blueprint defines routes for interacting with the user database.
-It provides endpoints for retrieving, adding, updating, and deleting user records.
-
-"""
 from flask import Blueprint, request, jsonify
 from passlib.hash import sha256_crypt
 from master.web.database.models import User
@@ -28,7 +21,9 @@ def get_users():
             "email": user.email, 
             "first_name": user.first_name, 
             "last_name": user.last_name,
-            "role": user.role
+            "role": user.role,
+            "phone_number": user.phone_number,
+            "balance": user.balance
         } 
         for user in users]
     return jsonify(result)
@@ -52,7 +47,9 @@ def get_user(user_id):
             "email": user.email, 
             "first_name": user.first_name, 
             "last_name": user.last_name,
-            "role": user.role
+            "role": user.role,
+            "phone_number": user.phone_number,
+            "balance": user.balance
         }
         return jsonify(result)
     else:
@@ -79,7 +76,9 @@ def add_user():
         email=data.get("email"),
         first_name=data.get("first_name"),
         last_name=data.get("last_name"),
-        role=data.get("role")
+        role=data.get("role"),
+        phone_number=data.get("phone_number"),
+        balance=data.get("balance")
     )
 
     db.session.add(new_user)
@@ -91,7 +90,9 @@ def add_user():
         "email": new_user.email, 
         "first_name": new_user.first_name, 
         "last_name": new_user.last_name,
-        "role": new_user.role
+        "role": new_user.role,
+        "phone_number": new_user.phone_number,
+        "balance": new_user.balance
     }
     return jsonify(result), 201
 
@@ -114,6 +115,8 @@ def update_user(user_id):
         user.first_name = data.get("first_name")
         user.last_name = data.get("last_name")
         user.role = data.get("role")
+        user.phone_number = data.get("phone_number")
+        user.balance = data.get("balance")
 
         db.session.commit()
 
@@ -123,7 +126,9 @@ def update_user(user_id):
             "email": user.email, 
             "first_name": user.first_name, 
             "last_name": user.last_name,
-            "role": user.role
+            "role": user.role,
+            "phone_number": user.phone_number,
+            "balance": user.balance
         }
         return jsonify(result)
     else:
@@ -150,7 +155,9 @@ def delete_user(user_id):
             "email": user.email, 
             "first_name": user.first_name, 
             "last_name": user.last_name,
-            "role": user.role
+            "role": user.role,
+            "phone_number": user.phone_number,
+            "balance": user.balance
         }
         return jsonify(result)
     else:
