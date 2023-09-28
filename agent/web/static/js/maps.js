@@ -18,28 +18,38 @@ function initMap() {
         scaledSize: new google.maps.Size(32, 32)
     };
 
-     // Iterate over scooter data and create markers
-     for (let i = 0; i < scooterData.length; i++) {
-        const scooter = scooterData[i];
-        new google.maps.Marker({
-            position: { lat: scooter.Latitude, lng: scooter.Longitude },
-            map,
-            title: "Scooter ID: " + scooter.ScooterID,
-            icon: customIcon
+     // Check if scooterData is defined
+     if (typeof scooterData !== 'undefined') {
+        const customIcon = {
+            url: "https://cdn-icons-png.flaticon.com/512/1819/1819598.png",
+            scaledSize: new google.maps.Size(32, 32)
+        };
+
+        // Iterate over scooter data and create markers
+        for (let i = 0; i < scooterData.length; i++) {
+            const scooter = scooterData[i];
+            new google.maps.Marker({
+                position: { lat: scooter.Latitude, lng: scooter.Longitude },
+                map,
+                title: "Scooter ID: " + scooter.ScooterID,
+                icon: customIcon
+            });
+        }
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const tableRows = document.querySelectorAll("tr[data-latitude][data-longitude]");
+    const locateButtons = document.querySelectorAll(".locate-button");
+
+    locateButtons.forEach(function (button, index) {
+        button.addEventListener("click", function () {
+            const row = tableRows[index]; // Get the corresponding table row
+            const latitude = parseFloat(row.getAttribute("data-latitude"));
+            const longitude = parseFloat(row.getAttribute("data-longitude"));
+            const scooterLatLng = new google.maps.LatLng(latitude, longitude);
+            map.panTo(scooterLatLng);
         });
-    }
-
-    // new google.maps.Marker({
-    //     position: myLatLng,
-    //     map,
-    //     title: "My location",
-    //     icon: customIcon
-    // });
-
-    // new google.maps.Marker({
-    //     position: {lat:-37.86616061413071, lng: 144.6228517415038 },
-    //     map,
-    //     title: "Pin 2",
-    //     icon: customIcon
-    // });
+    });
+});
 }

@@ -34,6 +34,18 @@ def fetch_scooter_locations():
         print(f"An unexpected error occurred: {str(error)}")
     return None
 
+
+@engineer.route("/engineer")
+def home():
+    """
+    Display the engineer home page.
+
+    Returns:
+        Flask response: The engineer home page.
+    """
+    scooter_data = fetch_scooter_locations()
+    return render_template("engineer/pages/home.html", scooter_data=scooter_data)
+
 @engineer.route("/engineer/scooters/locations")
 def scooter_locations(): 
     """
@@ -44,8 +56,8 @@ def scooter_locations():
     """
     scooter_data = fetch_scooter_locations()
 
-    if scooter_data is not None:
-        print(scooter_data)
-        print()
+    # if scooter_data is not None:
+    #     print(scooter_data)
+    #     print()
     
     return render_template("engineer/pages/locations.html", scooter_data=scooter_data)

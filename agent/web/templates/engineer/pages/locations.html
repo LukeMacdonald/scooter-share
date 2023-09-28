@@ -7,30 +7,34 @@
     <div id="gmp-map"></div>
     <br>
     
-    <table class="table table-striped" style="width:75%; margin: 0 auto">
+    <table class="table table-bordered table-hover" style="width:95%; margin: 0 auto;">
         <thead>
-            <tr>
-                <th>Scooter ID</th>
-                <th>Status</th>
-                <th>Make</th>
-                <th>Power Remaining</th>
-                <th>Location</th>
+            <tr class="table-dark">
+                <th scope="col">Scooter ID</th>
+                <th scope="col">Make</th>
+                <th scope="col">Status</th>
+                <th scope="col">Power</th>
+                <th scope="col" style='text-align:center'>Location</th>
             </tr>
         </thead>
         <tbody>
             {% if scooter_data %}
                 {% for scooter in scooter_data %}
-                    <tr>
-                        <td>{{scooter.ScooterID}}
-                        <td>{{ scooter.Status }}</td> 
+                    <tr class='clickable-row' data-latitude="{{ scooter.Latitude }}" data-longitude="{{ scooter.Longitude }}">
+                        <td>{{ scooter.ScooterID }}</td>
                         <td>{{ scooter.Make }}</td>
-                        <td>{{scooter.RemainingPower}}%<td>
-                        <td>({{ scooter.Latitude }},{{ scooter.Longitude }})</td>
+                        <td>{{ scooter.Status }}</td> 
+                        <td>{{ scooter.RemainingPower }}%</td>
+                        <td style='text-align:center'>
+                            <button class="btn btn-outline-secondary locate-button" style='width:4rem'>
+                                <i class="fa fa-location-dot"></i>
+                            </button>
+                        </td>
                     </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="4">No scooter data available.</td>
+                    <td colspan="5">No scooter data available.</td>
                 </tr>
             {% endif %}
         </tbody>
