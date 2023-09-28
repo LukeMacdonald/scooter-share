@@ -17,20 +17,21 @@ ADDRESS = (HOST, ENGINEER_SOCKET_PORT)
 
 logging.basicConfig(level=logging.ERROR)
 
-def communicate_with_server(message_to_server):
+def communicate_with_master(master_request):
     """
-    Communicate with the server over a socket connection.
+    Communicate with the master pi over a socket connection.
 
     Args:
-        message_to_server (dict): The message to send to the server.
+        message_to_master (dict): The message to send to the master.
 
     Returns:
-        dict or None: The server's response as a dictionary, or None on error.
+        dict or None: The master pi's response as a dictionary, or None on error.
     """
+    
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(ADDRESS)
-            sendJson(s, message_to_server)
+            sendJson(s, master_request)
             while True:
                 data = recvJson(s)
                 if "error" in data:
@@ -45,29 +46,6 @@ def communicate_with_server(message_to_server):
         logging.error(str(error))
     return None
 
-def fetch_scooter_locations():
-    """
-    Send a request to the server to fetch scooter locations.
-
-    Returns:
-        dict or None: The fetched scooter locations as a dictionary, or None on error.
-    """
-    message_to_server = {"name": "locations"}
-    return communicate_with_server(message_to_server)
-
-def update_scooter_status(id):
-    """
-    Update the status of a scooter on the server.
-
-    Args:
-        id (str): The ID of the scooter to update.
-
-    Returns:
-        dict or None: The server's response as a dictionary, or None on error.
-    """
-    message_to_server = {"name": "repair-fixed", "id": id}
-    return communicate_with_server(message_to_server) 
-
 @engineer.route("/engineer")
 def home():
     """
@@ -76,8 +54,9 @@ def home():
     Returns:
         Flask response: The engineer home page.
     """
-    scooter_data = fetch_scooter_locations()
-    return render_template("engineer/pages/home.html", scooter_data=scooter_data)
+    master_request = {"name": "locations"}
+    response = communicate_with_master(master_request)
+    return render_template("engineer/pages/home.html", scooter_data=response)
 
 @engineer.route("/engineer/scooters/locations")
 def scooter_locations(): 
@@ -87,9 +66,9 @@ def scooter_locations():
     Returns:
         Flask response: The reported scooters location page with Google Maps displayed.
     """
-    scooter_data = fetch_scooter_locations()
-    
-    return render_template("engineer/pages/locations.html", scooter_data=scooter_data)
+    master_request = {"name": "locations"}
+    response = communicate_with_master(master_request)
+    return render_template("engineer/pages/locations.html", scooter_data=response)
 
 @engineer.route("/engineer/scooters/repairs")
 def update_repair_report():
@@ -99,8 +78,9 @@ def update_repair_report():
     Returns:
         Flask response: The update repair report page.
     """
-    scooter_data = fetch_scooter_locations()
-    return render_template("engineer/pages/update_repair.html", scooter_data=scooter_data)
+    master_request = {"name": "locations"}
+    response = communicate_with_master(master_request)
+    return render_template("engineer/pages/update_repair.html", scooter_data=response)
 
 @engineer.route("/engineer/scooter/fixed", methods=["POST"])
 def scooter_fixed():
@@ -111,5 +91,6 @@ def scooter_fixed():
         Flask redirect: Redirects back to the update repair report page.
     """
     scooter_id = request.form.get("scooter_id")
-    update_scooter_status(scooter_id)
+    master_request = {"name": "repair-fixed", "id": scooter_id}
+    communicate_with_master(master_request)
     return redirect(url_for("engineer.update_repair_report"))

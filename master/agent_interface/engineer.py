@@ -9,7 +9,7 @@ def fetchAllReportedScooters():
         response.raise_for_status()
         return {"data": response.json()}
     except RequestException as req_error:
-        return {"error": f"Request error while fetching reported scooters: {req_error}" }
+        return {"error": f"{req_error}" }
     except ValueError as json_error:
         return {"error": f"JSON decoding error while processing response: {json_error}" }
     except Exception as error:
