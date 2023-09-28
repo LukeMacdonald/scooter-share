@@ -7,13 +7,13 @@ It initializes the database and registers blueprints for the admin site and data
 """
 from flask import Flask
 from master.web.admin_site import admin
-from master.web.database.database_manager import init_db
-from master.web.database.api.users import users_api
-from master.web.database.api.scooters import scooter_api
-from master.web.database.api.bookings import booking_api
-from master.web.database.api.repairs import repairs_api
-from master.web.database.api.transactions import transaction_api
-from master.web.database.seed import seedData
+from database.database_manager import init_db
+from database.api.users import users_api
+from database.api.scooters import scooter_api
+from database.api.bookings import booking_api
+from database.api.repairs import repairs_api
+from database.api.transactions import transaction_api
+from database.seed import seed_data
 
 
 def create_master_app():
@@ -23,14 +23,23 @@ def create_master_app():
     Returns:
         Flask: The configured Flask application instance.
     """
-    app = Flask(__name__)   
+    app = Flask(__name__)
+   
     init_db(app)
-    app.register_blueprint(admin)
-    app.register_blueprint(users_api)
-    app.register_blueprint(scooter_api)
-    app.register_blueprint(booking_api)
-    app.register_blueprint(repairs_api)
-    app.register_blueprint(transaction_api)
+   
     with app.app_context():
-        seedData()
+        seed_data()
+   
+    blueprints = [
+        admin,
+        users_api,
+        scooter_api,
+        booking_api,
+        repairs_api,
+        transaction_api,
+    ]
+  
+    for blueprint in blueprints:
+        app.register_blueprint(blueprint)
+  
     return app

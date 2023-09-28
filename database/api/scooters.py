@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from master.web.database.models import Scooter
-from master.web.database.database_manager import db
+from database.models import Scooter, ScooterStatus
+from database.database_manager import db
 
 scooter_api = Blueprint("scooter_api", __name__)
 
@@ -105,7 +105,7 @@ def get_maintenance_scooters():
     Returns:
         JSON response with a list of maintenance scooters or a "No maintenance scooters found" message.
     """
-    maintenance_scooters = Scooter.query.filter_by(status='maintenance').all()
+    maintenance_scooters = Scooter.query.filter_by(status=ScooterStatus.AWAITING_REPAIR.value).all()
     if maintenance_scooters:
         result = [
             {

@@ -6,6 +6,7 @@ and role-based redirections to customer and engineer home pages.
 
 """
 from flask import Blueprint, render_template, request, redirect, url_for
+from database.models import UserType
 # from agent_common import comms
 
 user = Blueprint("user", __name__)
@@ -38,11 +39,11 @@ def login_post():
         "name": "login"
     }
     
-    role = "engineer"
+    role = UserType.ENGINEER.value
     
-    if role == "customer":
+    if role == UserType.CUSTOMER.value:
         return redirect(url_for('user.customer_home'))
-    elif role == "engineer":
+    elif role == UserType.ENGINEER.value:
         return redirect(url_for('engineer.home'))
     else:
         # todo: Add error response

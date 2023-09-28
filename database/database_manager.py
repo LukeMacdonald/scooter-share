@@ -6,7 +6,7 @@ It establishes a connection to the MySQL database and creates the necessary data
 
 """
 from flask_sqlalchemy import SQLAlchemy
-from master.web.database.config import HOST, USER, PASSWORD, NAME
+from database.config import HOST, USER, PASSWORD, NAME
 
 
 db = SQLAlchemy()

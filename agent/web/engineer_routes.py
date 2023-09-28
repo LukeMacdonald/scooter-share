@@ -7,13 +7,9 @@ This module defines the routes and views related to the engineer's functionality
 import socket
 import logging
 from flask import Blueprint, render_template, url_for, redirect, request
-from agent_common.socket_utils import sendJson, recvJson
+from agent_common import socket_utils
 
 engineer = Blueprint("engineer", __name__)
-
-HOST = "192.168.1.98"
-ENGINEER_SOCKET_PORT = 63000
-ADDRESS = (HOST, ENGINEER_SOCKET_PORT)
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -30,10 +26,10 @@ def communicate_with_master(master_request):
     
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(ADDRESS)
-            sendJson(s, master_request)
+            s.connect((socket_utils.MASTER_HOST, socket_utils.ENGINEER_SOCKET_PORT))
+            socket_utils.sendJson(s, master_request)
             while True:
-                data = recvJson(s)
+                data = socket_utils.recvJson(s)
                 if "error" in data:
                     raise Exception(data['error'])
                 elif "data" in data:

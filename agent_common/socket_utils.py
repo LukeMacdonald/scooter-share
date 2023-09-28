@@ -2,6 +2,14 @@ import socket
 import json
 import struct
 
+
+PUBLIC_HOST = '0.0.0.0'
+PRIVATE_HOST= '127.0.0.1'
+MASTER_HOST = "192.168.1.98"
+MASTER_PORT = 5000
+AGENT_PORT = 5001
+ENGINEER_SOCKET_PORT = 63000
+
 def sendJson(socket, object):
     jsonString = json.dumps(object)
     data = jsonString.encode("utf-8")
