@@ -15,13 +15,14 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False, unique=True)
     first_name = db.Column(db.String(255), nullable=False)
     last_name = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum('customer', 'engineer', 'admin'), nullable=False)
     phone_number = db.Column(db.String(12))
+    balance = db.Column(db.Float(precision=2), nullable=False)
 
 class Scooter(db.Model):
     """
@@ -29,13 +30,13 @@ class Scooter(db.Model):
     """
     __tablename__ = 'scooters'
 
-    ScooterID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    Make = db.Column(db.String(100), nullable=False)
-    Longitude = db.Column(db.Float(precision=6), nullable=False)  
-    Latitude = db.Column(db.Float(precision=6), nullable=False)  
-    RemainingPower = db.Column(db.Float(precision=2), nullable=False)
-    CostPerTime = db.Column(db.Float(precision=2), nullable=False)
-    Status = db.Column(db.Enum('available', 'occupying', 'maintenance','repaired'), nullable=False)
+    scooter_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    make = db.Column(db.String(100), nullable=False)
+    longitude = db.Column(db.Float(precision=6), nullable=False)  
+    latitude = db.Column(db.Float(precision=6), nullable=False)  
+    remaining_power = db.Column(db.Float(precision=2), nullable=False)
+    cost_per_time = db.Column(db.Float(precision=2), nullable=False)
+    status = db.Column(db.Enum('available', 'occupying', 'maintenance','repaired'), nullable=False)
 
 class Booking(db.Model):
     """
@@ -43,11 +44,11 @@ class Booking(db.Model):
     """
     __tablename__ = 'bookings'
 
-    BookingID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    ScooterID = db.Column(db.Integer, db.ForeignKey('scooters.ScooterID'), nullable=False)
-    Time = db.Column(db.DateTime, nullable=False)
-    Status = db.Column(db.Enum('active', 'completed', 'cancelled'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    scooter_id = db.Column(db.Integer, db.ForeignKey('scooters.id'), nullable=False)
+    time = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.Enum('active', 'completed', 'cancelled'), nullable=False)
 
     user = relationship('User')
     scooter = relationship('Scooter')
@@ -58,21 +59,21 @@ class Repairs(db.Model):
     """
     __tablename__ = 'repairs'
 
-    RepairID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    ScooterID = db.Column(db.Integer, db.ForeignKey('scooters.ScooterID'), nullable=False)
-    Report = db.Column(db.String(255), nullable=False)
-    Status = db.Column(db.Enum('active', 'completed'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    scooter_id = db.Column(db.Integer, db.ForeignKey('scooters.id'), nullable=False)
+    report = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.Enum('active', 'completed'), nullable=False)
 
     scooter = relationship('Scooter')
 
-class Balance(db.Model):
+class Transaction(db.Model):
     """
-    Represents the balance of a user in the system.
+    Represents the transactions of a user in the system.
     """
-    __tablename__ = 'balances'
+    __tablename__ = 'transactions'
 
-    BalanceID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    Balance = db.Column(db.Float(precision=2), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Float(precision=2), nullable=False)
 
     user = relationship('User')
