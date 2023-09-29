@@ -1,10 +1,14 @@
+
+// Majority of the below code was sourced from Google Maps Platform
+// https://console.cloud.google.com/google/maps-apis/discover
 "use strict";
+
 
 let map, infoWindow;
 let userLocation;
 
 function initMap() {
-    const defaultLocation = { lat: -37.812374114990234, lng: 144.96246337890625 };
+    const defaultLocation = { lat: -37.81237, lng: 144.96246 };
     map = new google.maps.Map(document.getElementById("gmp-map"), {
         zoom: 14,
         center: defaultLocation,
@@ -14,7 +18,6 @@ function initMap() {
     });
     infoWindow = new google.maps.InfoWindow();
 
-    // Add default current location marker
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -42,10 +45,12 @@ function initMap() {
     }
 
     const locationButton = document.createElement("button");
-    locationButton.textContent = "Pan to Current Location";
-    locationButton.classList.add("custom-map-control-button");
+
+    locationButton.textContent = "Current Location";
+    locationButton.classList.add("btn", "btn-dark","current-location");
     map.controls[google.maps.ControlPosition.TOP_CENTER].push(locationButton);
     
+    /* CODE TO GET LAT AND LONG FROM CURRENT LOCATION */
     locationButton.addEventListener("click", () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -82,41 +87,32 @@ function initMap() {
     document.addEventListener("DOMContentLoaded", function () {
         const tableRows = document.querySelectorAll("tr[data-latitude][data-longitude]");
         const locateButtons = document.querySelectorAll(".locate-button");
+        const directionButtons = document.querySelectorAll(".direction-button");
 
         locateButtons.forEach(function (button, index) {
             button.addEventListener("click", function () {
                 const row = tableRows[index];
                 const latitude = parseFloat(row.getAttribute("data-latitude"));
                 const longitude = parseFloat(row.getAttribute("data-longitude"));
-                const scooterLatLng = { lat: latitude, lng: longitude };
-    
-                // Check if user location is available
+                const scooterLatLng = new google.maps.LatLng(latitude, longitude);
+                map.panTo(scooterLatLng);
+            });
+        });
+
+        directionButtons.forEach(function (button,index) {
+            button.addEventListener("click", function () {
+                const row = tableRows[index];
+                const latitude = parseFloat(row.getAttribute("data-latitude"));
+                const longitude = parseFloat(row.getAttribute("data-longitude")); 
+                const scooterLatLng = new google.maps.LatLng(latitude, longitude);
                 if (userLocation) {
-                    const directionsService = new google.maps.DirectionsService();
-                    const directionsRenderer = new google.maps.DirectionsRenderer({
-                        map: map,
-                        suppressMarkers: true // Prevent default markers on the route
-                    });
-    
-                    const request = {
-                        origin: userLocation,
-                        destination: scooterLatLng,
-                        travelMode: google.maps.TravelMode.DRIVING
-                    };
-    
-                    directionsService.route(request, function (response, status) {
-                        if (status === google.maps.DirectionsStatus.OK) {
-                            directionsRenderer.setDirections(response);
-                        } else {
-                            window.alert("Directions request failed due to " + status);
-                        }
-                    });
+                    calculateAndDisplayRoute(userLocation, scooterLatLng);
                 } else {
                     window.alert("User location not available.");
                 }
             });
         });
-    });
+    })
 }
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -127,6 +123,29 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
             : "Error: Your browser doesn't support geolocation."
     );
     infoWindow.open(map);
+}
+
+function calculateAndDisplayRoute(origin, destination) {
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: true, // Prevent default markers on the route
+        panel: document.getElementById('directions-panel') // Display directions in an HTML element
+    });
+
+    const request = {
+        origin: origin,
+        destination: destination,
+        travelMode: google.maps.TravelMode.DRIVING
+    };
+
+    directionsService.route(request, function (response, status) {
+        if (status === google.maps.DirectionsStatus.OK) {
+            directionsRenderer.setDirections(response);
+        } else {
+            window.alert("Directions request failed due to " + status);
+        }
+    });
 }
 
 window.initMap = initMap;

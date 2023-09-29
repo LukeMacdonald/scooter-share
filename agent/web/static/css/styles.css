@@ -71,3 +71,6 @@
     color: white; /* Text color */
     border-radius: 5px 0 0 5px;
 }
+.current-location{
+    margin-top: 1rem;
+}

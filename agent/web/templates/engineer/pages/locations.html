@@ -16,6 +16,7 @@
                 <th scope="col">Power</th>
                 <th scropt="col">Report</th>
                 <th scope="col" style='text-align:center'>Location</th>
+                <th scope="col" style='text-align:center'>Directions</th>
             </tr>
         </thead>
         <tbody>
@@ -32,6 +33,12 @@
                                 <i class="fa fa-location-dot"></i>
                             </button>
                         </td>
+                        <td style='text-align:center'>
+                            <button class="btn btn-outline-secondary direction-button" style='width:4rem' onclick="calculateAndDisplayRoute({{ scooter.Latitude }}, {{ scooter.Longitude }})">
+                                <i class="fa fa-location-dot"></i>
+                            </button>
+                        </td>
+                    
                     </tr>
                 {% endfor %}
             {% else %}
