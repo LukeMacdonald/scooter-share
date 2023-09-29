@@ -7,6 +7,8 @@ app = None
 
 @comms.action("register", ["start"])
 def register(handler, message):
+    if message["role"] not in ["customer", "engineer"]:
+        raise ValueError("role must be either customer or engineer")
     password_hash = sha256_crypt.hash(message["password"])
     user = User(username=message["username"],
                 password=password_hash,
