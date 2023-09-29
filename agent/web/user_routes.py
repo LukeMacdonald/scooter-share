@@ -10,6 +10,14 @@ from agent_common import comms
 
 user = Blueprint("user", __name__)
 
+# Connect the first time that we use a connection.
+conn = None
+def get_connection() -> comms.Connection:
+    global conn
+    if conn is None:
+        conn = comms.Connection('0.0.0.0', 12345)
+    return conn
+
 @user.route("/")
 def login():
     """
@@ -47,9 +55,7 @@ def login_post():
     #     pass
     
     # communicate with the master
-
-    connection = comms.Connection('0.0.0.0', 12345)
-    response = connection.send(data)
+    response = get_connection().send(data)
     print(response)
 
     # if receives confirmation and user type from master
@@ -84,9 +90,7 @@ def signup_post():
             'role': request.form.get('role'),
             "name": "register"
     }
-
-    connection = comms.Connection('0.0.0.0', 12345)
-    response = connection.send(data)
+    response = get_connection().send(data)
 
     print(response)
 

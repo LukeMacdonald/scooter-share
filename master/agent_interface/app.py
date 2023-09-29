@@ -19,7 +19,7 @@ def register(handler, message):
     with app.app_context():
         db.session.add(user)
         db.session.commit()
-        return {"role": "{}".format(user.role), "response": "yes"}
+        return {"role": user.role, "response": "yes"}
 
 @comms.action("login", ["start"])
 def register(handler, message):
@@ -28,7 +28,7 @@ def register(handler, message):
     email = message["email"]
     with app.app_context():
         user = User.query.filter_by(email=email).first()
-    return {"role": "{}".format(user.role), "response": "yes"}
+    return {"role": user.role, "response": "yes"}
 
 def run_agent_server(master):
     global app
