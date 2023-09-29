@@ -1,6 +1,6 @@
 import requests
 from requests.exceptions import RequestException
-from database.models import ScooterStatus
+from database.models import ScooterStatus, RepairStatus
 
 def fetch_reported_scooters():
     """
@@ -10,7 +10,7 @@ def fetch_reported_scooters():
         dict: A dictionary containing the fetched data or an error message.
     """
     try:
-        url = "http://localhost:5000/scooters/maintenance"
+        url = "http://localhost:5000/scooters/awaiting-repairs"
         response = requests.get(url, timeout=5)
         response.raise_for_status()
         return {"data": response.json()}
@@ -21,33 +21,30 @@ def fetch_reported_scooters():
     except Exception as error:
         return {"error": f"An unexpected error occurred: {error}" }
 
-def update_scooter_status(scooterID):
+def update_scooter_status(scooter_id, repair_id):
     """
-    Mark scooter as repaired by update its status as available.
+    Mark scooter as repaired by updating its status as available.
 
     Args:
-        scooterID (int): The ID of the scooter to update.
+        scooter_id (int): The ID of the scooter to update.
+        repair_id (int): The ID of the repair associated with the scooter.
 
     Returns:
-        dict: A dictionary containing the updated data or an error message.
+        dict: A dictionary containing the response data or an error message.
     """
     try:
-        
-        scooter_url = f"http://localhost:5000/scooters/{scooterID}"
-        response = requests.get(scooter_url, timeout=5)
-        response.raise_for_status()
-        scooter_data = response.json()
+        fixed_url = f"http://localhost:5000/scooters/fixed/{scooter_id}/{repair_id}"
+        response = requests.put(fixed_url, timeout=5)
 
-        scooter_data["status"] = ScooterStatus.AVAILABLE.value
-
-        response = requests.put(scooter_url, json=scooter_data, timeout=5)
-        response.raise_for_status()
-
-        return {"data": response.json()}
-    except RequestException as error:
-        return {"error": f"An error occurred while updating scooter status: {error}" }
+        if response.status_code == 200:
+            return {"message": "Scooter status updated successfully"}
+        else:
+            return {"error": f"Failed to update scooter status. Status code: {response.status_code}"}
+    
+    except RequestException as req_error:
+        return {"error": f"Request error while updating scooter status: {req_error}"}
     except Exception as error:
-        return {"error": f"An unexpected error occurred: {error}" }
+        return {"error": f"An unexpected error occurred: {error}"}
 
 def fetch_engineer_data(request, options):
     """
@@ -63,5 +60,5 @@ def fetch_engineer_data(request, options):
     if request == "locations":
         return fetch_reported_scooters()
     elif request == "repair-fixed":
-        return update_scooter_status(options["id"])
+        return update_scooter_status(options["id"],options["repair_id"])
         

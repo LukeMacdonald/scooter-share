@@ -87,6 +87,7 @@ def scooter_fixed():
         Flask redirect: Redirects back to the update repair report page.
     """
     scooter_id = request.form.get("scooter_id")
-    master_request = {"name": "repair-fixed", "id": scooter_id}
+    repair_id = request.form.get("repair_id")
+    master_request = {"name": "repair-fixed", "id": scooter_id, "repair_id": repair_id}
     communicate_with_master(master_request)
     return redirect(url_for("engineer.update_repair_report"))

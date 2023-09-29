@@ -152,6 +152,11 @@ def repair_data():
         {
             "scooter_id": 4,  
             "report": "Battery replacement",
+            "status": RepairStatus.ACTIVE.value
+        },
+        {
+            "scooter_id": 1,  
+            "report": "Damaged Handle",
             "status": RepairStatus.COMPLETED.value
         },
     ]

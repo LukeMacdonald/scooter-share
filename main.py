@@ -3,7 +3,6 @@ Main Module for Running Flask Master and Agent Applications in Separate Threads.
 """
 import threading
 import socket
-import logging
 from agent.web.app import create_agent_app
 from agent_common import socket_utils
 from master.web.app import create_master_app
