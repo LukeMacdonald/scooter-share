@@ -18,6 +18,9 @@
                     <h1 class="display-4 login-header">Welcome Back</h1>
                     <form method="POST" action="{{ url_for('user.signup_post') }}">
                         <div class="form-group">
+                            <input class="form-control" id="username" name="username" placeholder="Username" value="" required>
+                        </div>
+                        <div class="form-group">
                             <input class="form-control" id="email" name="email" placeholder="Email Address" value="" required>
                         </div>
                         <div class="form-group">

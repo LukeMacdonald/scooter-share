@@ -10,8 +10,6 @@ from agent_common import comms
 
 user = Blueprint("user", __name__)
 
-connection = comms.Connection('0.0.0.0', 5000)
-
 @user.route("/")
 def login():
     """
@@ -29,33 +27,37 @@ def login_post():
 
     Redirects the user based on their role (customer or engineer).
     """
-    username = request.form.get('username')
+    email = request.form.get('email')
     password = request.form.get('password')
 
     data = {
-        "username": username,
+        "email": email,
         "password": password,
         "name": "login"
     }
     
-    role = "customer"
+    # role = "customer"
     
-    if role == "customer":
-        return redirect(url_for('user.customer_home'))
-    elif role == "engineer":
-        return redirect(url_for('user.engineer_home'))
-    else:
-        # todo: Add error response
-        pass
+    # if role == "customer":
+    #     return redirect(url_for('user.customer_home'))
+    # elif role == "engineer":
+    #     return redirect(url_for('user.engineer_home'))
+    # else:
+    #     # todo: Add error response
+    #     pass
     
-    # # communicate with the master
-    # response = connection.send(data)
-    # # if receives confirmation and user type from master
-    # if response["name"] == "yes":
-    #     if response["user_type"] == "customer":
-    #         redirect(url_for('user_homepage'))
-    #     elif response["engineer_type"] == "engineer":
-    #         redirect(url_for('engineer_homepage'))
+    # communicate with the master
+
+    connection = comms.Connection('0.0.0.0', 12345)
+    response = connection.send(data)
+    print(response)
+
+    # if receives confirmation and user type from master
+    if response["response"] == "yes":
+        if response["role"] == "customer":
+            return redirect(url_for('user.customer_home'))
+        elif response["role"] == "engineer":
+            return redirect(url_for('user.engineer_home'))
 @user.route("/signup")
 def signup():
     """
@@ -79,8 +81,20 @@ def signup_post():
             'password': request.form.get('password'),
             'first_name': request.form.get('first_name'),
             'last_name': request.form.get('last_name'),
-            'role': request.form.get('role')
+            'role': request.form.get('role'),
+            "name": "register"
     }
+
+    connection = comms.Connection('0.0.0.0', 12345)
+    response = connection.send(data)
+
+    print(response)
+
+    if response["response"] == "yes":
+        if response["role"] == "customer":
+            return redirect(url_for('user.customer_home'))
+        elif response["role"] == "engineer":
+            return redirect(url_for('user.engineer_home'))
 
 @user.route("/customer")
 def customer_home():
