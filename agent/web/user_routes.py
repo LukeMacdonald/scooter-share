@@ -6,11 +6,11 @@ and role-based redirections to customer and engineer home pages.
 
 """
 from flask import Blueprint, render_template, request, redirect, url_for
-# from agent_common import comms
+from agent_common import comms
 
 user = Blueprint("user", __name__)
 
-# connection = comms.Connection()
+connection = comms.Connection('0.0.0.0', 5000)
 
 @user.route("/")
 def login():
@@ -38,7 +38,7 @@ def login_post():
         "name": "login"
     }
     
-    role = "engineer"
+    role = "customer"
     
     if role == "customer":
         return redirect(url_for('user.customer_home'))
@@ -56,21 +56,30 @@ def login_post():
     #         redirect(url_for('user_homepage'))
     #     elif response["engineer_type"] == "engineer":
     #         redirect(url_for('engineer_homepage'))
+@user.route("/signup")
+def signup():
+    """
+    Display the login page.
+
+    Returns:
+        Flask response: The login page.
+    """
+    return render_template("register.html")
 
 @user.route("/signup", methods=["POST"])
-def signup():
+def signup_post():
     """
     Handle the signup form submission.
 
     Extracts user data from the form and performs the signup process.
     """
     data = {
-            #Auto assign an id?
             'username': request.form.get('username'),
             'email': request.form.get('email'),
             'password': request.form.get('password'),
             'first_name': request.form.get('first_name'),
-            'last_name': request.form.get('last_name')
+            'last_name': request.form.get('last_name'),
+            'role': request.form.get('role')
     }
 
 @user.route("/customer")
