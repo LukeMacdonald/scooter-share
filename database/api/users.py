@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from passlib.hash import sha256_crypt
-from master.web.database.models import User
-from master.web.database.database_manager import db
+from database.models import User, UserType
+from database.database_manager import db
 
 users_api = Blueprint("db_user", __name__)
 
@@ -69,10 +69,9 @@ def add_user():
     if not password:
         return jsonify({"message": "Password is required"}), 400
 
-    password_hash = sha256_crypt.hash(password)
     new_user = User(
         username=data.get("username"),
-        password=password_hash,
+        password=password,
         email=data.get("email"),
         first_name=data.get("first_name"),
         last_name=data.get("last_name"),
@@ -162,3 +161,16 @@ def delete_user(user_id):
         return jsonify(result)
     else:
         return jsonify({"message": "User not found"}), 404
+
+@users_api.route("/engineer_emails", methods=["GET"])
+def get_engineer_emails():
+    """
+    Get email addresses of users with the "engineer" role.
+
+    Returns:
+        JSON response with a list of email addresses.
+    """
+    engineer_users = User.query.filter_by(role=UserType.ENGINEER.value).all()
+    engineer_emails = [user.email for user in engineer_users]
+    
+    return jsonify(engineer_emails)

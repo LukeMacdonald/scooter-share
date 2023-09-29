@@ -14,5 +14,6 @@ def bye(handler, message):
     handler.state = "start"
     return "Goodbye!"
 
-if __name__ == "__main__":
-    comms.run(12345)
+
+# if __name__ == "__main__":
+#     comms.run(12345)

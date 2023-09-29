@@ -2,35 +2,31 @@
 
 {% block title %}Engineer Home{% endblock %}
 
-{% block content %}
-    <h2>Scooter Locations:</h2>
-    <div id="gmp-map"></div>
-    <br>
-    
+{% block content %} 
     <table class="table table-bordered table-hover" style="width:95%; margin: 0 auto;">
         <thead>
             <tr class="table-dark">
                 <th scope="col">Scooter ID</th>
-                <th scope="col">Make</th>
                 <th scope="col">Status</th>
-                <th scope="col">Power</th>
                 <th scropt="col">Report</th>
-                <th scope="col" style='text-align:center'>Location</th>
+                <th scope="col" style='text-align:center'>Update</th>
             </tr>
         </thead>
         <tbody>
             {% if scooter_data %}
                 {% for scooter in scooter_data %}
-                    <tr class='clickable-row' data-latitude="{{ scooter.Latitude }}" data-longitude="{{ scooter.Longitude }}">
+                    <tr>
                         <td>{{ scooter.ScooterID }}</td>
-                        <td>{{ scooter.Make }}</td>
                         <td>{{ scooter.ScooterStatus }}</td> 
-                        <td>{{ scooter.RemainingPower }}%</td>
                         <td>{{ scooter.RepairReport }}
                         <td style='text-align:center'>
-                            <button class="btn btn-outline-secondary locate-button" style='width:4rem'>
-                                <i class="fa fa-location-dot"></i>
-                            </button>
+                            <form action="{{ url_for('engineer.scooter_fixed') }}" method="POST">
+                                <input type="hidden" name="scooter_id" value="{{ scooter.ScooterID }}">
+                                <input type="hidden" name="repair_id" value="{{ scooter.RepairID }}">
+                                <button type="submit" class="btn btn-outline-success locate-button" style='width:4rem'>
+                                    Fixed
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 {% endfor %}

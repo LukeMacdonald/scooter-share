@@ -7,6 +7,8 @@ for the agent, including the registration of user routes.
 """
 from flask import Flask
 from agent.web.user_routes import user
+from agent.web.engineer_routes import engineer
+
 def create_agent_app():
     """
     Create and configure the Flask application.
@@ -16,4 +18,5 @@ def create_agent_app():
     """
     app = Flask(__name__)
     app.register_blueprint(user)
+    app.register_blueprint(engineer)
     return app

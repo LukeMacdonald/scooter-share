@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from master.web.database.models import Booking
-from master.web.database.database_manager import db
+from database.models import Booking
+from database.database_manager import db
 
 booking_api = Blueprint("booking_api", __name__)
 
@@ -13,7 +13,7 @@ def get_bookings():
             "UserID": booking.user_id,
             "ScooterID": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.status
+            "status": booking.status
         }
         for booking in bookings
     ]
@@ -28,7 +28,7 @@ def get_booking(booking_id):
             "UserID": booking.user_id,
             "ScooterID": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.status
+            "status": booking.status
         }
         return jsonify(result)
     else:
@@ -41,7 +41,7 @@ def add_booking():
         user_id=data.get("UserID"),
         scooter_id=data.get("ScooterID"),
         time=data.get("Time"),
-        status=data.get("Status")
+        status=data.get("status")
     )
 
     db.session.add(new_booking)
@@ -52,7 +52,7 @@ def add_booking():
         "UserID": new_booking.user_id,
         "ScooterID": new_booking.scooter_id,
         "Time": new_booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-        "Status": new_booking.status
+        "status": new_booking.status
     }
     return jsonify(result), 201
 
@@ -65,7 +65,7 @@ def update_booking(booking_id):
         booking.user_id = data.get("UserID")
         booking.scooter_id = data.get("ScooterID")
         booking.time = data.get("Time")
-        booking.status = data.get("Status")
+        booking.status = data.get("status")
 
         db.session.commit()
 
@@ -74,7 +74,7 @@ def update_booking(booking_id):
             "UserID": booking.user_id,
             "ScooterID": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.status
+            "status": booking.status
         }
         return jsonify(result)
     else:
@@ -92,7 +92,7 @@ def delete_booking(booking_id):
             "UserID": booking.user_id,
             "ScooterID": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "Status": booking.status
+            "status": booking.status
         }
         return jsonify(result)
     else:

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from master.web.database.models import Transaction
-from master.web.database.database_manager import db
+from database.models import Transaction
+from database.database_manager import db
 
 transaction_api = Blueprint("transaction_api", __name__)
 
