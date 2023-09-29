@@ -13,11 +13,11 @@ def register(handler, message):
                 email=message["email"],
                 first_name=message["first_name"],
                 last_name=message["last_name"],
-                role="customer")
+                role=message["role"])
     with app.app_context():
         db.session.add(user)
         db.session.commit()
-    return {"role": "customer", "response": "yes"}
+        return {"role": "{}".format(user.role), "response": "yes"}
 
 @comms.action("login", ["start"])
 def register(handler, message):
