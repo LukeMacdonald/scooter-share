@@ -15,7 +15,6 @@ from database.api.repairs import repairs_api
 from database.api.transactions import transaction_api
 from database.seed import seed_data
 
-
 def create_master_app():
     """
     Create and configure the Flask application.
