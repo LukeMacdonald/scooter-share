@@ -6,7 +6,8 @@ This module defines the routes and views related to the engineer's functionality
 """
 import logging
 from flask import Blueprint, render_template, url_for, redirect, request
-from agent.web.user_routes import get_connection
+from agent.web.connection import get_connection
+
 engineer = Blueprint("engineer", __name__)
 
 logging.basicConfig(level=logging.ERROR)

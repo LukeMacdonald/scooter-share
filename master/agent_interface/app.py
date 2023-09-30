@@ -2,7 +2,7 @@ import requests
 from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from master.agent_interface import comms
-from agent_common import socket_utils
+from agent.common import socket_utils
 from database.models import User, UserType, Scooter, Booking
 from database.database_manager import db
 from flask import jsonify

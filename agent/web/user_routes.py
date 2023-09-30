@@ -7,17 +7,9 @@ and role-based redirections to customer and engineer home pages.
 """
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
 from database.models import UserType
-from agent_common import comms, socket_utils
+from agent.web.connection import get_connection
 
 user = Blueprint("user", __name__)
-
-# Connect the first time that we use a connection.
-conn = None
-def get_connection() -> comms.Connection:
-    global conn
-    if conn is None:
-        conn = comms.Connection(socket_utils.PUBLIC_HOST, socket_utils.SOCKET_PORT)
-    return conn
 
 @user.route("/")
 def login():
