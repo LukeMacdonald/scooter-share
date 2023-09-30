@@ -93,8 +93,19 @@ th {
 }
 
 table {
-    background-color: #f5f5f5;
+    background-color: #fafafa;
     border-radius: 15px;
     padding: 5px;
-    width: 100%;
+    width: 98%;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.left {
+    flex: 1;
 }

@@ -3,7 +3,7 @@ from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from master.agent_interface import comms
 from agent_common import socket_utils
-from database.models import User, UserType, Scooter
+from database.models import User, UserType, Scooter, Booking
 from database.database_manager import db
 from flask import jsonify
 
@@ -33,11 +33,13 @@ def login(handler, message):
     with app.app_context():
         user = User.query.filter_by(email=email).first()
         data = {
+            'id': user.id,
             'username': user.username,
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'role': user.role,
+            'balance': user.balance
     }
     return {"user": data, "response": "yes"}
 
@@ -89,17 +91,17 @@ def update_scooter_status(handler, request):
     except Exception as error:
         return {"status_code":500, "error": f"An unexpected error occurred: {error}"}
     
-@comms.action("scooter-status", ["start"])
+@comms.action("customer-homepage", ["start"])
 def fetch_reported_scooters(handler, request):
     """
-    Fetch a list of scooters and their availability status.
+    Fetch a list of available scooters.
 
     Returns:
         dict: A dictionary containing the fetched data or an error message.
     """
     try: 
         with app.app_context():
-            scooters = Scooter.query.all()
+            scooters = Scooter.query.filter_by(status="available")
             scooters_list = []
             for scooter in scooters:
                 scooter_dict = {
@@ -113,7 +115,23 @@ def fetch_reported_scooters(handler, request):
                 }
                 scooters_list.append(scooter_dict)
 
-            return scooters_list
+            bookings = Booking.query.filter_by(user_id=request["customer_id"])
+            bookings_list = []
+            for booking in bookings:
+                booking_dict = {
+                    "id": booking.id,
+                    "scooter_id": booking.scooter_id,
+                    "time": booking.time.strftime("%a %d %b, %H:%M, %Y"),
+                    "status": booking.status
+                }
+                bookings_list.append(booking_dict)
+
+            data = {
+                "scooters" : scooters_list,
+                "bookings" : bookings_list
+            }
+
+            return data
     except RequestException as req_error:
         return {"status_code":500,"error": f"{req_error}" }
     except ValueError as json_error:

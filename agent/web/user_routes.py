@@ -84,6 +84,7 @@ def signup_post():
             'role': request.form.get('role'),
             "name": "register"
     }
+
     response = get_connection().send(data)
 
     if response["response"] == "yes":
@@ -101,11 +102,14 @@ def customer_home():
         Flask response: The customer home page.
     """
     customer_info = session.get('user_info')
-    print(customer_info)
+    print(customer_info["id"])
+    data = {
+        "customer_id": customer_info["id"],
+        "name": "customer-homepage"
+    }
 
-    response = get_connection().send({"name":"scooter-status"})
+    response = get_connection().send(data)
+    print(response)
 
-    # Sort scooters so that available scooters are at top of list
-    response.sort(key=lambda scooter: scooter["status"] != 'available')
-
-    return render_template("customer/pages/home.html", scooters=response, customer=customer_info)
+    return render_template("customer/pages/home.html", scooters=response["scooters"], customer=customer_info, 
+                           bookings=response["bookings"])
