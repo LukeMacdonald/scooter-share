@@ -3,19 +3,49 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    <div style="margin-left:2rem">
-        <h1 style="color:black; font-size:3rem">Welcome Back</h1>
+    <div class="center">
+        <h1 style="color:black; font-size:3rem">Welcome Back, {{ customer.first_name }}</h1>
         <hr/>
     </div>
-    <div>
-        <body>
-            <h2>Scooters List</h2>
-            <ul>
+    <div style="height: 300px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Scooter</th>
+                    <th>Availability</th>
+                    <th>Make</th>
+                    <th>Colour</th>
+                    <th>Location</th>
+                    <th>Remaining Power</th>
+                    <th>Cost Per Time</th>
+                    <th>Book</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for scooter in scooters %}
-                    <li>{{ scooter.id }} - {{ scooter.status }}</li>
+                <tr>
+                    <td>{{ scooter.id }}</td>
+                    <td>{% if scooter.status == 'available' %}
+                        🟢
+                        {% else %}
+                        🔴
+                        {% endif %}
+                    </td>
+                    <td>{{ scooter.make }}</td>
+                    <td>Colour...</td>
+                    <td>Location...</td>
+                    <td>{{ scooter.remaining_power }}</td>
+                    <td>{{ scooter.cost_per_time }}</td>
+                    <td>{% if scooter.status == 'available' %}
+                        Book now!
+                        {% else %}
+                        
+                        {% endif %}
+                    </td>
+                </tr>
                 {% endfor %}
-            </ul>
-        </body>
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 

@@ -5,7 +5,7 @@ This blueprint defines routes related to user management, including login, signu
 and role-based redirections to customer and engineer home pages.
 
 """
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
 from database.models import UserType
 from agent_common import comms, socket_utils
 
@@ -48,11 +48,13 @@ def login_post():
     # communicate with the master
     response = get_connection().send(data)
 
+    session['user_info'] = response["user"]
+
     # if receives confirmation and user type from master
     if response["response"] == "yes":
-        if response["role"] == UserType.CUSTOMER.value:
+        if response["user"]["role"] == UserType.CUSTOMER.value:
             return redirect(url_for('user.customer_home'))
-        elif response["role"] == UserType.ENGINEER.value:
+        elif response["user"]["role"] == UserType.ENGINEER.value:
             return redirect(url_for('engineer.home'))
         
 
@@ -84,8 +86,6 @@ def signup_post():
     }
     response = get_connection().send(data)
 
-    print(response)
-
     if response["response"] == "yes":
         if response["role"] == "customer":
             return redirect(url_for('user.customer_home'))
@@ -100,10 +100,12 @@ def customer_home():
     Returns:
         Flask response: The customer home page.
     """
+    customer_info = session.get('user_info')
+    print(customer_info)
 
     response = get_connection().send({"name":"scooter-status"})
-    print(response)
-    for scooter in response:
-        print(scooter["status"])
 
-    return render_template("customer/pages/home.html", scooters=response)
+    # Sort scooters so that available scooters are at top of list
+    response.sort(key=lambda scooter: scooter["status"] != 'available')
+
+    return render_template("customer/pages/home.html", scooters=response, customer=customer_info)

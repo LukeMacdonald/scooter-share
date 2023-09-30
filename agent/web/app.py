@@ -19,4 +19,5 @@ def create_agent_app():
     app = Flask(__name__)
     app.register_blueprint(user)
     app.register_blueprint(engineer)
+    app.secret_key = 'secret_key'
     return app

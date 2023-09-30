@@ -32,7 +32,14 @@ def login(handler, message):
     email = message["email"]
     with app.app_context():
         user = User.query.filter_by(email=email).first()
-    return {"role": user.role, "response": "yes"}
+        data = {
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+    }
+    return {"user": data, "response": "yes"}
 
 @comms.action("locations", ["start"])
 def fetch_reported_scooters(handler, request):
