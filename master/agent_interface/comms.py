@@ -16,7 +16,10 @@ def action(name, states):
         def wrapper(handler, message):
             if handler.state not in states:
                 raise ValueError(f"Handler should be in one of the states in {states}, not {handler.state}.")
-            return function(handler, message)
+            try:
+                return function(handler, message)
+            except Exception as e:
+                return {"error": str(e)}
         _actions[name] = wrapper
         return wrapper
     return inner
@@ -51,6 +54,12 @@ class Handler(socketserver.StreamRequestHandler):
             else:
                 return
 
+class ReusingThreadingTCPServer(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+
 def run(port):
-    server = socketserver.ThreadingTCPServer(("0.0.0.0", port), Handler)
-    server.serve_forever()
+    server = ReusingThreadingTCPServer(("0.0.0.0", port), Handler)
+    try:
+        server.serve_forever()
+    finally:
+        server.shutdown()
