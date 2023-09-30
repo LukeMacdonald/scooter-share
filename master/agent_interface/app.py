@@ -3,8 +3,9 @@ from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from master.agent_interface import comms
 from agent_common import socket_utils
-from database.models import User, UserType
+from database.models import User, UserType, Scooter
 from database.database_manager import db
+from flask import jsonify
 
 app = None
 
@@ -80,6 +81,38 @@ def update_scooter_status(handler, request):
         return {"status_code":500, "error": f"Request error while updating scooter status: {req_error}"}
     except Exception as error:
         return {"status_code":500, "error": f"An unexpected error occurred: {error}"}
+    
+@comms.action("scooter-status", ["start"])
+def fetch_reported_scooters(handler, request):
+    """
+    Fetch a list of scooters and their availability status.
+
+    Returns:
+        dict: A dictionary containing the fetched data or an error message.
+    """
+    try: 
+        with app.app_context():
+            scooters = Scooter.query.all()
+            scooters_list = []
+            for scooter in scooters:
+                scooter_dict = {
+                    "id": scooter.id,
+                    "make": scooter.make,
+                    "longitude": scooter.longitude,
+                    "latitude": scooter.latitude,
+                    "remaining_power": scooter.remaining_power,
+                    "cost_per_time": scooter.cost_per_time,
+                    "status": scooter.status,
+                }
+                scooters_list.append(scooter_dict)
+
+            return scooters_list
+    except RequestException as req_error:
+        return {"status_code":500,"error": f"{req_error}" }
+    except ValueError as json_error:
+        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
+    except Exception as error:
+        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
 
 def run_agent_server(master):
     global app

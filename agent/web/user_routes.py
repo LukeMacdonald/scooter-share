@@ -16,7 +16,7 @@ conn = None
 def get_connection() -> comms.Connection:
     global conn
     if conn is None:
-        conn = comms.Connection(socket_utils.MASTER_HOST, socket_utils.SOCKET_PORT)
+        conn = comms.Connection(socket_utils.PUBLIC_HOST, socket_utils.SOCKET_PORT)
     return conn
 
 @user.route("/")
@@ -47,7 +47,6 @@ def login_post():
         
     # communicate with the master
     response = get_connection().send(data)
-    print(response)
 
     # if receives confirmation and user type from master
     if response["response"] == "yes":
@@ -101,4 +100,10 @@ def customer_home():
     Returns:
         Flask response: The customer home page.
     """
-    return render_template("customer/pages/home.html")
+
+    response = get_connection().send({"name":"scooter-status"})
+    print(response)
+    for scooter in response:
+        print(scooter["status"])
+
+    return render_template("customer/pages/home.html", scooters=response)

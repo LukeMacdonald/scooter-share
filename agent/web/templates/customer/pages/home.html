@@ -7,6 +7,16 @@
         <h1 style="color:black; font-size:3rem">Welcome Back</h1>
         <hr/>
     </div>
+    <div>
+        <body>
+            <h2>Scooters List</h2>
+            <ul>
+                {% for scooter in scooters %}
+                    <li>{{ scooter.id }} - {{ scooter.status }}</li>
+                {% endfor %}
+            </ul>
+        </body>
+    </div>
 {% endblock %}
 
 
