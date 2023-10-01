@@ -24,7 +24,8 @@ def register(handler, message):
     with app.app_context():
         db.session.add(user)
         db.session.commit()
-        return {"user": user.as_json(), "response": "yes"}
+    handler.state = message["role"]
+    return {"user": user.as_json(), "response": "yes"}
 
 @comms.action("login", ["start"])
 def login(handler, message):
@@ -33,9 +34,10 @@ def login(handler, message):
     email = message["email"]
     with app.app_context():
         user = User.query.filter_by(email=email).first()
+    handler.state = user.role
     return {"user": user.as_json(), "response": "yes"}
 
-@comms.action("locations", ["start"])
+@comms.action("locations", ["engineer"])
 def fetch_reported_scooters(handler, request):
     """
     Fetch a list of scooters reported for repair.
@@ -43,9 +45,10 @@ def fetch_reported_scooters(handler, request):
     Returns:
         dict: A dictionary containing the fetched data or an error message.
     """
-    return {"data": scooters_awaiting_repairs()}
+    with app.app_context():
+        return {"data": scooters_awaiting_repairs()}
 
-@comms.action("repair-fixed", ["start"])
+@comms.action("repair-fixed", ["engineer"])
 def update_scooter_status(handler, request):
     """
     Mark scooter as repaired by updating its status as available.
@@ -57,21 +60,22 @@ def update_scooter_status(handler, request):
     Returns:
         dict: A dictionary containing the response data or an error message.
     """
-    repair_id = request["repair_id"]
-    scooter_id = request["scooter_id"]
-    scooter = Scooter.query.get(scooter_id)
-    repair = Repairs.query.get(repair_id)
-    if scooter is None:
-        return {"error": f"Scooter with ID {scooter_id} not found"}
-    if repair is None:
-        return {"error": f"Repair with ID {repair_id} not found"}
-    scooter.status = ScooterStatus.AVAILABLE.value
-    repair.status = RepairStatus.COMPLETED.value
-    db.session.commit()
+    with app.app_context():
+        repair_id = request["repair_id"]
+        scooter_id = request["scooter_id"]
+        scooter = Scooter.query.get(scooter_id)
+        repair = Repairs.query.get(repair_id)
+        if scooter is None:
+            return {"error": f"Scooter with ID {scooter_id} not found"}
+        if repair is None:
+            return {"error": f"Repair with ID {repair_id} not found"}
+        scooter.status = ScooterStatus.AVAILABLE.value
+        repair.status = RepairStatus.COMPLETED.value
+        db.session.commit()
     return {"message": "Scooter successfully repaired"}
     
-@comms.action("customer-homepage", ["start"])
-def fetch_reported_scooters(handler, request):
+@comms.action("customer-homepage", ["customer"])
+def fetch_available_scooters(handler, request):
     """
     Fetch a list of available scooters.
 

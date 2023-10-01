@@ -38,7 +38,7 @@ def login_post():
         
     # communicate with the master
     response = get_connection().send(data)
-
+    print(response)
     session['user_info'] = response["user"]
 
     # if receives confirmation and user type from master

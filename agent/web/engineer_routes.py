@@ -22,12 +22,8 @@ def home():
     """
     try:
         data = {"name": "locations"}
-        response = get_connection().send(data) 
-        if "status_code" in response and response["status_code"] == 200:
-            return render_template("engineer/pages/home.html", scooter_data=response["data"])
-        else:
-            error_message = response.get("error", "Unknown error occurred.")
-            return render_template("engineer/pages/error.html", error=error_message), 500
+        response = get_connection().send(data)
+        return render_template("engineer/pages/home.html", scooter_data=response["data"])
     except Exception as error:
         # Log the exception for debugging purposes
         logging.error("Error occurred: %s", error)
@@ -45,14 +41,7 @@ def scooter_locations():
     try:
         data = {"name": "locations"}
         response = get_connection().send(data)
-        print(response)
-        
-        if "status_code" in response and response["status_code"] == 200:
-            return render_template("engineer/pages/locations.html", scooter_data=response["data"])
-        else:
-            error_message = response.get("error", "Unknown error occurred.")
-            return render_template("engineer/pages/error.html", error=error_message), 500
-
+        return render_template("engineer/pages/locations.html", scooter_data=response["data"])
     except Exception as error:
         # Log the exception for debugging purposes
         logging.error("Error occurred: %s", error)
@@ -70,12 +59,7 @@ def update_repair_report():
     try:
         data = {"name": "locations"}
         response = get_connection().send(data)
-        if "status_code" in response and response["status_code"] == 200:
-            return render_template("engineer/pages/update_repair.html", scooter_data=response["data"])
-        else:
-            error_message = response.get("error", "Unknown error occurred.")
-            return render_template("engineer/pages/error.html", error=error_message), 500
-
+        return render_template("engineer/pages/update_repair.html", scooter_data=response["data"])
     except Exception as error:
         # Log the exception for debugging purposes
         logging.error("Error occurred: %s", error)
@@ -96,12 +80,7 @@ def scooter_fixed():
         data = {"name": "repair-fixed", "scooter_id": scooter_id, "repair_id": repair_id}
         response = get_connection().send(data)
         print(response)
-        if "status_code" in response and response["status_code"] == 200:
-            return redirect(url_for("engineer.update_repair_report"))
-        else:
-            error_message = response.get("error", "Unknown error occurred.")
-            return render_template("engineer/pages/error.html", error=error_message), 500
-
+        return redirect(url_for("engineer.update_repair_report"))
     except Exception as error:
         # Log the exception for debugging purposes
         logging.error("Error occurred: %s", error)

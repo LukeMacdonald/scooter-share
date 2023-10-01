@@ -15,7 +15,7 @@ def action(name, states):
         @functools.wraps(function)
         def wrapper(handler, message):
             if handler.state not in states:
-                raise ValueError(f"Handler should be in one of the states in {states}, not {handler.state}.")
+                return {"error": "Unauthorised"}
             try:
                 return function(handler, message)
             except Exception as e:
