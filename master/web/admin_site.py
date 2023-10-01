@@ -105,7 +105,7 @@ def notify_engineers(scooter_id, report):
         steet_address = helpers.get_street_address(latitude, longitude)
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
         # engineer_emails = requests.get(f"{API_BASE_URL}/engineer_emails", timeout=5).json()
-        engineer_emails = ["lukemacdonald560@gmail.com"]
+        engineer_emails = ["lukemacdonald560@gmail.com","lukemacdonald21@gmail.com"]
         email_subject = 'URGENT: Scooter Repair Request'
         email_body = helpers.get_email_body(scooter_id, report, steet_address, email_subject)
         # Send the email

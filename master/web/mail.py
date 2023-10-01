@@ -12,8 +12,8 @@ def init_mail(app):
     """
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = 'lukemacdonald21@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'jiwf jpbu eqis dtcs'
+    app.config['MAIL_USERNAME'] = 'scootershare7@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'zkho jutc yrtg rerm'
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
 

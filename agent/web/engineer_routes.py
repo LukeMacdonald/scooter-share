@@ -20,7 +20,7 @@ def home():
         Flask response: The engineer home page.
     """
     try:
-        data = {"name": "email-engineer"}
+        data = {"name": "locations"}
         response = get_connection().send(data) 
         if "status_code" in response and response["status_code"] == 200:
             return render_template("engineer/pages/home.html", scooter_data=response["data"])
