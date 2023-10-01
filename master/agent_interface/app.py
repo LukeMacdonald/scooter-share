@@ -2,7 +2,7 @@ from agent.common import socket_utils
 from flask import jsonify
 from master.agent_interface import comms
 from master.database.database_manager import db
-from master.database.models import User, UserType, Scooter, Booking
+from master.database.models import Booking, RepairStatus, Repairs, Scooter, ScooterStatus, User, UserType
 from master.database.queries import scooters_awaiting_repairs
 from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
