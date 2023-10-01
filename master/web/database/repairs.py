@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from database.models import Repairs
-from database.database_manager import db
+from master.database.models import Repairs
+from master.database.database_manager import db
 
 repairs_api = Blueprint("repairs_api", __name__)
 

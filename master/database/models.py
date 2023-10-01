@@ -8,7 +8,7 @@ such as users, scooters, bookings, repairs, and user balances.
 from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
 from enum import Enum
-from database.database_manager import db
+from master.database.database_manager import db
 
 class UserType(Enum):
     ADMIN = 'admin'
@@ -26,7 +26,7 @@ class BookingState(Enum):
     COMPLETED = 'completed'
     
 class RepairStatus(Enum):
-    ACTIVE ='active'
+    ACTIVE = 'active'
     COMPLETED = 'completed' 
     
 class User(db.Model):
@@ -56,6 +56,18 @@ class User(db.Model):
         self.phone_number = phone_number
         self.balance = balance
 
+    def as_json(self):
+        "A dictionary with all the values other than the password hash of this user."
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'role': self.role,
+            'balance': self.balance
+        }
+
 class Scooter(db.Model):
     """
     Represents a scooter in the system.
@@ -70,6 +82,18 @@ class Scooter(db.Model):
     cost_per_time = db.Column(db.Float(precision=2), nullable=False)
     status = db.Column(db.Enum(ScooterStatus.AVAILABLE.value,ScooterStatus.AWAITING_REPAIR.value,ScooterStatus.OCCUPYING.value), 
                        nullable=False)
+
+    def as_json(self):
+        "A dictionary with all the values of this scooter."
+        return {
+            "id": self.id,
+            "make": self.make,
+            "longitude": self.longitude,
+            "latitude": self.latitude,
+            "remaining_power": self.remaining_power,
+            "cost_per_time": self.cost_per_time,
+            "status": self.status,
+        }
 
 class Booking(db.Model):
     """
@@ -86,6 +110,16 @@ class Booking(db.Model):
 
     user = relationship('User')
     scooter = relationship('Scooter')
+
+    def as_json(self):
+        "A dictionary with all the values of this booking."
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "scooter_id": self.scooter_id,
+            "time": self.time.strftime("%a %d %b, %H:%M, %Y"),
+            "status": self.status
+        }
 
 class Repairs(db.Model):
     """

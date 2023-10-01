@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
-from database.models import Scooter, ScooterStatus, Repairs, RepairStatus
-from database.database_manager import db
+from master.database.database_manager import db
+from master.database.models import Scooter, ScooterStatus, Repairs, RepairStatus
+from master.database.queries import scooters_awaiting_repairs
 
 scooter_api = Blueprint("scooter_api", __name__)
 
@@ -105,52 +106,7 @@ def get_scooters_awaiting_repairs():
     Returns:
         JSON response with a list of scooters and their first repair request or a "No data found" message.
     """
-    # Use a subquery to find the first repair request with status "active" for each scooter with status "awaiting repair."
-    subquery = db.session.query(
-        Repairs.scooter_id,
-        db.func.min(Repairs.id).label("repair_id")
-    ).filter_by(status="active").group_by(Repairs.scooter_id).subquery()
-
-    # Join the Scooter and Repairs tables using the subquery to fetch data.
-    query = db.session.query(
-        Scooter.id.label("ScooterID"),
-        Scooter.make.label("Make"),
-        Scooter.longitude.label("Longitude"),
-        Scooter.latitude.label("Latitude"),
-        Scooter.remaining_power.label("RemainingPower"),
-        Scooter.cost_per_time.label("CostPerTime"),
-        Scooter.status.label("ScooterStatus"),
-        Repairs.report.label("Report"),
-        Repairs.status.label("RepairStatus"),
-        subquery.c.repair_id.label("RepairID")
-    ).join(
-        subquery, Scooter.id == subquery.c.scooter_id, isouter=True
-    ).join(
-        Repairs, Repairs.id == subquery.c.repair_id, isouter=True
-    )
-
-    results = query.all()
-
-    if results:
-        result_list = []
-        for row in results:
-            if row.ScooterStatus == ScooterStatus.AWAITING_REPAIR.value and row.RepairStatus == "active":
-                scooter_data = {
-                    "ScooterID": row.ScooterID,
-                    "Make": row.Make,
-                    "Longitude": row.Longitude,
-                    "Latitude": row.Latitude,
-                    "RemainingPower": row.RemainingPower,
-                    "CostPerTime": row.CostPerTime,
-                    "ScooterStatus": row.ScooterStatus,
-                    "RepairReport": row.Report,
-                    "RepairID": row.RepairID
-                }
-                result_list.append(scooter_data)
-
-        return jsonify(result_list)
-    else:
-        return jsonify({"message": "No data found"}), 404
+    return jsonify(scooters_awaiting_repairs())
 
 @scooter_api.route("/scooters/fixed/<int:scooter_id>/<int:repair_id>", methods=["PUT"])
 def scooter_fixed(scooter_id, repair_id):

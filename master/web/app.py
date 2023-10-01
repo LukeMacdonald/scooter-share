@@ -6,14 +6,14 @@ It initializes the database and registers blueprints for the admin site and data
 
 """
 from flask import Flask
+from master.database.database_manager import init_db
+from master.database.seed import seed_data
 from master.web.admin_site import admin
-from database.database_manager import init_db
-from database.api.users import users_api
-from database.api.scooters import scooter_api
-from database.api.bookings import booking_api
-from database.api.repairs import repairs_api
-from database.api.transactions import transaction_api
-from database.seed import seed_data
+from master.web.database.users import users_api
+from master.web.database.scooters import scooter_api
+from master.web.database.bookings import booking_api
+from master.web.database.repairs import repairs_api
+from master.web.database.transactions import transaction_api
 
 def create_master_app():
     """

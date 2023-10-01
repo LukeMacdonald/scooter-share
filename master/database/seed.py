@@ -1,5 +1,5 @@
 import datetime
-from database.models import *
+from master.database.models import *
 def seed_data():
     """
     Seed data into the database if no data exists.
