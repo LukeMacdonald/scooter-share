@@ -6,6 +6,7 @@ from requests.exceptions import RequestException, Timeout
 from flask import Blueprint, request, jsonify
 from passlib.hash import sha256_crypt
 import requests
+from constants import API_BASE_URL
 
 api = Blueprint("api", __name__)
 
@@ -38,7 +39,7 @@ def register():
         # You should hash the password before sending it to the server
         hashed_password = sha256_crypt.hash(password)
 
-        response = requests.post('http://localhost:5000/user', json={"username": username, "password": hashed_password}, timeout=10)
+        response = requests.post(f"{API_BASE_URL}/user", json={"username": username, "password": hashed_password}, timeout=10)
 
         return jsonify({"message": response["message"]})
 
@@ -62,7 +63,7 @@ def login_user():
         username = data.get("username")
         password = data.get("password")
 
-        response = requests.get(f'http://localhost:5000/user/{username}', timeout=10)
+        response = requests.get(f"{API_BASE_URL}/user/{username}", timeout=10)
         user_data = response.json()
 
         # Check if the username exists and verify the password
