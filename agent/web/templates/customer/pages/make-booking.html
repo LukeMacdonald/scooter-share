@@ -82,34 +82,67 @@
         <input type="submit" value="Submit">
     </form>
     <script>
-        // Get a reference to the "start-time" input element
+        // Get a reference to the form and input elements
+        var form = document.querySelector("form");
         var startTimeInput = document.getElementById("start-time");
-    
+        var durationInput = document.getElementById("duration");
+        var durationUnitInput = document.getElementById("duration-unit");
+
+        // Function to calculate the total cost based on duration and unit
+        function calculateTotalCost() {
+            var duration = parseFloat(durationInput.value);
+            var durationUnit = durationUnitInput.value;
+            var costPerTime =  cost_per_time
+            var totalCost = 0;
+
+            if (durationUnit === "hours") {
+                totalCost = costPerTime * duration;
+            } else if (durationUnit === "minutes") {
+                // Convert minutes to hours for consistency
+                totalCost = costPerTime * (duration / 60);
+            }
+
+            return totalCost;
+        }
+
         // Add an event listener to the form's submission
-        document.querySelector("form").addEventListener("submit", function (event) {
+        form.addEventListener("submit", function (event) {
             // Get the selected start time value
             var selectedTime = startTimeInput.value;
-    
+
             // Check if the start time is empty
             if (!selectedTime) {
                 alert("Start time cannot be empty.");
                 event.preventDefault();
                 return;
             }
-    
+
             // Get the current time in the format "HH:mm" (24-hour format)
             var currentTime = new Date().toLocaleTimeString("en-US", {
                 hour: "2-digit",
                 minute: "2-digit",
             });
-    
+
             // Compare the selected time with the current time
             if (selectedTime < currentTime) {
                 alert("Start time cannot be in the past.");
                 event.preventDefault();
+                return;
+            }
+
+            // Calculate the total cost
+            var totalCost = calculateTotalCost();
+
+            // Retrieve the user's balance (you need to implement this)
+            var userBalance =  balance
+
+            // Check if the balance is sufficient
+            if (userBalance - totalCost < 0) {
+                alert("Insufficient balance to make this booking.");
+                event.preventDefault();
             }
         });
-    </script> 
+    </script>
 </body>
 </html>
 {% endblock %}

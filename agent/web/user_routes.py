@@ -113,20 +113,18 @@ def customer_home():
 
     response = get_connection().send(data)
 
-    print(response)
-
     return render_template("customer/pages/home.html", scooters=response["scooters"], customer=customer_info, 
                            bookings=response["bookings"])
 
-@user.route('/make_booking/<int:scooter_id>')
-def make_booking(scooter_id):
+@user.route('/make_booking/<int:scooter_id>/<float:balance>/<float:cost_per_time>')
+def make_booking(scooter_id, balance, cost_per_time):
     """
     Display the page for booking a scooter.
 
     Returns:
         Flask response: The make-booking page.
     """
-    return render_template("customer/pages/make-booking.html", scooter_id=scooter_id)
+    return render_template("customer/pages/make-booking.html", scooter_id=scooter_id, balance=balance, cost_per_time=cost_per_time)
 
 @user.route('/make_booking/<int:scooter_id>', methods=["POST"])
 def make_booking_post(scooter_id):
