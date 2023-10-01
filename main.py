@@ -5,7 +5,7 @@ import threading
 from agent.web.app import create_agent_app
 from agent_common import socket_utils
 from master.web.app import create_master_app
-from master.agent_interface.app import run_agent_server, email_engineer
+from master.agent_interface.app import run_agent_server
 
 def run_master(master):
     "Run the Flask master application."
