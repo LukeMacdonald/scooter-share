@@ -8,6 +8,7 @@ and role-based redirections to customer and engineer home pages.
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
 from database.models import UserType
 from agent_common import comms, socket_utils
+from datetime import datetime, date, timedelta
 
 user = Blueprint("user", __name__)
 
@@ -109,6 +110,8 @@ def customer_home():
 
     response = get_connection().send(data)
 
+    print(len(response["bookings"]))
+
     return render_template("customer/pages/home.html", scooters=response["scooters"], customer=customer_info, 
                            bookings=response["bookings"])
 
@@ -133,15 +136,28 @@ def make_booking_post(scooter_id):
 
     # add new booking to the database
     customer_info = session.get('user_info')
+
+    start_time = request.form.get('start-time')
+    duration = int(request.form.get('duration'))
+    
+    # Combine the start time with today's date to create a datetime object
+    start_datetime = datetime.combine(date.today(), datetime.strptime(start_time, "%H:%M").time())
+    end_datetime = start_datetime + timedelta(minutes=duration)
+
     data = {
+        "data": {
         "scooter_id": scooter_id,
         "user_id": customer_info["id"],
-        "date": request.form.get('start_time'),
-        "duration": request.form.get('duration'),
-        "duration-unit": request.form.get('duration-unit'),
+        "date": date.today().isoformat(),
+        "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "status": "active"
+        },
         "name": "make-booking"
     }
 
     response = get_connection().send(data)
+
+    print(response)
 
     return redirect(url_for('user.customer_home'))

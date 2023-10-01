@@ -51,23 +51,29 @@
         <div style="height: 300px; overflow-y: auto;">
             <table>
                 <thead>
-                    <th>Scooter</th>
-                    <th>Time</th>
-                    <th>Status</th>
+                    <tr>
+                        <th>Scooter</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    <td>{{ booking.scooter_id }}</td>
-                    <td>{{ booking.time }}</td>
-                    <td>{% if booking.status == 'active' %}
-                        🟢 Active
-                    {% elif booking.status == 'cancelled' %}
-                        🔴 Cancelled
-                    {% elif booking.status == 'completed' %}
-                        ✅ Completed
-                    {% else %}
-                        Status is Unknown
-                    {% endif %}</td>
+                    <tr>
+                        <td>{{ booking.scooter_id }}</td>
+                        <td>{{ booking.start_time }}</td>
+                        <td>
+                            {% if booking.status == 'active' %}
+                                🟢 Active
+                            {% elif booking.status == 'cancelled' %}
+                                🔴 Cancelled
+                            {% elif booking.status == 'completed' %}
+                                ✅ Completed
+                            {% else %}
+                                Status is Unknown
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>

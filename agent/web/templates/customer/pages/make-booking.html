@@ -68,6 +68,9 @@
     <h1>Make a booking for Scooter {{ scooter_id }}</h1>
     <a href="javascript:history.back()" style="text-decoration: underline; color: #007BFF; margin-right: 20px; display: inline-block;">Back</a>
     <form method="POST" action="{{ url_for('user.make_booking_post', scooter_id=scooter_id) }}">
+        <label for="start-time">Start Time:</label>
+        <input type="time" id="start-time" name="start-time" required>
+    
         <label for="duration">Duration:</label>
         <input type="number" id="duration" name="duration" value="10" required>
         
@@ -78,6 +81,35 @@
 
         <input type="submit" value="Submit">
     </form>
+    <script>
+        // Get a reference to the "start-time" input element
+        var startTimeInput = document.getElementById("start-time");
+    
+        // Add an event listener to the form's submission
+        document.querySelector("form").addEventListener("submit", function (event) {
+            // Get the selected start time value
+            var selectedTime = startTimeInput.value;
+    
+            // Check if the start time is empty
+            if (!selectedTime) {
+                alert("Start time cannot be empty.");
+                event.preventDefault();
+                return;
+            }
+    
+            // Get the current time in the format "HH:mm" (24-hour format)
+            var currentTime = new Date().toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+    
+            // Compare the selected time with the current time
+            if (selectedTime < currentTime) {
+                alert("Start time cannot be in the past.");
+                event.preventDefault();
+            }
+        });
+    </script> 
 </body>
 </html>
 {% endblock %}

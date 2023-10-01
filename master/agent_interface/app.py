@@ -5,9 +5,9 @@ from master.agent_interface import comms
 from agent_common import socket_utils
 from database.models import User, UserType, Scooter, Booking
 from database.database_manager import db
-from flask import jsonify
 from constants import API_BASE_URL
 from credentials.email import send_email
+import json
 
 app = None
 
@@ -122,7 +122,8 @@ def fetch_homepage_data(handler, request):
                 booking_dict = {
                     "id": booking.id,
                     "scooter_id": booking.scooter_id,
-                    "time": booking.time.strftime("%a %d %b, %H:%M, %Y"),
+                    "date": booking.date.strftime("%a %d %b, %H:%M, %Y"),
+                    "start_time": booking.start_time.strftime("%H:%M, %Y"),
                     "status": booking.status
                 }
                 bookings_list.append(booking_dict)
@@ -143,12 +144,27 @@ def fetch_homepage_data(handler, request):
 @comms.action("make-booking", ["start"])
 def make_booking(handler, request):
     try: 
-        url = "http://localhost:5000/bookings"
-        response = requests.post(url, timeout=5, data=request["data"])
+        # json_data = json.dumps(request["data"])
+        # headers = {"Content-Type": "application/json"}
 
-        # mark scooter as occupied
-        response.raise_for_status()
-        return {"status_code":response.status_code, "data": response.json()}
+        # url = f"{API_BASE_URL}/bookings"
+        # response = requests.post(url, data=request["data"], timeout=5)
+
+        # # mark scooter as occupied
+        # response.raise_for_status()
+
+        booking_data = request["data"]
+        print(booking_data["scooter_id"])
+        booking = Booking(user_id=booking_data["user_id"],
+                scooter_id=booking_data["scooter_id"],
+                date=booking_data["date"],
+                start_time=booking_data["start_time"],
+                end_time=booking_data["end_time"],
+                status=booking_data["status"])
+        with app.app_context():
+            db.session.add(booking)
+            db.session.commit()
+            return {}
     except RequestException as req_error:
         return {"status_code":500,"error": f"{req_error}" }
     except ValueError as json_error:
