@@ -3,7 +3,7 @@ from flask import jsonify
 from master.agent_interface import comms
 from master.database.database_manager import db
 from master.database.models import Booking, RepairStatus, Repairs, Scooter, ScooterStatus, User, UserType
-from master.database.queries import scooters_awaiting_repairs
+import master.database.queries as queries
 from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 import requests
@@ -11,27 +11,26 @@ import requests
 app = None
 
 @comms.action("register", ["start"])
-def register(handler, message):
-    if message["role"] not in [UserType.CUSTOMER.value, UserType.ENGINEER.value]:
+def register(handler, request):
+    if request["role"] not in [UserType.CUSTOMER.value, UserType.ENGINEER.value]:
         raise ValueError("role must be either customer or engineer")
-    password_hash = sha256_crypt.hash(message["password"])
-    user = User(username=message["password"],
+    password_hash = sha256_crypt.hash(request["password"])
+    user = User(username=request["password"],
                 password=password_hash,
-                email=message["email"],
-                first_name=message["first_name"],
-                last_name=message["last_name"],
-                role=message["role"])
+                email=request["email"],
+                first_name=request["first_name"],
+                last_name=request["last_name"],
+                role=request["role"])
     with app.app_context():
         db.session.add(user)
         db.session.commit()
-    handler.state = message["role"]
+    handler.state = request["role"]
     return {"user": user.as_json(), "response": "yes"}
 
 @comms.action("login", ["start"])
-def login(handler, message):
-    password_hash = sha256_crypt.hash(message["password"])
-    # need to decrypt password and compare
-    email = message["email"]
+def login(handler, request):
+    password_hash = sha256_crypt.hash(request["password"])
+    email = request["email"]
     with app.app_context():
         user = User.query.filter_by(email=email).first()
     handler.state = user.role
@@ -46,7 +45,7 @@ def fetch_reported_scooters(handler, request):
         dict: A dictionary containing the fetched data or an error message.
     """
     with app.app_context():
-        return {"data": scooters_awaiting_repairs()}
+        return {"data": queries.scooters_awaiting_repairs()}
 
 @comms.action("repair-fixed", ["engineer"])
 def update_scooter_status(handler, request):
@@ -61,18 +60,11 @@ def update_scooter_status(handler, request):
         dict: A dictionary containing the response data or an error message.
     """
     with app.app_context():
-        repair_id = request["repair_id"]
-        scooter_id = request["scooter_id"]
-        scooter = Scooter.query.get(scooter_id)
-        repair = Repairs.query.get(repair_id)
-        if scooter is None:
-            return {"error": f"Scooter with ID {scooter_id} not found"}
-        if repair is None:
-            return {"error": f"Repair with ID {repair_id} not found"}
-        scooter.status = ScooterStatus.AVAILABLE.value
-        repair.status = RepairStatus.COMPLETED.value
-        db.session.commit()
-    return {"message": "Scooter successfully repaired"}
+        message, status = queries.fix_scooter(request["scooter_id"], request["repair_id"])
+        if status == 200:
+            return {"message": message}
+        else:
+            return {"error": status}
     
 @comms.action("customer-homepage", ["customer"])
 def fetch_available_scooters(handler, request):

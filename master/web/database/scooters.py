@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from master.database.database_manager import db
-from master.database.models import Scooter, ScooterStatus, Repairs, RepairStatus
-from master.database.queries import scooters_awaiting_repairs
+from master.database.models import Scooter, ScooterStatus
+import master.database.queries as queries
 
 scooter_api = Blueprint("scooter_api", __name__)
 
@@ -106,7 +106,7 @@ def get_scooters_awaiting_repairs():
     Returns:
         JSON response with a list of scooters and their first repair request or a "No data found" message.
     """
-    return jsonify(scooters_awaiting_repairs())
+    return jsonify(queries.scooters_awaiting_repairs())
 
 @scooter_api.route("/scooters/fixed/<int:scooter_id>/<int:repair_id>", methods=["PUT"])
 def scooter_fixed(scooter_id, repair_id):
@@ -120,15 +120,5 @@ def scooter_fixed(scooter_id, repair_id):
     Returns:
         JSON response with a success message or error message if the scooter or repair is not found.
     """
-    scooter = Scooter.query.get(scooter_id)
-    repair = Repairs.query.get(repair_id)
-    
-    if scooter is None:
-        return jsonify({'message': f'Scooter with ID {scooter_id} not found'}), 404
-    elif repair is None:
-        return jsonify({'message': f'Repair with ID {repair_id} not found'}), 404
-    else:
-        scooter.status = ScooterStatus.AVAILABLE.value
-        repair.status = RepairStatus.COMPLETED.value
-        db.session.commit()
-        return jsonify({'message': 'Scooter successfully repaired'})
+    message, status = queries.fix_scooter(scooter_id, repair_id)
+    return jsonify(message), status
