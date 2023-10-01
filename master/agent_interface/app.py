@@ -155,13 +155,14 @@ def make_booking(handler, request):
         # response.raise_for_status()
 
         booking_data = request["data"]
-        print(booking_data["scooter_id"])
+
         booking = Booking(user_id=booking_data["user_id"],
                 scooter_id=booking_data["scooter_id"],
                 date=booking_data["date"],
                 start_time=booking_data["start_time"],
                 end_time=booking_data["end_time"],
                 status=booking_data["status"])
+        
         with app.app_context():
             db.session.add(booking)
             db.session.commit()

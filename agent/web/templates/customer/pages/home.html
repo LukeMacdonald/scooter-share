@@ -73,6 +73,32 @@
                                 Status is Unknown
                             {% endif %}
                         </td>
+                        <td><button onclick="confirmCancel()">Cancel Booking</button></td>
+                        <script>
+                            // Get the modal
+                            var modal = document.getElementById("myModal");
+                        
+                            // Get the button that opens the modal
+                            var btn = document.querySelector("button");
+                        
+                            // When the user clicks the button, open the modal
+                            function openModal() {
+                                modal.style.display = "block";
+                            }
+                        
+                            // When the user clicks on "No" or the close button, close the modal
+                            function closeModal() {
+                                modal.style.display = "none";
+                            }
+                        
+                            // When the user clicks on "Yes," perform the cancellation action
+                            function cancelBooking() {
+                                // You can add your booking cancellation logic here
+                                // For simplicity, we'll just display an alert
+                                alert("Booking canceled!");
+                                closeModal(); // Close the modal after confirmation
+                            }
+                        </script>
                     </tr>
                     {% endfor %}
                 </tbody>

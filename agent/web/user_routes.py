@@ -9,6 +9,7 @@ from flask import Flask, Blueprint, render_template, request, redirect, url_for,
 from database.models import UserType
 from agent_common import comms, socket_utils
 from datetime import datetime, date, timedelta
+from agent.web.google_api import calendar
 
 user = Blueprint("user", __name__)
 
@@ -19,6 +20,8 @@ def get_connection() -> comms.Connection:
     if conn is None:
         conn = comms.Connection(socket_utils.PUBLIC_HOST, socket_utils.SOCKET_PORT)
     return conn
+
+calendar = calendar.GoogleCalendar()
 
 @user.route("/")
 def login():
@@ -134,6 +137,8 @@ def make_booking_post(scooter_id):
         Flask response: The make-booking page.
     """
 
+    ## TODO: calculate cost per time
+
     # add new booking to the database
     customer_info = session.get('user_info')
 
@@ -142,7 +147,10 @@ def make_booking_post(scooter_id):
     
     # Combine the start time with today's date to create a datetime object
     start_datetime = datetime.combine(date.today(), datetime.strptime(start_time, "%H:%M").time())
-    end_datetime = start_datetime + timedelta(minutes=duration)
+    if request.form.get('duration-unit') == "minutes":
+        end_datetime = start_datetime + timedelta(minutes=duration)
+    else:
+        end_datetime = start_datetime + timedelta(hours=duration)
 
     data = {
         "data": {
@@ -157,6 +165,15 @@ def make_booking_post(scooter_id):
     }
 
     response = get_connection().send(data)
+
+    calendar_info = {
+        "time_start" : start_datetime,
+        "time_end": end_datetime,
+        "description": f"{duration} {request.form.get('duration-unit')} booking of Scooter {scooter_id}.",
+        "summary": f"Scooter {scooter_id} booking!"
+    }
+
+    calendar.insert(calendar_info)
 
     print(response)
 
