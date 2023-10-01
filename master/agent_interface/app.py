@@ -29,12 +29,14 @@ def register(handler, request):
 
 @comms.action("login", ["start"])
 def login(handler, request):
-    password_hash = sha256_crypt.hash(request["password"])
     email = request["email"]
     with app.app_context():
         user = User.query.filter_by(email=email).first()
-    handler.state = user.role
-    return {"user": user.as_json(), "response": "yes"}
+    if user is None or not sha256_crypt.verify(request["password"], user.password):
+        return {"error": "Login info is incorrect."}
+    else:
+        handler.state = user.role
+        return {"user": user.as_json()}
 
 @comms.action("locations", ["engineer"])
 def fetch_reported_scooters(handler, request):

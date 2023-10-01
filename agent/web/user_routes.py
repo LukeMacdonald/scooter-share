@@ -39,14 +39,15 @@ def login_post():
     # communicate with the master
     response = get_connection().send(data)
     print(response)
-    session['user_info'] = response["user"]
 
-    # if receives confirmation and user type from master
-    if response["response"] == "yes":
+    if "user" in response:
+        session['user_info'] = response["user"]
         if response["user"]["role"] == "customer":
             return redirect(url_for('user.customer_home'))
         elif response["user"]["role"] == "engineer":
             return redirect(url_for('engineer.home'))
+    else:
+        return redirect("/")
         
 
 @user.route("/signup")
