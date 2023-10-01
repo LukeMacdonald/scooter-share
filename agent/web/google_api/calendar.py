@@ -4,7 +4,8 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 from googleapiclient.discovery import build
 import pytz
-import json
+from tzlocal import get_localzone
+import datetime
 
 
 class GoogleCalendar:
@@ -20,18 +21,17 @@ class GoogleCalendar:
 
 
     def insert(self, eventInfo):
-        current_timezone = pytz.timezone('Etc/GMT+0')
-        current_timezone_str = current_timezone.zone
+        local_timezone = get_localzone()
         event = {
             "summary": eventInfo["summary"],
             "description": eventInfo["description"],
             "start": {
                 "dateTime": eventInfo["time_start"].isoformat(),
-                "timeZone": current_timezone_str,
+                "timeZone": str(local_timezone),
             },
             "end": {
                 "dateTime": eventInfo["time_end"].isoformat(),
-                "timeZone": current_timezone_str,
+                "timeZone": str(local_timezone),
             },
             "reminders": {
                 "useDefault": False,
@@ -44,5 +44,5 @@ class GoogleCalendar:
 
         try:
             event = self.service.events().insert(calendarId="primary", body=event).execute()
-        except self.service.errors.HttpError as error:
+        except Exception as error:
             print(f"Error inserting event: {error}")

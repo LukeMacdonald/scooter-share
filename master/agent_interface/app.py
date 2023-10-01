@@ -3,7 +3,7 @@ from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from master.agent_interface import comms
 from agent_common import socket_utils
-from database.models import User, UserType, Scooter, Booking
+from database.models import User, UserType, Scooter, Booking, ScooterStatus
 from database.database_manager import db
 from constants import API_BASE_URL
 # from credentials.email import send_email
@@ -103,7 +103,7 @@ def fetch_homepage_data(handler, request):
     """
     try:
         with app.app_context():
-            scooters = Scooter.query.filter_by(status="available")
+            scooters = Scooter.query.filter_by(status=ScooterStatus.AVAILABLE.value)
             scooters_list = []
             for scooter in scooters:
                 scooter_dict = {
@@ -164,6 +164,8 @@ def make_booking(handler, request):
                 status=booking_data["status"])
         
         with app.app_context():
+            scooter = Scooter.query.get(booking_data["scooter_id"])
+            scooter.status = ScooterStatus.OCCUPYING.value
             db.session.add(booking)
             db.session.commit()
             return {}

@@ -113,7 +113,7 @@ def customer_home():
 
     response = get_connection().send(data)
 
-    print(len(response["bookings"]))
+    print(response)
 
     return render_template("customer/pages/home.html", scooters=response["scooters"], customer=customer_info, 
                            bookings=response["bookings"])
@@ -164,7 +164,7 @@ def make_booking_post(scooter_id):
         "name": "make-booking"
     }
 
-    response = get_connection().send(data)
+    get_connection().send(data)
 
     calendar_info = {
         "time_start" : start_datetime,
@@ -174,7 +174,5 @@ def make_booking_post(scooter_id):
     }
 
     calendar.insert(calendar_info)
-
-    print(response)
 
     return redirect(url_for('user.customer_home'))
