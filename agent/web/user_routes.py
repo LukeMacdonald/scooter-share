@@ -102,14 +102,46 @@ def customer_home():
         Flask response: The customer home page.
     """
     customer_info = session.get('user_info')
-    print(customer_info["id"])
     data = {
         "customer_id": customer_info["id"],
         "name": "customer-homepage"
     }
 
     response = get_connection().send(data)
-    print(response)
 
     return render_template("customer/pages/home.html", scooters=response["scooters"], customer=customer_info, 
                            bookings=response["bookings"])
+
+@user.route('/make_booking/<int:scooter_id>')
+def make_booking(scooter_id):
+    """
+    Display the page for booking a scooter.
+
+    Returns:
+        Flask response: The make-booking page.
+    """
+    return render_template("customer/pages/make-booking.html", scooter_id=scooter_id)
+
+@user.route('/make_booking/<int:scooter_id>', methods=["POST"])
+def make_booking_post(scooter_id):
+    """
+    Display the page for booking a scooter.
+
+    Returns:
+        Flask response: The make-booking page.
+    """
+
+    # add new booking to the database
+    customer_info = session.get('user_info')
+    data = {
+        "scooter_id": scooter_id,
+        "user_id": customer_info["id"],
+        "date": request.form.get('start_time'),
+        "duration": request.form.get('duration'),
+        "duration-unit": request.form.get('duration-unit'),
+        "name": "make-booking"
+    }
+
+    response = get_connection().send(data)
+
+    return redirect(url_for('user.customer_home'))

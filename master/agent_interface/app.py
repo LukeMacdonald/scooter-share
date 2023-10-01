@@ -92,7 +92,7 @@ def update_scooter_status(handler, request):
         return {"status_code":500, "error": f"An unexpected error occurred: {error}"}
     
 @comms.action("customer-homepage", ["start"])
-def fetch_reported_scooters(handler, request):
+def fetch_homepage_data(handler, request):
     """
     Fetch a list of available scooters.
 
@@ -138,6 +138,23 @@ def fetch_reported_scooters(handler, request):
         return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
     except Exception as error:
         return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+    
+@comms.action("make-booking", ["start"])
+def make_booking(handler, request):
+    try: 
+        url = "http://localhost:5000/bookings"
+        response = requests.post(url, timeout=5, data=request["data"])
+
+        # mark scooter as occupied
+        response.raise_for_status()
+        return {"status_code":response.status_code, "data": response.json()}
+    except RequestException as req_error:
+        return {"status_code":500,"error": f"{req_error}" }
+    except ValueError as json_error:
+        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
+    except Exception as error:
+        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+
 
 def run_agent_server(master):
     global app
