@@ -7,6 +7,7 @@ It initializes the database and registers blueprints for the admin site and data
 """
 from flask import Flask
 from master.web.admin_site import admin
+from master.web.mail import init_mail
 from database.database_manager import init_db
 from database.api.users import users_api
 from database.api.scooters import scooter_api
@@ -23,8 +24,9 @@ def create_master_app():
         Flask: The configured Flask application instance.
     """
     app = Flask(__name__)
-   
+    
     init_db(app)
+    init_mail(app)
    
     with app.app_context():
         seed_data()
