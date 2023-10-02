@@ -54,6 +54,38 @@ def get_scooter(scooter_id):
     else:
         return jsonify({'message': 'Scooter not found'}), 404
 
+@scooter_api.route("/scooters/status/<string:status>", methods=["GET"])
+def get_scooters_by_status(status):
+    """
+    Get a list of scooters by their status.
+
+    Args:
+        status (str): The status of the scooters to retrieve.
+
+    Returns:
+        JSON response with a list of scooters with the specified status.
+    """
+    if status not in [status.value for status in ScooterStatus]:
+        return jsonify({'message': 'Invalid status provided'}), 400
+
+    scooters = Scooter.query.filter_by(status=status).all()
+    if scooters:
+        result = [
+            {
+                'ScooterID': scooter.id,
+                'Make': scooter.make,
+                'Longitude': scooter.longitude,
+                'Latitude': scooter.latitude,
+                'RemainingPower': scooter.remaining_power,
+                'CostPerTime': scooter.cost_per_time,
+                'status': scooter.status
+            }
+            for scooter in scooters
+        ]
+        return jsonify(result)
+    else:
+        return jsonify({'message': 'No scooters found with the specified status'}), 404
+
 @scooter_api.route("/scooters/<int:scooter_id>", methods=["PUT"])
 def update_scooter(scooter_id):
     """

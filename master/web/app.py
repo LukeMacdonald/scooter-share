@@ -14,6 +14,8 @@ from master.web.database.scooters import scooter_api
 from master.web.database.bookings import booking_api
 from master.web.database.repairs import repairs_api
 from master.web.database.transactions import transaction_api
+from master.web.mail import init_mail
+from master.database.seed import seed_data
 
 def create_master_app():
     """
@@ -23,8 +25,9 @@ def create_master_app():
         Flask: The configured Flask application instance.
     """
     app = Flask(__name__)
-   
+    
     init_db(app)
+    init_mail(app)
    
     with app.app_context():
         seed_data()

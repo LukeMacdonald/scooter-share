@@ -5,8 +5,10 @@ This blueprint defines routes related to user management, including login, signu
 and role-based redirections to customer and engineer home pages.
 
 """
-from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
+from agent.common import comms, socket_utils
 from agent.web.connection import get_connection
+from datetime import datetime, date, timedelta
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
 
 user = Blueprint("user", __name__)
 
@@ -94,14 +96,71 @@ def customer_home():
         Flask response: The customer home page.
     """
     customer_info = session.get('user_info')
-    print(customer_info["id"])
     data = {
         "customer_id": customer_info["id"],
         "name": "customer-homepage"
     }
 
     response = get_connection().send(data)
-    print(response)
 
     return render_template("customer/pages/home.html", scooters=response["scooters"], customer=customer_info, 
                            bookings=response["bookings"])
+
+@user.route('/make_booking/<int:scooter_id>/<float:balance>/<float:cost_per_time>')
+def make_booking(scooter_id, balance, cost_per_time):
+    """
+    Display the page for booking a scooter.
+
+    Returns:
+        Flask response: The make-booking page.
+    """
+    return render_template("customer/pages/make-booking.html", scooter_id=scooter_id, balance=balance, cost_per_time=cost_per_time)
+
+@user.route('/make_booking/<int:scooter_id>', methods=["POST"])
+def make_booking_post(scooter_id):
+    """
+    Display the page for booking a scooter.
+
+    Returns:
+        Flask response: The make-booking page.
+    """
+
+    ## TODO: calculate cost per time
+
+    # add new booking to the database
+    customer_info = session.get('user_info')
+
+    start_time = request.form.get('start-time')
+    duration = int(request.form.get('duration'))
+    
+    # Combine the start time with today's date to create a datetime object
+    start_datetime = datetime.combine(date.today(), datetime.strptime(start_time, "%H:%M").time())
+    if request.form.get('duration-unit') == "minutes":
+        end_datetime = start_datetime + timedelta(minutes=duration)
+    else:
+        end_datetime = start_datetime + timedelta(hours=duration)
+
+    data = {
+        "data": {
+        "scooter_id": scooter_id,
+        "user_id": customer_info["id"],
+        "date": date.today().isoformat(),
+        "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "status": "active"
+        },
+        "name": "make-booking"
+    }
+
+    get_connection().send(data)
+
+    calendar_info = {
+        "time_start" : start_datetime,
+        "time_end": end_datetime,
+        "description": f"{duration} {request.form.get('duration-unit')} booking of Scooter {scooter_id}.",
+        "summary": f"Scooter {scooter_id} booking!"
+    }
+
+    calendar.insert(calendar_info)
+
+    return redirect(url_for('user.customer_home'))

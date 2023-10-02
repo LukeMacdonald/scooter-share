@@ -92,7 +92,9 @@ th {
     padding-right: 20px;
 }
 
-table {
+.content-container {
+    max-height: 300px;
+    overflow-y: auto;
     background-color: #fafafa;
     border-radius: 15px;
     padding: 5px;

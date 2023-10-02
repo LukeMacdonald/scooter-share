@@ -18,8 +18,8 @@
 </div>
 <div>
 <h2 style="padding-left: 10px;">Available scooters:</h2>
-    <div style="height: 300px; overflow-y: auto;">
-        <table>
+    <div class="content-container">
+        <table style="width: 98%;">
             <thead>
                 <tr>
                     <th>Scooter</th>
@@ -40,26 +40,66 @@
                     <td>Location...</td>
                     <td>{{ scooter.remaining_power }}%</td>
                     <td>${{ scooter.cost_per_time }}</td>
-                    <td>Book now!</td>
+                    <td><a href="{{ url_for('user.make_booking', scooter_id=scooter.id, balance=customer.balance, cost_per_time=scooter.cost_per_time) }}">Book</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     <div>
-        <h2>History:</h2>
-        <div style="height: 300px; overflow-y: auto;">
-            <table>
+        <h2 style="padding-left: 10px; padding-top: 30px;">History:</h2>
+        <div class="content-container" style="width: 80%;">
+            <table style="width: 100%;">
                 <thead>
-                    <th>Scooter</th>
-                    <th>Time</th>
-                    <th>Status</th>
+                    <tr>
+                        <th>Scooter</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
-                    <td>{{ booking.scooter_id }}</td>
-                    <td>{{ booking.time }}</td>
-                    <td>{{ booking.status }}</td>
+                    <tr>
+                        <td>{{ booking.scooter_id }}</td>
+                        <td>{{ booking.start_time }}</td>
+                        <td>
+                            {% if booking.status == 'active' %}
+                                🟢 Active
+                            {% elif booking.status == 'cancelled' %}
+                                🔴 Cancelled
+                            {% elif booking.status == 'completed' %}
+                                ✅ Completed
+                            {% else %}
+                                Status is Unknown
+                            {% endif %}
+                        </td>
+                        <td><button onclick="confirmCancel()">Cancel Booking</button></td>
+                        <script>
+                            // Get the modal
+                            var modal = document.getElementById("myModal");
+                        
+                            // Get the button that opens the modal
+                            var btn = document.querySelector("button");
+                        
+                            // When the user clicks the button, open the modal
+                            function openModal() {
+                                modal.style.display = "block";
+                            }
+                        
+                            // When the user clicks on "No" or the close button, close the modal
+                            function closeModal() {
+                                modal.style.display = "none";
+                            }
+                        
+                            // When the user clicks on "Yes," perform the cancellation action
+                            function cancelBooking() {
+                                // You can add your booking cancellation logic here
+                                // For simplicity, we'll just display an alert
+                                alert("Booking canceled!");
+                                closeModal(); // Close the modal after confirmation
+                            }
+                        </script>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -127,15 +127,19 @@ def booking_data():
         {
             "user_id": 1,
             "scooter_id": 1,
-            "time": datetime.datetime(2023, 9, 29, 12, 0),
+            "date": datetime.datetime(2023, 9, 29),
+            "start_time": datetime.datetime(2023, 9, 29, 12, 0),
+            "end_time": datetime.datetime(2023, 9, 29, 12, 30),
             "status": BookingState.ACTIVE.value
         },
         {
-            "user_id": 2,  
-            "scooter_id": 3,  
-            "time": datetime.datetime(2023, 9, 30, 14, 30), 
+            "user_id": 2,
+            "scooter_id": 3,
+            "date": datetime.datetime(2023, 9, 30),
+            "start_time": datetime.datetime(2023, 9, 29, 14, 30),
+            "end_time": datetime.datetime(2023, 9, 29, 15, 30),
             "status": BookingState.COMPLETED.value
-        },
+        }
     ]
     seed_model(Booking,data)
 

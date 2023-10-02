@@ -14,7 +14,7 @@ def run_master(master):
 def run_agent():
     "Function to run the Flask agent application."
     agent = create_agent_app()
-    agent.run(host=socket_utils.PUBLIC_HOST, ssl_context=('cert.pem', 'key.pem'), port=socket_utils.AGENT_PORT, debug=False, threaded=True)
+    agent.run(host=socket_utils.PUBLIC_HOST, ssl_context=('credentials/cert.pem', 'credentials/key.pem'),port=socket_utils.AGENT_PORT, debug=False, threaded=True)               
 
 if __name__ == '__main__':
     app = create_master_app()

@@ -1,12 +1,16 @@
 from agent.common import socket_utils
+from agent.common import socket_utils
+from constants import API_BASE_URL
 from flask import jsonify
+import json
+from master.agent_interface import comms
 from master.agent_interface import comms
 from master.database.database_manager import db
+from master.database.database_manager import db
 from master.database.models import Booking, RepairStatus, Repairs, Scooter, ScooterStatus, User, UserType
+from master.database.models import User, UserType, Scooter, Booking, ScooterStatus
 import master.database.queries as queries
 from passlib.hash import sha256_crypt
-from requests.exceptions import RequestException
-import requests
 
 app = None
 
@@ -84,6 +88,22 @@ def fetch_available_scooters(handler, request):
             "bookings" : [b.as_json() for b in bookings]
         }
         return data
+    
+@comms.action("make-booking", ["start"])
+def make_booking(handler, request):
+    booking_data = request["data"]
+    booking = Booking(user_id=booking_data["user_id"],
+                      scooter_id=booking_data["scooter_id"],
+                      date=booking_data["date"],
+                      start_time=booking_data["start_time"],
+                      end_time=booking_data["end_time"],
+                      status=booking_data["status"])
+    with app.app_context():
+        scooter = Scooter.query.get(booking_data["scooter_id"])
+        scooter.status = ScooterStatus.OCCUPYING.value
+        db.session.add(booking)
+        db.session.commit()
+    return {}
 
 def run_agent_server(master):
     global app

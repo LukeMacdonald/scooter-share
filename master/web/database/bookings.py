@@ -37,10 +37,13 @@ def get_booking(booking_id):
 @booking_api.route("/bookings", methods=["POST"])
 def add_booking():
     data = request.json
+    print(f"Here: {data}")
     new_booking = Booking(
-        user_id=data.get("UserID"),
-        scooter_id=data.get("ScooterID"),
-        time=data.get("Time"),
+        user_id=data.get("user_id"),
+        scooter_id=data.get("scooter_id"),
+        date=data.get("date"),
+        start_time=data.get("start_time"),
+        end_time=data.get("end_time"),
         status=data.get("status")
     )
 
@@ -48,10 +51,12 @@ def add_booking():
     db.session.commit()
 
     result = {
-        "BookingID": new_booking.id,
-        "UserID": new_booking.user_id,
-        "ScooterID": new_booking.scooter_id,
-        "Time": new_booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+        "booking_id": new_booking.id,
+        "user_id": new_booking.user_id,
+        "scooter_id": new_booking.scooter_id,
+        "date": new_booking.date.strftime("%Y-%m-%d %H:%M:%S"),
+        "start_time": new_booking.start_time.strftime("%H:%M:%S"),
+        "end_time": new_booking.end_time.strftime("%H:%M:%S"),
         "status": new_booking.status
     }
     return jsonify(result), 201
