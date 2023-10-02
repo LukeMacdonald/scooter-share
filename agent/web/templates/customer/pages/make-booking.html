@@ -63,86 +63,97 @@
             background-color: #0056b3;
         }
     </style>
-</head>
-<body>
-    <h1>Make a booking for Scooter {{ scooter_id }}</h1>
-    <a href="javascript:history.back()" style="text-decoration: underline; color: #007BFF; margin-right: 20px; display: inline-block;">Back</a>
-    <form method="POST" action="{{ url_for('user.make_booking_post', scooter_id=scooter_id) }}">
-        <label for="start-time">Start Time:</label>
-        <input type="time" id="start-time" name="start-time" required>
-    
-        <label for="duration">Duration:</label>
-        <input type="number" id="duration" name="duration" value="10" required>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Make a Booking</title>
+    </head>
+    <body>
+        <h1>Make a booking for Scooter {{ scooter_id }}</h1>
+        <a href="javascript:history.back()" style="text-decoration: underline; color: #007BFF; margin-right: 20px; display: inline-block;">Back</a>
+        <form method="POST" action="{{ url_for('user.make_booking_post', scooter_id=scooter_id) }}">
+            <label for="start-time">Start Time:</label>
+            <input type="time" id="start-time" name="start-time" required>
         
-        <select id="duration-unit" name="duration-unit">
-            <option value="minutes">Minutes</option>
-            <option value="hours">Hours</option>
-        </select>
+            <label for="duration">Duration:</label>
+            <input type="number" id="duration" name="duration" value="10" required data-balance="{{ balance }}" data-cost-per-time="{{ cost_per_time }}">
+        
+            <select id="duration-unit" name="duration-unit">
+                <option value="minutes">Minutes</option>
+                <option value="hours">Hours</option>
+            </select>
+        
+            <input type="submit" value="Submit">
+            <p id="error-message" style="color: red; padding-top: 5px;"></p>
+        </form>
+        <script>
+            // Get a reference to the form and input elements
+            var form = document.querySelector("form");
+            var startTimeInput = document.getElementById("start-time");
+            var durationInput = document.getElementById("duration");
+            var durationUnitInput = document.getElementById("duration-unit");
 
-        <input type="submit" value="Submit">
-    </form>
-    <script>
-        // Get a reference to the form and input elements
-        var form = document.querySelector("form");
-        var startTimeInput = document.getElementById("start-time");
-        var durationInput = document.getElementById("duration");
-        var durationUnitInput = document.getElementById("duration-unit");
+            // Function to calculate the total cost based on duration and unit
+            function calculateTotalCost() {
+                var duration = parseFloat(durationInput.value);
+                var durationUnit = durationUnitInput.value;
+                var costPerTime = parseFloat(durationInput.getAttribute("data-cost-per-time"));
+                var totalCost = 0;
 
-        // Function to calculate the total cost based on duration and unit
-        function calculateTotalCost() {
-            var duration = parseFloat(durationInput.value);
-            var durationUnit = durationUnitInput.value;
-            var costPerTime =  cost_per_time
-            var totalCost = 0;
+                if (durationUnit === "hours") {
+                    totalCost = costPerTime * duration;
+                } else if (durationUnit === "minutes") {
+                    // Convert minutes to hours for consistency
+                    totalCost = costPerTime * (duration / 60);
+                }
 
-            if (durationUnit === "hours") {
-                totalCost = costPerTime * duration;
-            } else if (durationUnit === "minutes") {
-                // Convert minutes to hours for consistency
-                totalCost = costPerTime * (duration / 60);
+                return totalCost;
             }
 
-            return totalCost;
-        }
+            // Add an event listener to the form's submission
+            form.addEventListener("submit", function (event) {
+                // Get the selected start time value
+                var selectedTime = startTimeInput.value;
 
-        // Add an event listener to the form's submission
-        form.addEventListener("submit", function (event) {
-            // Get the selected start time value
-            var selectedTime = startTimeInput.value;
+                // Check if the start time is empty
+                if (!selectedTime) {
+                    alert("Start time cannot be empty.");
+                    event.preventDefault();
+                    return;
+                }
 
-            // Check if the start time is empty
-            if (!selectedTime) {
-                alert("Start time cannot be empty.");
-                event.preventDefault();
-                return;
-            }
+                // Get the current time in the format "HH:mm" (24-hour format)
+                var currentTime = new Date().toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
 
-            // Get the current time in the format "HH:mm" (24-hour format)
-            var currentTime = new Date().toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
+                // Compare the selected time with the current time
+                if (selectedTime < currentTime) {
+                    alert("Start time cannot be in the past.");
+                    event.preventDefault();
+                    return;
+                }
+
+                // Calculate the total cost
+                var totalCost = calculateTotalCost();
+
+                // Retrieve the user's balance from the data attribute
+                var userBalance = parseFloat(durationInput.getAttribute("data-balance"));
+
+                // Check if the balance is sufficient
+                if (userBalance - totalCost < 0) {
+                    document.getElementById("error-message").textContent = "Insufficient balance to make this booking.";
+                    event.preventDefault();
+                }
+                
+            });
+            durationInput.addEventListener("input", function () {
+            document.getElementById("error-message").textContent = "";
             });
 
-            // Compare the selected time with the current time
-            if (selectedTime < currentTime) {
-                alert("Start time cannot be in the past.");
-                event.preventDefault();
-                return;
-            }
-
-            // Calculate the total cost
-            var totalCost = calculateTotalCost();
-
-            // Retrieve the user's balance (you need to implement this)
-            var userBalance =  balance
-
-            // Check if the balance is sufficient
-            if (userBalance - totalCost < 0) {
-                alert("Insufficient balance to make this booking.");
-                event.preventDefault();
-            }
-        });
-    </script>
-</body>
-</html>
+        </script>
+    </body>
+    </html>
 {% endblock %}
