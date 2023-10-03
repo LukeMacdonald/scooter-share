@@ -87,12 +87,12 @@ class Scooter(db.Model):
     def as_json(self):
         "A dictionary with all the values of this scooter."
         return {
-            "id": self.id,
-            "make": self.make,
-            "longitude": self.longitude,
-            "latitude": self.latitude,
-            "remaining_power": self.remaining_power,
-            "cost_per_time": self.cost_per_time,
+            "ScooterID": self.id,
+            "Make": self.make,
+            "Longitude": self.longitude,
+            "Latitude": self.latitude,
+            "RemainingPower": self.remaining_power,
+            "CostPerTime": self.cost_per_time,
             "status": self.status,
         }
 

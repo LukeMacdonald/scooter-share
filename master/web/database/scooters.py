@@ -14,19 +14,7 @@ def get_all_scooters():
         JSON response with a list of all scooter objects.
     """
     scooters = Scooter.query.all()
-    result = [
-        {
-            'ScooterID': scooter.id,
-            'Make': scooter.make,
-            'Longitude': scooter.longitude,
-            'Latitude': scooter.latitude,
-            'RemainingPower': scooter.remaining_power,
-            'CostPerTime': scooter.cost_per_time,
-            'status': scooter.status
-        }
-        for scooter in scooters
-    ]
-    return jsonify(result)
+    return jsonify([scooter.as_json() for scooter in scooters])
 
 @scooter_api.route("/scooters/<int:scooter_id>", methods=["GET"])
 def get_scooter(scooter_id):
@@ -41,16 +29,7 @@ def get_scooter(scooter_id):
     """
     scooter = Scooter.query.get(scooter_id)
     if scooter:
-        result = {
-            'ScooterID': scooter.id,
-            'Make': scooter.make,
-            'Longitude': scooter.longitude,
-            'Latitude': scooter.latitude,
-            'RemainingPower': scooter.remaining_power,
-            'CostPerTime': scooter.cost_per_time,
-            'status': scooter.status
-        }
-        return jsonify(result)
+        return jsonify(result.as_json())
     else:
         return jsonify({'message': 'Scooter not found'}), 404
 
@@ -70,19 +49,7 @@ def get_scooters_by_status(status):
 
     scooters = Scooter.query.filter_by(status=status).all()
     if scooters:
-        result = [
-            {
-                'ScooterID': scooter.id,
-                'Make': scooter.make,
-                'Longitude': scooter.longitude,
-                'Latitude': scooter.latitude,
-                'RemainingPower': scooter.remaining_power,
-                'CostPerTime': scooter.cost_per_time,
-                'status': scooter.status
-            }
-            for scooter in scooters
-        ]
-        return jsonify(result)
+        return jsonify([scooter.as_json() for scooter in scooters])
     else:
         return jsonify({'message': 'No scooters found with the specified status'}), 404
 
