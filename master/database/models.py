@@ -65,6 +65,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'role': self.role,
+            'phone_number': self.phone_number,
             'balance': self.balance
         }
 
