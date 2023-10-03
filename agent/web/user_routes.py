@@ -7,9 +7,11 @@ and role-based redirections to customer and engineer home pages.
 """
 from agent.common import comms, socket_utils
 from agent.web.connection import get_connection
+from agent.web.google_api import calendar
 from datetime import datetime, date, timedelta
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
 
+calendar = calendar.GoogleCalendar()
 user = Blueprint("user", __name__)
 
 @user.route("/")
