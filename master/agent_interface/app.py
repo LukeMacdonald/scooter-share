@@ -3,7 +3,7 @@ from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from master.agent_interface import comms
 from agent_common import socket_utils
-from database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs
+from database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
 from database.database_manager import db
 from constants import API_BASE_URL
 # from credentials.email import send_email
@@ -128,10 +128,22 @@ def fetch_homepage_data(handler, request):
             bookings = Booking.query.filter_by(user_id=request["customer_id"])
             scooters_list = [scooter_to_dict(scooter) for scooter in scooters]
             bookings_list = [booking_to_dict(booking) for booking in bookings]
+            user = User.query.get(request["customer_id"])
+
+            user_data = {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': user.role,
+                'balance': user.balance
+            }
 
             data = {
                 "scooters": scooters_list,
-                "bookings": bookings_list
+                "bookings": bookings_list,
+                "customer": user_data
             }
 
             return data
@@ -223,6 +235,31 @@ def cancel_booking(handler, request):
             db.session.add(repair)
             db.session.commit()
         
+    except RequestException as req_error:
+        return {"status_code":500,"error": f"{req_error}" }
+    except ValueError as json_error:
+        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
+    except Exception as error:
+        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+    
+@comms.action("top-up-balance", ["start"])
+def top_up_balance(handler, request):
+    """
+    Updates a scooter to have the status 'awaiting-repair' in the database.
+
+    Returns:
+        dict: An empty dictionary if no errors occured.
+    """
+    try:
+        amount = float(request["amount"])
+        transation = Transaction(user_id=request["user-id"],
+                amount=amount)
+        with app.app_context():
+            user = User.query.get(request["user-id"])
+            user.balance = user.balance + amount
+            db.session.add(transation)
+            db.session.commit()
+            return {"new_balance": user.balance}
     except RequestException as req_error:
         return {"status_code":500,"error": f"{req_error}" }
     except ValueError as json_error:

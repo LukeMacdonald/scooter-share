@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+{% extends "customer/base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<html>
+<head>
+    <title>Balance Top-Up</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            top: 40%;
+            left: 60%;
+            transform: translate(-50%, -50%);
+            padding: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Top-Up Your Balance</h1>
+        
+        <form method="POST" action="{{ url_for('user.top_up_balance') }}" onsubmit="return validateForm()">
+            <label for="amount">Enter Amount:</label>
+            <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
+            
+            <input type="submit" value="Top Up">
+        </form>
+    </div>
+    <script>
+        function validateForm() {
+            var amount = parseFloat(document.getElementById('amount').value);
+            
+            // Check if the amount is a number and greater than 0
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount greater than 0.');
+                return false;
+            }
+            
+            // Form is valid, continue with submission
+            return true;
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

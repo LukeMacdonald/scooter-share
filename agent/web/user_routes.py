@@ -71,6 +71,7 @@ def login_post():
             # login_user(user)
 
             # Redirect to the customer home page
+            session["user_info"] = response["user"]
             return redirect(url_for('user.customer_home'))
         elif response["user"]["role"] == UserType.ENGINEER.value:
             # Redirect to the engineer home page
@@ -123,6 +124,7 @@ def customer_home():
         Flask response: The customer home page.
     """
     customer_info = session.get('user_info')
+
     data = {
         "customer_id": customer_info["id"],
         "name": "customer-homepage"
@@ -130,7 +132,7 @@ def customer_home():
 
     response = get_connection().send(data)
 
-    return render_template("customer/pages/home.html", scooters=response["scooters"], customer=customer_info, 
+    return render_template("customer/pages/home.html", scooters=response["scooters"], customer=response["customer"], 
                            bookings=response["bookings"])
 
 @user.route('/make_booking/<int:scooter_id>/<float:balance>/<float:cost_per_time>')
@@ -209,5 +211,30 @@ def cancel_booking(booking_id, event_id):
 # @login_required
 def report_issue(scooter_id):
     response = get_connection().send({"name" : "report-issue", "scooter-id" : scooter_id, "report": request.form.get("issue_description")})
+
+    return redirect(url_for('user.customer_home'))
+
+@user.route('/top-up-balance')
+# @login_required
+def top_up_balance():
+    """
+    Display the page for topping up balance.
+
+    Returns:
+        Flask response: The top-up-balance page.
+    """
+    return render_template("customer/pages/top-up-balance.html")
+
+@user.route('/top-up-balance', methods=["POST"])
+# @login_required
+def top_up_balance_post():
+    """
+    Display the page for topping up balance.
+
+    Returns:
+        Flask response: The top-up-balance page.
+    """
+    get_connection().send({"user-id": session.get('user_info')['id'], 
+                                      "amount": request.form.get("amount"), "name": "top-up-balance"})
 
     return redirect(url_for('user.customer_home'))
