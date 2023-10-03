@@ -137,6 +137,14 @@ class Repairs(db.Model):
 
     scooter = relationship('Scooter')
 
+    def as_json(self):
+        return {
+            "RepairID": self.id,
+            "ScooterID": self.scooter_id,
+            "Report": self.report,
+            "status": self.status
+        }
+
 class Transaction(db.Model):
     """
     Represents the transactions of a user in the system.

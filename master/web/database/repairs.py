@@ -12,17 +12,7 @@ def get_repairs():
     Returns:
         JSON response with a list of repair records or an error message if no records are found.
     """
-    repairs = Repairs.query.all()
-    result = [
-        {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
-            "status": repair.status
-        }
-        for repair in repairs
-    ]
-    return jsonify(result)
+    return jsonify([repair.as_json() for repair in Repairs.query.all()])
 
 @repairs_api.route("/repair/<int:repair_id>", methods=["GET"])
 def get_repair(repair_id):
@@ -37,13 +27,7 @@ def get_repair(repair_id):
     """
     repair = Repairs.query.get(repair_id)
     if repair:
-        result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
-            "status": repair.status
-        }
-        return jsonify(result)
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "Repair not found"}), 404
 
@@ -60,13 +44,7 @@ def get_first_repair_by_scooter(scooter_id):
     """
     repair = Repairs.query.filter_by(scooter_id=scooter_id).first()
     if repair:
-        result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
-            "status": repair.status
-        }
-        return jsonify(result)
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "No repairs found for the specified ScooterID"}), 404
 
@@ -87,14 +65,7 @@ def add_repair():
 
     db.session.add(new_repair)
     db.session.commit()
-
-    result = {
-        "RepairID": new_repair.id,
-        "ScooterID": new_repair.scooter_id,
-        "Report": new_repair.report,
-        "status": new_repair.status
-    }
-    return jsonify(result), 201
+    return jsonify(new_repair.as_json()), 201
 
 @repairs_api.route("/repair/<int:repair_id>", methods=["PUT"])
 def update_repair(repair_id):
@@ -115,14 +86,7 @@ def update_repair(repair_id):
         repair.status = data.get("status")
 
         db.session.commit()
-
-        result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
-            "status": repair.status
-        }
-        return jsonify(result)
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "Repair not found"}), 404
 
@@ -141,12 +105,6 @@ def delete_repair(repair_id):
     if repair:
         db.session.delete(repair)
         db.session.commit()
-        result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
-            "status": repair.status
-        }
-        return jsonify(result)
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "Repair not found"}), 404
