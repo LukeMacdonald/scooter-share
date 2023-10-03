@@ -120,7 +120,8 @@ class Booking(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "scooter_id": self.scooter_id,
-            "time": self.time.strftime("%a %d %b, %H:%M, %Y"),
+            "start_time": self.start_time.strftime("%a %d %b, %H:%M, %Y"),
+            "end_time": self.end_time.strftime("%a %d %b, %H:%M, %Y"),
             "status": self.status
         }
 
@@ -156,3 +157,10 @@ class Transaction(db.Model):
     amount = db.Column(db.Float(precision=2), nullable=False)
 
     user = relationship('User')
+
+    def as_json(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "amount": self.amount
+        }
