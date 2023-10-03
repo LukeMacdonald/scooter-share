@@ -150,20 +150,6 @@ def make_booking_post(scooter_id):
     else:
         end_datetime = start_datetime + timedelta(hours=duration)
 
-    data = {
-        "data": {
-        "scooter_id": scooter_id,
-        "user_id": customer_info["id"],
-        "date": date.today().isoformat(),
-        "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        "status": "active"
-        },
-        "name": "make-booking"
-    }
-
-    get_connection().send(data)
-
     calendar_info = {
         "time_start" : start_datetime,
         "time_end": end_datetime,
@@ -171,6 +157,30 @@ def make_booking_post(scooter_id):
         "summary": f"Scooter {scooter_id} booking!"
     }
 
-    calendar.insert(calendar_info)
+    event_id = calendar.insert(calendar_info)
+
+    data = {
+        "data": {
+        "scooter_id": scooter_id,
+        "user_id": customer_info["id"],
+        "date": date.today().isoformat(),
+        "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "status": "active",
+        "event_id": event_id
+        },
+        "name": "make-booking"
+    }
+
+    get_connection().send(data)
+
+
+    return redirect(url_for('user.customer_home'))
+
+@user.route('/cancel-booking/<int:booking_id>/<string:event_id>', methods=["POST"])
+def cancel_booking(booking_id, event_id):
+    get_connection().send({"name" : "cancel-booking", "booking-id" : booking_id})
+
+    calendar.remove(event_id)
 
     return redirect(url_for('user.customer_home'))

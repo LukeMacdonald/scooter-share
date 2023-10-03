@@ -20,17 +20,17 @@ class GoogleCalendar:
         self.service = build("calendar", "v3", http=creds.authorize(Http()))
 
 
-    def insert(self, eventInfo):
+    def insert(self, event_info):
         local_timezone = get_localzone()
         event = {
-            "summary": eventInfo["summary"],
-            "description": eventInfo["description"],
+            "summary": event_info["summary"],
+            "description": event_info["description"],
             "start": {
-                "dateTime": eventInfo["time_start"].isoformat(),
+                "dateTime": event_info["time_start"].isoformat(),
                 "timeZone": str(local_timezone),
             },
             "end": {
-                "dateTime": eventInfo["time_end"].isoformat(),
+                "dateTime": event_info["time_end"].isoformat(),
                 "timeZone": str(local_timezone),
             },
             "reminders": {
@@ -44,5 +44,13 @@ class GoogleCalendar:
 
         try:
             event = self.service.events().insert(calendarId="primary", body=event).execute()
+            return event["id"]
         except Exception as error:
             print(f"Error inserting event: {error}")
+
+    def remove(self, event_id):
+        try:
+            self.service.events().delete(calendarId="primary", eventId=event_id).execute()
+            print(f'Event {event_id} deleted successfully.')
+        except Exception as e:
+            print(f'Error deleting event: {str(e)}')

@@ -85,6 +85,7 @@ class Booking(db.Model):
     end_time = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.Enum(BookingState.ACTIVE.value,BookingState.CANCELLED.value,BookingState.COMPLETED.value), 
                        nullable=False)
+    event_id = db.Column(db.String(100), nullable=False)
 
     user = relationship('User')
     scooter = relationship('Scooter')

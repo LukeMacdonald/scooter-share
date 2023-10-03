@@ -130,7 +130,8 @@ def booking_data():
             "date": datetime.datetime(2023, 9, 29),
             "start_time": datetime.datetime(2023, 9, 29, 12, 0),
             "end_time": datetime.datetime(2023, 9, 29, 12, 30),
-            "status": BookingState.ACTIVE.value
+            "status": BookingState.ACTIVE.value,
+            "event_id": 1
         },
         {
             "user_id": 2,
@@ -138,7 +139,8 @@ def booking_data():
             "date": datetime.datetime(2023, 9, 30),
             "start_time": datetime.datetime(2023, 9, 29, 14, 30),
             "end_time": datetime.datetime(2023, 9, 29, 15, 30),
-            "status": BookingState.COMPLETED.value
+            "status": BookingState.COMPLETED.value,
+            "event_id": 2
         }
     ]
     seed_model(Booking,data)
