@@ -13,20 +13,7 @@ def get_users():
     Returns:
         JSON response with a list of user objects.
     """
-    users = User.query.all()
-    result = [
-        {
-            "id": user.id, 
-            "username": user.username, 
-            "email": user.email, 
-            "first_name": user.first_name, 
-            "last_name": user.last_name,
-            "role": user.role,
-            "phone_number": user.phone_number,
-            "balance": user.balance
-        } 
-        for user in users]
-    return jsonify(result)
+    return jsonify([user.as_json() for user in User.query.all()])
 
 @users_api.route("/user/<int:user_id>", methods=["GET"])
 def get_user(user_id):
@@ -41,17 +28,7 @@ def get_user(user_id):
     """
     user = User.query.get(user_id)
     if user:
-        result = {
-            "id": user.id, 
-            "username": user.username, 
-            "email": user.email, 
-            "first_name": user.first_name, 
-            "last_name": user.last_name,
-            "role": user.role,
-            "phone_number": user.phone_number,
-            "balance": user.balance
-        }
-        return jsonify(result)
+        return jsonify(user.as_json())
     else:
         return jsonify({"message": "User not found"}), 404
 
@@ -82,18 +59,7 @@ def add_user():
 
     db.session.add(new_user)
     db.session.commit()
-
-    result = {
-        "id": new_user.id, 
-        "username": new_user.username, 
-        "email": new_user.email, 
-        "first_name": new_user.first_name, 
-        "last_name": new_user.last_name,
-        "role": new_user.role,
-        "phone_number": new_user.phone_number,
-        "balance": new_user.balance
-    }
-    return jsonify(result), 201
+    return jsonify(new_user.as_json()), 201
 
 @users_api.route("/user/<int:user_id>", methods=["PUT"])
 def update_user(user_id):
@@ -118,18 +84,7 @@ def update_user(user_id):
         user.balance = data.get("balance")
 
         db.session.commit()
-
-        result = {
-            "id": user.id, 
-            "username": user.username, 
-            "email": user.email, 
-            "first_name": user.first_name, 
-            "last_name": user.last_name,
-            "role": user.role,
-            "phone_number": user.phone_number,
-            "balance": user.balance
-        }
-        return jsonify(result)
+        return jsonify(user.as_json())
     else:
         return jsonify({"message": "User not found"}), 404
 
@@ -148,17 +103,7 @@ def delete_user(user_id):
     if user:
         db.session.delete(user)
         db.session.commit()
-        result = {
-            "id": user.id, 
-            "username": user.username, 
-            "email": user.email, 
-            "first_name": user.first_name, 
-            "last_name": user.last_name,
-            "role": user.role,
-            "phone_number": user.phone_number,
-            "balance": user.balance
-        }
-        return jsonify(result)
+        return jsonify(user.as_json())
     else:
         return jsonify({"message": "User not found"}), 404
 
