@@ -3,7 +3,7 @@ from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from master.agent_interface import comms
 from agent_common import socket_utils
-from database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState
+from database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs
 from database.database_manager import db
 from constants import API_BASE_URL
 # from credentials.email import send_email
@@ -36,6 +36,7 @@ def login(handler, message):
         user = User.query.filter_by(email=email).first()
         data = {
             'id': user.id,
+            'password': password_hash,
             'username': user.username,
             'email': user.email,
             'first_name': user.first_name,
@@ -117,7 +118,7 @@ def fetch_homepage_data(handler, request):
             "id": booking.id,
             "scooter_id": booking.scooter_id,
             "date": booking.date.strftime("%a %d %b, %H:%M, %Y"),
-            "start_time": booking.start_time.strftime("%H:%M, %Y"),
+            "start_time": booking.start_time.strftime("%a %d %b, %H:%M, %Y"),
             "status": booking.status,
             "event_id": booking.event_id
         }
@@ -198,6 +199,29 @@ def cancel_booking(handler, request):
             scooter.status = ScooterStatus.AVAILABLE.value
             db.session.commit()
             return {}
+        
+    except RequestException as req_error:
+        return {"status_code":500,"error": f"{req_error}" }
+    except ValueError as json_error:
+        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
+    except Exception as error:
+        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+    
+@comms.action("report-issue", ["start"])
+def cancel_booking(handler, request):
+    """
+    Updates a scooter to have the status 'awaiting-repair' in the database.
+
+    Returns:
+        dict: An empty dictionary if no errors occured.
+    """
+    try:
+        repair = Repairs(scooter_id=request["scooter-id"],
+                report=request["report"],
+                status=RepairStatus.PENDING.value)
+        with app.app_context():
+            db.session.add(repair)
+            db.session.commit()
         
     except RequestException as req_error:
         return {"status_code":500,"error": f"{req_error}" }
