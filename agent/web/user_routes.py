@@ -10,7 +10,7 @@ from database.models import UserType, User
 from agent_common import comms, socket_utils
 from datetime import datetime, date, timedelta
 from agent.web.google_api import calendar
-# from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import login_user, login_required, logout_user, current_user
 
 # Create a Blueprint for user routes
 user = Blueprint("user", __name__)
@@ -155,8 +155,6 @@ def make_booking_post(scooter_id):
     Returns:
         Flask response: The make-booking page.
     """
-
-    ## TODO: calculate cost per time
 
     # add new booking to the database
     customer_info = session.get('user_info')

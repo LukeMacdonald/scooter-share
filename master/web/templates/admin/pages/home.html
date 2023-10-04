@@ -3,10 +3,141 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+<style>
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        text-align: center;
+    }
+
+    thead {
+        background-color: cadetblue; /* Header background color */
+        color: white; /* Header text color */
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    .status {
+        border-radius: 10px; /* Border radius */
+        padding: 6px;
+        width: 90px;
+        text-align: center;
+    }
+
+    div {
+        padding-bottom: 50px;
+    }
+</style>
     <div style="margin-left:2rem">
         <h1 style="color:black; font-size:3rem">Welcome Back</h1>
         <hr/>
-        <h3>Statistics</h3>
+    </div>
+    <div>
+        <h3>Scooter usage history:</h3>
+        <table>
+            <thead>
+                <th>Scooter</th>
+                <th>Date</th>
+                <th>Duration</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                {% if booking.status == 'completed' %}
+                <tr>
+                    <td>{{ booking.ScooterID }}</td>
+                    <td>{{ booking.date }}</td>
+                    <td>{{ booking.duration }}</td>
+                    <td class="status" style="background-color: yellow;">{{ booking.status }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h3>Scooter history:</h3>
+        <table>
+            <thead>
+                <th>Scooter</th>
+                <th>Date</th>
+                <th>Duration</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.ScooterID }}</td>
+                    <td>{{ booking.date }}</td>
+                    <td>{{ booking.duration }}</td>
+                    {% if booking.status == 'active' %}
+                    <td class="status" style="background-color: greenyellow;">{{ booking.status }}</td>
+                    {% elif booking.status == 'completed' %}
+                    <td class="status" style="background-color: yellow;">{{ booking.status }}</td>
+                    {% elif booking.status == 'cancelled' %}
+                    <td class="status" style="background-color: red;">{{ booking.status }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h3>Scooters:</h3>
+        <table>
+            <thead>
+                <th>Scooter</th>
+                <th>Make</th>
+                <th>Colour</th>
+                <th>Location</th>
+                <th>Remaining power</th>
+                <th>Cost per time</th>
+                <th>Status</th>
+            </thead>
+            <tbody>
+                {% for scooter in scooters %}
+                <tr>
+                    <td>{{ scooter.id }}</td>
+                    <td>{{ scooter.make }}</td>
+                    <td>{{ scooter.colour }}</td>
+                    <td>{{ scooter.location }}</td>
+                    <td>{{ scooter.remaining_power }}%</td>
+                    <td>${{ scooter.cost_per_time }}</td>
+                    <td>{{ scooter.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h3>Cusotmers:</h3>
+        <table>
+            <thead>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Balance</th>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.first_name }}</td>
+                    <td>{{ customer.last_name }}</td>
+                    <td>{{ customer.phone_number }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.balance }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
 

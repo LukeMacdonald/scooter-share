@@ -8,7 +8,6 @@ for the agent, including the registration of user routes.
 from flask import Flask
 from agent.web.user_routes import user
 from agent.web.engineer_routes import engineer
-from database.models import User
 from flask_login import LoginManager
 
 def create_agent_app():
@@ -22,8 +21,10 @@ def create_agent_app():
 
     # Initialize and configure Flask-Login
     # login_manager = LoginManager()
-    # login_manager.login_view = "user.login"
+    # login_manager.login_view = "/"
     # login_manager.init_app(app)
+
+    # from database.models import User
 
     # @login_manager.user_loader
     # def load_user(user_id):
