@@ -15,12 +15,12 @@ def get_all_scooters():
     scooters = Scooter.query.all()
     result = [
         {
-            'ScooterID': scooter.id,
-            'Make': scooter.make,
-            'Longitude': scooter.longitude,
-            'Latitude': scooter.latitude,
-            'RemainingPower': scooter.remaining_power,
-            'CostPerTime': scooter.cost_per_time,
+            'scooter_id': scooter.id,
+            'make': scooter.make,
+            'longitude': scooter.longitude,
+            'latitude': scooter.latitude,
+            'remaining_power': scooter.remaining_power,
+            'cost_per_time': scooter.cost_per_time,
             'status': scooter.status
         }
         for scooter in scooters
@@ -41,12 +41,12 @@ def get_scooter(scooter_id):
     scooter = Scooter.query.get(scooter_id)
     if scooter:
         result = {
-            'ScooterID': scooter.id,
-            'Make': scooter.make,
-            'Longitude': scooter.longitude,
-            'Latitude': scooter.latitude,
-            'RemainingPower': scooter.remaining_power,
-            'CostPerTime': scooter.cost_per_time,
+            'scooter_id': scooter.id,
+            'make': scooter.make,
+            'longitude': scooter.longitude,
+            'latitude': scooter.latitude,
+            'remaining_power': scooter.remaining_power,
+            'cost_per_time': scooter.cost_per_time,
             'status': scooter.status
         }
         return jsonify(result)
@@ -71,12 +71,12 @@ def get_scooters_by_status(status):
     if scooters:
         result = [
             {
-                'ScooterID': scooter.id,
-                'Make': scooter.make,
-                'Longitude': scooter.longitude,
-                'Latitude': scooter.latitude,
-                'RemainingPower': scooter.remaining_power,
-                'CostPerTime': scooter.cost_per_time,
+                'scooter_id': scooter.id,
+                'make': scooter.make,
+                'longitude': scooter.longitude,
+                'latitude': scooter.latitude,
+                'remaining_power': scooter.remaining_power,
+                'cost_per_time': scooter.cost_per_time,
                 'status': scooter.status
             }
             for scooter in scooters
@@ -99,11 +99,11 @@ def update_scooter(scooter_id):
     scooter = Scooter.query.get(scooter_id)
     if scooter:
         data = request.get_json()
-        scooter.make = data['Make']
-        scooter.longitude = data['Longitude']
-        scooter.latitude = data['Latitude']
-        scooter.remaining_power = data['RemainingPower']
-        scooter.cost_per_time = data['CostPerTime']
+        scooter.make = data['make']
+        scooter.longitude = data['longitude']
+        scooter.latitude = data['latitude']
+        scooter.remaining_power = data['remaining_power']
+        scooter.cost_per_time = data['cost_per_time']
         scooter.status = data['status']
         db.session.commit()
         return jsonify({'message': 'Scooter updated successfully'})
@@ -128,7 +128,7 @@ def delete_scooter(scooter_id):
         return jsonify({'message': 'Scooter deleted successfully'})
     else:
         return jsonify({'message': 'Scooter not found'}), 404
-
+    
 @scooter_api.route("/scooters/awaiting-repairs", methods=["GET"])
 def get_scooters_awaiting_repairs():
     """
@@ -145,16 +145,16 @@ def get_scooters_awaiting_repairs():
 
     # Join the Scooter and Repairs tables using the subquery to fetch data.
     query = db.session.query(
-        Scooter.id.label("ScooterID"),
-        Scooter.make.label("Make"),
-        Scooter.longitude.label("Longitude"),
-        Scooter.latitude.label("Latitude"),
-        Scooter.remaining_power.label("RemainingPower"),
-        Scooter.cost_per_time.label("CostPerTime"),
-        Scooter.status.label("ScooterStatus"),
-        Repairs.report.label("Report"),
-        Repairs.status.label("RepairStatus"),
-        subquery.c.repair_id.label("RepairID")
+        Scooter.id.label("scooter_id"),
+        Scooter.make.label("make"),
+        Scooter.longitude.label("longitude"),
+        Scooter.latitude.label("latitude"),
+        Scooter.remaining_power.label("remaining_power"),
+        Scooter.cost_per_time.label("cost_per_time"),
+        Scooter.status.label("scooter_status"),
+        Repairs.report.label("report"),
+        Repairs.status.label("repair_status"),
+        subquery.c.repair_id.label("repair_id")
     ).join(
         subquery, Scooter.id == subquery.c.scooter_id, isouter=True
     ).join(
@@ -166,17 +166,17 @@ def get_scooters_awaiting_repairs():
     if results:
         result_list = []
         for row in results:
-            if row.ScooterStatus == ScooterStatus.AWAITING_REPAIR.value and row.RepairStatus == "active":
+            if row.scooter_status == ScooterStatus.AWAITING_REPAIR.value and row.repair_status == "active":
                 scooter_data = {
-                    "ScooterID": row.ScooterID,
-                    "Make": row.Make,
-                    "Longitude": row.Longitude,
-                    "Latitude": row.Latitude,
-                    "RemainingPower": row.RemainingPower,
-                    "CostPerTime": row.CostPerTime,
-                    "ScooterStatus": row.ScooterStatus,
-                    "RepairReport": row.Report,
-                    "RepairID": row.RepairID
+                    "scooter_id": row.scooter_id,
+                    "make": row.make,
+                    "longitude": row.longitude,
+                    "latitude": row.latitude,
+                    "remaining_power": row.remaining_power,
+                    "cost_per_time": row.cost_per_time,
+                    "scooter_status": row.scooter_status,
+                    "repair_report": row.report,
+                    "repair_id": row.repair_id
                 }
                 result_list.append(scooter_data)
 

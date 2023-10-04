@@ -1,6 +1,6 @@
-{% extends "engineer/base.html" %}
+{% extends "admin/base.html" %}
 
-{% block title %}Engineer Home{% endblock %}
+{% block title %}Admin Home{% endblock %}
 
 {% block content %} 
     <table class="table table-bordered table-hover" style="width:95%; margin: 0 auto;">
@@ -13,18 +13,17 @@
             </tr>
         </thead>
         <tbody>
-            {% if scooter_data %}
-                {% for scooter in scooter_data %}
+            {% if repairs_data %}
+                {% for repair in repairs_data %}
                     <tr>
-                        <td>{{ scooter.scooter_id }}</td>
-                        <td>{{ scooter.scooter_status }}</td> 
-                        <td>{{ scooter.repair_report }}
+                        <td>{{ repair.scooter_id }}</td>
+                        <td>{{ repair.status }}</td> 
+                        <td>{{ repair.report }}
                         <td style='text-align:center'>
-                            <form action="{{ url_for('engineer.scooter_fixed') }}" method="POST">
-                                <input type="hidden" name="scooter_id" value="{{ scooter.scooter_id }}">
-                                <input type="hidden" name="repair_id" value="{{ scooter.repair_id }}">
-                                <button type="submit" class="btn btn-outline-success locate-button" style='width:4rem'>
-                                    Fixed
+                            <form action="{{ url_for('admin.report_scooter') }}" method="POST">
+                                <input type="hidden" name="repair_id" value="{{ repair.repair_id }}">
+                                <button type="submit" class="btn btn-success">
+                                    Confirm
                                 </button>
                             </form>
                         </td>

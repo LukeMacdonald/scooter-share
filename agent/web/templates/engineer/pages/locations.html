@@ -22,19 +22,19 @@
         <tbody>
             {% if scooter_data %}
                 {% for scooter in scooter_data %}
-                    <tr class='clickable-row' data-latitude="{{ scooter.Latitude }}" data-longitude="{{ scooter.Longitude }}">
-                        <td>{{ scooter.ScooterID }}</td>
-                        <td>{{ scooter.Make }}</td>
-                        <td>{{ scooter.ScooterStatus }}</td> 
-                        <td>{{ scooter.RemainingPower }}%</td>
-                        <td>{{ scooter.RepairReport }}
+                    <tr class='clickable-row' data-latitude="{{ scooter.latitude }}" data-longitude="{{ scooter.longitude }}">
+                        <td>{{ scooter.scooter_id }}</td>
+                        <td>{{ scooter.make }}</td>
+                        <td>{{ scooter.scooter_status }}</td> 
+                        <td>{{ scooter.remaining_power }}%</td>
+                        <td>{{ scooter.repair_report }}
                         <td style='text-align:center'>
                             <button class="btn btn-outline-secondary locate-button" style='width:4rem'>
                                 <i class="fa fa-location-dot"></i>
                             </button>
                         </td>
                         <td style='text-align:center'>
-                            <button class="btn btn-outline-secondary direction-button" style='width:4rem' onclick="calculateAndDisplayRoute({{ scooter.Latitude }}, {{ scooter.Longitude }})">
+                            <button class="btn btn-outline-secondary direction-button" style='width:4rem' onclick="calculateAndDisplayRoute({{ scooter.latitude }}, {{ scooter.latitude }})">
                                 <i class="fa fa-location-dot"></i>
                             </button>
                         </td>

@@ -3,10 +3,14 @@ Blueprint for Admin Routes
 
 """
 import requests
-from flask import Blueprint, render_template, redirect, url_for
+from requests.exceptions import RequestException
+from flask import Blueprint, render_template, redirect, url_for, request
 from master.agent_interface import helpers
 from master.web.mail import send_email
+from database.api.repairs import get_repair
+from database.models import Repairs, RepairStatus
 from constants import API_BASE_URL
+
 
 admin = Blueprint("admin", __name__)
 
@@ -93,6 +97,37 @@ def customers_info():
     """
     return render_template("admin/pages/home.html")
 
+@admin.route("/admin/repairs")
+def confirm_reports():
+    url = f"{API_BASE_URL}/repairs/pending"
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()  
+    repairs = response.json()
+    return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
+   
+@admin.route("/admin/scooter/report", methods=['POST'])
+def report_scooter():
+    try:
+        repair_id = request.form.get('repair_id')
+        url = f"{API_BASE_URL}/repair/{repair_id}"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  
+        repair = response.json()
+         
+        repair["status"] = RepairStatus.ACTIVE.value
+        response = requests.put(url, json=repair, timeout=10)
+        response.raise_for_status() 
+        
+        # Send notifications to engineers
+        notify_engineers(repair["scooter_id"], repair["report"])
+    
+        return redirect(url_for("admin.confirm_reports"))
+    
+    except RequestException as error:
+        print(f"Error during API request: {error}")
+        return {"error": "Internal Server Error"}, 500  # Return a meaningful error response
+    
 @admin.route("/admin/notify/<int:scooter_id>/<string:report>", methods=["GET"])
 def notify_engineers(scooter_id, report):
     """
@@ -100,8 +135,8 @@ def notify_engineers(scooter_id, report):
     """
     try: 
         scooter_data = requests.get(f"{API_BASE_URL}/scooters/{scooter_id}", timeout=5).json()
-        latitude = scooter_data.get('Latitude')
-        longitude = scooter_data.get('Longitude')
+        latitude = scooter_data.get('latitude')
+        longitude = scooter_data.get('longitude')
         steet_address = helpers.get_street_address(latitude, longitude)
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
         # engineer_emails = requests.get(f"{API_BASE_URL}/engineer_emails", timeout=5).json()

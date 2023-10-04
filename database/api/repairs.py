@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from database.models import Repairs
+from database.models import Repairs, RepairStatus
 from database.database_manager import db
 
 repairs_api = Blueprint("repairs_api", __name__)
@@ -15,9 +15,9 @@ def get_repairs():
     repairs = Repairs.query.all()
     result = [
         {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
+            "repair_id": repair.id,
+            "scooter_id": repair.scooter_id,
+            "report": repair.report,
             "status": repair.status
         }
         for repair in repairs
@@ -38,9 +38,9 @@ def get_repair(repair_id):
     repair = Repairs.query.get(repair_id)
     if repair:
         result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
+            "repair_id": repair.id,
+            "scooter_id": repair.scooter_id,
+            "report": repair.report,
             "status": repair.status
         }
         return jsonify(result)
@@ -61,14 +61,14 @@ def get_first_repair_by_scooter(scooter_id):
     repair = Repairs.query.filter_by(scooter_id=scooter_id).first()
     if repair:
         result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
+            "repair_id": repair.id,
+            "scooter_id": repair.scooter_id,
+            "report": repair.report,
             "status": repair.status
         }
         return jsonify(result)
     else:
-        return jsonify({"message": "No repairs found for the specified ScooterID"}), 404
+        return jsonify({"message": "No repairs found for the specified scooter_id"}), 404
 
 @repairs_api.route("/repairs", methods=["POST"])
 def add_repair():
@@ -80,8 +80,8 @@ def add_repair():
     """
     data = request.json
     new_repair = Repairs(
-        scooter_id=data.get("ScooterID"),
-        report=data.get("Report"),
+        scooter_id=data.get("scooter_id"),
+        report=data.get("report"),
         status=data.get("status")
     )
 
@@ -89,9 +89,9 @@ def add_repair():
     db.session.commit()
 
     result = {
-        "RepairID": new_repair.id,
-        "ScooterID": new_repair.scooter_id,
-        "Report": new_repair.report,
+        "repair_id": new_repair.id,
+        "scooter_id": new_repair.scooter_id,
+        "report": new_repair.report,
         "status": new_repair.status
     }
     return jsonify(result), 201
@@ -110,16 +110,16 @@ def update_repair(repair_id):
     repair = Repairs.query.get(repair_id)
     if repair:
         data = request.json
-        repair.scooter_id = data.get("ScooterID")
-        repair.report = data.get("Report")
+        repair.scooter_id = data.get("scooter_id")
+        repair.report = data.get("report")
         repair.status = data.get("status")
 
         db.session.commit()
 
         result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
+            "repair_id": repair.id,
+            "scooter_id": repair.scooter_id,
+            "report": repair.report,
             "status": repair.status
         }
         return jsonify(result)
@@ -142,11 +142,38 @@ def delete_repair(repair_id):
         db.session.delete(repair)
         db.session.commit()
         result = {
-            "RepairID": repair.id,
-            "ScooterID": repair.scooter_id,
-            "Report": repair.report,
+            "repair_id": repair.id,
+            "scooter_id": repair.scooter_id,
+            "report": repair.report,
             "status": repair.status
         }
         return jsonify(result)
     else:
         return jsonify({"message": "Repair not found"}), 404
+
+@repairs_api.route("/repairs/pending", methods=["GET"])
+def get_pending_repairs():
+    """
+    Get repair records based on their status.
+
+    Args:
+        status (str): The status of repairs to filter.
+
+    Returns:
+        JSON response with a list of repair records matching the given status or an error message if none are found.
+    """
+    repairs = Repairs.query.filter_by(status=RepairStatus.PENDING.value).all()
+    print(repairs)
+    result = [
+        {
+            "repair_id": repair.id,
+            "scooter_id": repair.scooter_id,
+            "report": repair.report,
+            "status": repair.status
+        }
+        for repair in repairs
+    ]
+    if repairs:
+        return jsonify(result)
+    else:
+        return jsonify({"message": "No repairs found with the specified status"}), 404

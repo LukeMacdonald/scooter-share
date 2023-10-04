@@ -5,7 +5,7 @@
     <div class="collapse show" id="manageScootersDropdown">
         <ul class="nav flex-column" style="margin-left: 3rem;">
             <li class="nav-item">
-                <a class="nav-link {% if request.path == url_for('admin.manage_scooters') %}active{% endif %}" href="{{ url_for('admin.home') }}">Manage Scooters</a>
+                <a class="nav-link {% if request.path == url_for('admin.confirm_reports') %}active{% endif %}" href="{{ url_for('admin.confirm_reports') }}">Manage Scooters</a>
             </li> 
             <li class="nav-item">
                 <a class="nav-link {% if request.path == url_for('admin.bookings') %}active{% endif %}" href="{{ url_for('admin.bookings') }}">View Booking History</a>

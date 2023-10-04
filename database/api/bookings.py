@@ -11,7 +11,7 @@ def get_bookings():
         {
             "BookingID": booking.id,
             "UserID": booking.user_id,
-            "ScooterID": booking.scooter_id,
+            "scooter_id": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
@@ -26,7 +26,7 @@ def get_booking(booking_id):
         result = {
             "BookingID": booking.id,
             "UserID": booking.user_id,
-            "ScooterID": booking.scooter_id,
+            "scooter_id": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
@@ -68,7 +68,7 @@ def update_booking(booking_id):
     if booking:
         data = request.json
         booking.user_id = data.get("UserID")
-        booking.scooter_id = data.get("ScooterID")
+        booking.scooter_id = data.get("scooter_id")
         booking.time = data.get("Time")
         booking.status = data.get("status")
 
@@ -77,7 +77,7 @@ def update_booking(booking_id):
         result = {
             "BookingID": booking.id,
             "UserID": booking.user_id,
-            "ScooterID": booking.scooter_id,
+            "scooter_id": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
@@ -95,7 +95,7 @@ def delete_booking(booking_id):
         result = {
             "BookingID": booking.id,
             "UserID": booking.user_id,
-            "ScooterID": booking.scooter_id,
+            "scooter_id": booking.scooter_id,
             "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
