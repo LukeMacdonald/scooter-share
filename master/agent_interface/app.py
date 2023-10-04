@@ -1,11 +1,8 @@
 from agent.common import socket_utils
-from agent.common import socket_utils
 from constants import API_BASE_URL
 from flask import jsonify
 import json
 from master.agent_interface import comms
-from master.agent_interface import comms
-from master.database.database_manager import db
 from master.database.database_manager import db
 from master.database.models import Booking, RepairStatus, Repairs, Scooter, ScooterStatus, User, UserType
 from master.database.models import User, UserType, Scooter, Booking, ScooterStatus
