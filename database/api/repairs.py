@@ -176,4 +176,4 @@ def get_pending_repairs():
     if repairs:
         return jsonify(result)
     else:
-        return jsonify({"message": "No repairs found with the specified status"}), 404
+        return jsonify({"message": "No repairs found with the specified status"}), 204

@@ -139,8 +139,10 @@ def customers_info():
 def confirm_reports():
     url = f"{API_BASE_URL}/repairs/pending"
     response = requests.get(url, timeout=10)
-    response.raise_for_status()  
-    repairs = response.json()
+    if response.status_code == 200:
+        repairs = response.json()
+    else:
+        repairs = []
     return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
    
 @admin.route("/admin/scooter/report", methods=['POST'])
