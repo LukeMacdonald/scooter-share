@@ -19,17 +19,18 @@ def register(handler, request):
     if request["role"] not in [UserType.CUSTOMER.value, UserType.ENGINEER.value]:
         raise ValueError("role must be either customer or engineer")
     password_hash = sha256_crypt.hash(request["password"])
-    user = User(username=request["password"],
-                password=password_hash,
-                email=request["email"],
-                first_name=request["first_name"],
-                last_name=request["last_name"],
-                role=request["role"])
     with app.app_context():
+        user = User(username=request["password"],
+                    password=password_hash,
+                    email=request["email"],
+                    first_name=request["first_name"],
+                    last_name=request["last_name"],
+                    role=request["role"])
+        json = user.as_json()
         db.session.add(user)
         db.session.commit()
     handler.state = request["role"]
-    return {"user": user.as_json(), "response": "yes"}
+    return {"user": json, "response": "yes"}
 
 @comms.action("login", ["start"])
 def login(handler, request):
@@ -92,13 +93,13 @@ def fetch_available_scooters(handler, request):
 @comms.action("make-booking", ["start"])
 def make_booking(handler, request):
     booking_data = request["data"]
-    booking = Booking(user_id=booking_data["user_id"],
-                      scooter_id=booking_data["scooter_id"],
-                      date=booking_data["date"],
-                      start_time=booking_data["start_time"],
-                      end_time=booking_data["end_time"],
-                      status=booking_data["status"])
     with app.app_context():
+        booking = Booking(user_id=booking_data["user_id"],
+                          scooter_id=booking_data["scooter_id"],
+                          date=booking_data["date"],
+                          start_time=booking_data["start_time"],
+                          end_time=booking_data["end_time"],
+                          status=booking_data["status"])
         scooter = Scooter.query.get(booking_data["scooter_id"])
         scooter.status = ScooterStatus.OCCUPYING.value
         db.session.add(booking)

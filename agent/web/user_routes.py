@@ -82,12 +82,16 @@ def signup_post():
     }
 
     response = get_connection().send(data)
-    if response["response"] == "yes":
+    if "user" in response:
         session["user_info"] = response["user"]
         if response["user"]["role"] == "customer":
             return redirect(url_for('user.customer_home'))
         elif response["user"] == "engineer":
             return redirect(url_for('engineer.home'))
+        else:
+            raise ValueError("wat")
+    else:
+        return redirect("/signup")
 
 @user.route("/customer")
 def customer_home():
