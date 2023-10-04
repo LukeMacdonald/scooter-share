@@ -27,7 +27,7 @@ def get_repair(repair_id):
     """
     repair = Repairs.query.get(repair_id)
     if repair:
-        return jsonify(result.as_json())
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "Repair not found"}), 404
 
@@ -44,7 +44,7 @@ def get_first_repair_by_scooter(scooter_id):
     """
     repair = Repairs.query.filter_by(scooter_id=scooter_id).first()
     if repair:
-        return jsonify(result.as_json())
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "No repairs found for the specified scooter_id"}), 404
 
@@ -121,8 +121,7 @@ def get_pending_repairs():
         JSON response with a list of repair records matching the given status or an error message if none are found.
     """
     repairs = Repairs.query.filter_by(status=RepairStatus.PENDING.value).all()
-    result = [repair.as_json() for repair in repairs]
     if repairs:
-        return jsonify(result)
+        return jsonify([repair.as_json() for repair in repairs])
     else:
         return jsonify({"message": "No repairs found with the specified status"}), 204
