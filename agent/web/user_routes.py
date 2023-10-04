@@ -42,8 +42,6 @@ def login_post():
         
     # communicate with the master
     response = get_connection().send(data)
-    print(response)
-
     if "user" in response:
         session['user_info'] = response["user"]
         if response["user"]["role"] == "customer":
@@ -102,14 +100,13 @@ def customer_home():
         Flask response: The customer home page.
     """
     customer_info = session.get('user_info')
+
     data = {
         "customer_id": customer_info["id"],
         "name": "customer-homepage"
     }
 
     response = get_connection().send(data)
-    print(response)
-
     return render_template("customer/pages/home.html",
                            scooters=response["scooters"],
                            customer=customer_info,
@@ -134,8 +131,6 @@ def make_booking_post(scooter_id):
         Flask response: The make-booking page.
     """
 
-    ## TODO: calculate cost per time
-
     # add new booking to the database
     customer_info = session.get('user_info')
 
@@ -149,20 +144,6 @@ def make_booking_post(scooter_id):
     else:
         end_datetime = start_datetime + timedelta(hours=duration)
 
-    data = {
-        "data": {
-        "scooter_id": scooter_id,
-        "user_id": customer_info["id"],
-        "date": date.today().isoformat(),
-        "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        "status": "active"
-        },
-        "name": "make-booking"
-    }
-
-    get_connection().send(data)
-
     calendar_info = {
         "time_start" : start_datetime,
         "time_end": end_datetime,
@@ -170,6 +151,59 @@ def make_booking_post(scooter_id):
         "summary": f"Scooter {scooter_id} booking!"
     }
 
-    calendar.insert(calendar_info)
+    event_id = calendar.insert(calendar_info)
+
+    data = {
+        "data": {
+        "scooter_id": scooter_id,
+        "user_id": customer_info["id"],
+        "date": date.today().isoformat(),
+        "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+        "status": "active",
+        "event_id": event_id
+        },
+        "name": "make-booking"
+    }
+
+    get_connection().send(data)
+
+
+    return redirect(url_for('user.customer_home'))
+
+@user.route('/cancel-booking/<int:booking_id>/<string:event_id>', methods=["POST"])
+def cancel_booking(booking_id, event_id):
+    get_connection().send({"name" : "cancel-booking", "booking-id" : booking_id})
+
+    calendar.remove(event_id)
+
+    return redirect(url_for('user.customer_home'))
+
+@user.route('/report-issue/<int:scooter_id>', methods=["POST"])
+def report_issue(scooter_id):
+    response = get_connection().send({"name" : "report-issue", "scooter-id" : scooter_id, "report": request.form.get("issue_description")})
+
+    return redirect(url_for('user.customer_home'))
+
+@user.route('/top-up-balance')
+def top_up_balance():
+    """
+    Display the page for topping up balance.
+
+    Returns:
+        Flask response: The top-up-balance page.
+    """
+    return render_template("customer/pages/top-up-balance.html")
+
+@user.route('/top-up-balance', methods=["POST"])
+def top_up_balance_post():
+    """
+    Display the page for topping up balance.
+
+    Returns:
+        Flask response: The top-up-balance page.
+    """
+    get_connection().send({"user-id": session.get('user_info')['id'], 
+                                      "amount": request.form.get("amount"), "name": "top-up-balance"})
 
     return redirect(url_for('user.customer_home'))

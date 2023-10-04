@@ -5,6 +5,7 @@ import socketserver
 import threading
 
 _actions = {}
+TRACE = True
 
 def action(name, states):
     """
@@ -45,10 +46,14 @@ class Handler(socketserver.StreamRequestHandler):
                 # (If we want to send a newline, the encoder should
                 # emit \n anyway.)
                 message = json.loads(self.rfile.readline())
+                if TRACE:
+                    print(f"A->M: {message}")
             except json.decoder.JSONDecodeError:
                 return
             if message["name"] in _actions:
                 response = _actions[message["name"]](self, message)
+                if TRACE:
+                    print(f"M->A: {response}")
                 self.wfile.write(json.dumps(response).encode() + b"\n")
                 self.wfile.flush()
             else:

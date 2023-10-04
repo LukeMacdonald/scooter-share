@@ -73,32 +73,64 @@
                                 Status is Unknown
                             {% endif %}
                         </td>
-                        <td><button onclick="confirmCancel()">Cancel Booking</button></td>
-                        <script>
-                            // Get the modal
-                            var modal = document.getElementById("myModal");
+                        <td> 
+                            {% if booking.status == 'active' %}
+                            <form method="POST" action="{{ url_for('user.cancel_booking', booking_id=booking.id, event_id=booking.event_id) }}" onsubmit="return confirmCancel()">
+                                <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                            </form>
+                            <script>
+                                // When the user clicks the button, show a confirmation dialog
+                                function confirmCancel() {
+                                    var confirmation = confirm("Are you sure you want to cancel your booking?");
+                                    return confirmation; // Return true if confirmed, false if cancelled
+                                }
+                            </script>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('user.report_issue', scooter_id=booking.scooter_id) }}" onsubmit="return reportIssue()">
+                                {% if booking.status == 'active' %}
+                                <div class="report-issue-container">
+                                    <button type="button" class="issue-button" onclick="showIssueInput()">🚩 Report issue</button>
+                                    <textarea name="issue_description" id="issue-description" placeholder="Describe the issue (255 characters max)" maxlength="255" style="display: none;" required></textarea>
+                                    <div class="button-container" style="display: none;">
+                                        <button type="submit" class="submit-button">Submit</button>
+                                        <button type="button" class="submit-button" style="background-color: red;" onclick="cancelReport()">Cancel</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </form>
+                            <script>
+                                // When the user clicks the "Report issue" button, show the input field and buttons
+                                function showIssueInput() {
+                                    document.getElementById('issue-description').style.display = 'block';
+                                    document.querySelector('.issue-button').style.display = 'none';
+                                    document.querySelector('.button-container').style.display = 'block'; // Show the button container
+                                }
                         
-                            // Get the button that opens the modal
-                            var btn = document.querySelector("button");
+                                // When the user clicks the "Cancel" button, hide the input field and buttons
+                                function cancelReport() {
+                                    document.getElementById('issue-description').style.display = 'none';
+                                    document.querySelector('.issue-button').style.display = 'block';
+                                    document.querySelector('.button-container').style.display = 'none'; // Hide the button container
+                                }
                         
-                            // When the user clicks the button, open the modal
-                            function openModal() {
-                                modal.style.display = "block";
-                            }
-                        
-                            // When the user clicks on "No" or the close button, close the modal
-                            function closeModal() {
-                                modal.style.display = "none";
-                            }
-                        
-                            // When the user clicks on "Yes," perform the cancellation action
-                            function cancelBooking() {
-                                // You can add your booking cancellation logic here
-                                // For simplicity, we'll just display an alert
-                                alert("Booking canceled!");
-                                closeModal(); // Close the modal after confirmation
-                            }
-                        </script>
+                                // When the user clicks the "Submit" button, show a confirmation dialog
+                                function reportIssue() {
+                                    var description = document.getElementById('issue-description').value;
+                                    
+                                    if (description.trim() === "") {
+                                        alert("Please enter a description of the issue.");
+                                        return false;
+                                    }
+
+                                    document.querySelector('input[name="issue_description"]').value = description;
+                                    
+                                    var confirmation = confirm("Confirm that there is an issue with scooter {{ booking.scooter_id }}.");
+                                    return confirmation; // Return true if confirmed, false if cancelled
+                                }
+                            </script>
+                        </td>                               
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
 from enum import Enum
 from master.database.database_manager import db
+from flask_login import UserMixin
 
 class UserType(Enum):
     ADMIN = 'admin'
@@ -28,8 +29,9 @@ class BookingState(Enum):
 class RepairStatus(Enum):
     ACTIVE = 'active'
     COMPLETED = 'completed' 
+    PENDING = 'pending'
     
-class User(db.Model):
+class User(UserMixin, db.Model):
     """
     Represents a user in the system.
     """
@@ -45,8 +47,9 @@ class User(db.Model):
                      nullable=False, default=UserType.CUSTOMER.value)
     phone_number = db.Column(db.String(12))
     balance = db.Column(db.Float(precision=2), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
     
-    def __init__(self, username, password, email, first_name, last_name, role=UserType.CUSTOMER.value, phone_number=None, balance=0.0):
+    def __init__(self, username, password, email, first_name, last_name, role=UserType.CUSTOMER.value, phone_number=None, balance=0.0, is_active=False):
         self.username = username
         self.password = sha256_crypt.hash(password)
         self.email = email
@@ -55,6 +58,7 @@ class User(db.Model):
         self.role = role
         self.phone_number = phone_number
         self.balance = balance
+        self.is_active = is_active
 
     def as_json(self):
         "A dictionary with all the values other than the password hash of this user."
@@ -83,6 +87,7 @@ class Scooter(db.Model):
     cost_per_time = db.Column(db.Float(precision=2), nullable=False)
     status = db.Column(db.Enum(ScooterStatus.AVAILABLE.value,ScooterStatus.AWAITING_REPAIR.value,ScooterStatus.OCCUPYING.value), 
                        nullable=False)
+    colour = db.Column(db.String(100), nullable=False)
 
     def as_json(self):
         "A dictionary with all the values of this scooter."
@@ -110,6 +115,7 @@ class Booking(db.Model):
     end_time = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.Enum(BookingState.ACTIVE.value,BookingState.CANCELLED.value,BookingState.COMPLETED.value), 
                        nullable=False)
+    event_id = db.Column(db.String(100), nullable=False)
 
     user = relationship('User')
     scooter = relationship('Scooter')
@@ -134,15 +140,15 @@ class Repairs(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     scooter_id = db.Column(db.Integer, db.ForeignKey('scooters.id'), nullable=False)
     report = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.Enum(RepairStatus.ACTIVE.value,RepairStatus.COMPLETED.value), nullable=False)
+    status = db.Column(db.Enum(RepairStatus.ACTIVE.value,RepairStatus.COMPLETED.value, RepairStatus.PENDING.value), nullable=False)
 
     scooter = relationship('Scooter')
 
     def as_json(self):
         return {
-            "RepairID": self.id,
-            "ScooterID": self.scooter_id,
-            "Report": self.report,
+            "repair_id": self.id,
+            "scooter_id": self.scooter_id,
+            "report": self.report,
             "status": self.status
         }
 

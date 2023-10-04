@@ -79,13 +79,14 @@ function setupScooterMarkers() {
         url: "https://cdn-icons-png.flaticon.com/512/1819/1819598.png",
         scaledSize: new google.maps.Size(32, 32)
     };
+    console.log(customIcon)
 
     if (typeof scooterData !== 'undefined') {
         for (const scooter of scooterData) {
             new google.maps.Marker({
-                position: { lat: scooter.Latitude, lng: scooter.Longitude },
+                position: { lat: scooter.latitude, lng: scooter.longitude },
                 map,
-                title: `Scooter ID: ${scooter.ScooterID}`,
+                title: `Scooter ID: ${scooter.scooter_id}`,
                 icon: customIcon
             });
         }

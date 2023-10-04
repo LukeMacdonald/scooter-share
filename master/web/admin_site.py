@@ -3,10 +3,16 @@ Blueprint for Admin Routes
 
 """
 import requests
-from flask import Blueprint, render_template, redirect, url_for
+from requests.exceptions import RequestException
+from flask import Blueprint, render_template, redirect, url_for, request
 from master.agent_interface import helpers
 from master.web.mail import send_email
+from master.database.models import Repairs, RepairStatus
 from constants import API_BASE_URL
+from master.database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
+from master.database.database_manager import db
+from passlib.hash import sha256_crypt
+
 
 admin = Blueprint("admin", __name__)
 
@@ -30,8 +36,13 @@ def login():
     Returns:
         Flask response: Redirect to the admin home page.
     """
-    # Perform login logic here
-    return redirect(url_for('admin.home'))
+    admin = User.query.filter_by(role='admin', email=request.form.get("email")).first()
+
+    if admin is not None:
+        password = request.form.get("password")
+        if sha256_crypt.verify(password, admin.password):
+            return redirect(url_for('admin.home'))
+    return redirect("/")
 
 @admin.route("/home")
 def home():
@@ -41,7 +52,10 @@ def home():
     Returns:
         Flask response: The admin home page.
     """
-    return render_template("admin/pages/home.html")
+    scooters = Scooter.query.all()
+    bookings = Booking.query.all()
+    customers = User.query.filter_by(role="customer")
+    return render_template("admin/pages/home.html", scooters=scooters, bookings=bookings, customers=customers)
 
 @admin.route("/scooter/bookings")
 def bookings():
@@ -93,6 +107,39 @@ def customers_info():
     """
     return render_template("admin/pages/home.html")
 
+@admin.route("/admin/repairs")
+def confirm_reports():
+    url = f"{API_BASE_URL}/repairs/pending"
+    response = requests.get(url, timeout=10)
+    if response.status_code == 200:
+        repairs = response.json()
+    else:
+        repairs = []
+    return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
+   
+@admin.route("/admin/scooter/report", methods=['POST'])
+def report_scooter():
+    try:
+        repair_id = request.form.get('repair_id')
+        url = f"{API_BASE_URL}/repair/{repair_id}"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  
+        repair = response.json()
+         
+        repair["status"] = RepairStatus.ACTIVE.value
+        response = requests.put(url, json=repair, timeout=10)
+        response.raise_for_status() 
+        
+        # Send notifications to engineers
+        notify_engineers(repair["scooter_id"], repair["report"])
+    
+        return redirect(url_for("admin.confirm_reports"))
+    
+    except RequestException as error:
+        print(f"Error during API request: {error}")
+        return {"error": "Internal Server Error"}, 500  # Return a meaningful error response
+    
 @admin.route("/admin/notify/<int:scooter_id>/<string:report>", methods=["GET"])
 def notify_engineers(scooter_id, report):
     """
@@ -100,8 +147,8 @@ def notify_engineers(scooter_id, report):
     """
     try: 
         scooter_data = requests.get(f"{API_BASE_URL}/scooters/{scooter_id}", timeout=5).json()
-        latitude = scooter_data.get('Latitude')
-        longitude = scooter_data.get('Longitude')
+        latitude = scooter_data.get('latitude')
+        longitude = scooter_data.get('longitude')
         steet_address = helpers.get_street_address(latitude, longitude)
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
         # engineer_emails = requests.get(f"{API_BASE_URL}/engineer_emails", timeout=5).json()

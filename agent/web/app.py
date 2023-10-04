@@ -8,6 +8,7 @@ for the agent, including the registration of user routes.
 from flask import Flask
 from agent.web.user_routes import user
 from agent.web.engineer_routes import engineer
+from flask_login import LoginManager
 
 def create_agent_app():
     """
@@ -17,7 +18,24 @@ def create_agent_app():
         Flask: The configured Flask application instance.
     """
     app = Flask(__name__)
+
+    # Initialize and configure Flask-Login
+    # login_manager = LoginManager()
+    # login_manager.login_view = "/"
+    # login_manager.init_app(app)
+
+    # from database.models import User
+
+    # @login_manager.user_loader
+    # def load_user(user_id):
+    #     return User.query.get(int(user_id))
+
+    # Register your blueprints
     app.register_blueprint(user)
     app.register_blueprint(engineer)
+    
+    # Set the secret key
     app.secret_key = 'secret_key'
+
     return app
+

@@ -31,15 +31,15 @@ def scooters_awaiting_repairs():
     for row in results:
         if row.ScooterStatus == ScooterStatus.AWAITING_REPAIR.value and row.RepairStatus == "active":
             scooter_data = {
-                "ScooterID": row.ScooterID,
-                "Make": row.Make,
-                "Longitude": row.Longitude,
-                "Latitude": row.Latitude,
-                "RemainingPower": row.RemainingPower,
-                "CostPerTime": row.CostPerTime,
-                "ScooterStatus": row.ScooterStatus,
-                "RepairReport": row.Report,
-                "RepairID": row.RepairID
+                "scooter_id": row.ScooterID,
+                "make": row.Make,
+                "longitude": row.Longitude,
+                "latitude": row.Latitude,
+                "remaining_power": row.RemainingPower,
+                "cost_per_id": row.CostPerTime,
+                "scooter_status": row.ScooterStatus,
+                "repair_report": row.Report,
+                "repair_id": row.RepairID
             }
             result_list.append(scooter_data)
     return result_list
