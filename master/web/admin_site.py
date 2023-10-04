@@ -2,17 +2,14 @@
 Blueprint for Admin Routes
 
 """
-import requests
-from requests.exceptions import RequestException
+from constants import API_BASE_URL
 from flask import Blueprint, render_template, redirect, url_for, request
 from master.agent_interface import helpers
-from master.web.mail import send_email
-from master.database.models import Repairs, RepairStatus
-from constants import API_BASE_URL
-from master.database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
 from master.database.database_manager import db
+from master.database.models import Repairs, RepairStatus
+from master.database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
+from master.web.mail import send_email
 from passlib.hash import sha256_crypt
-
 
 admin = Blueprint("admin", __name__)
 
@@ -109,46 +106,28 @@ def customers_info():
 
 @admin.route("/admin/repairs")
 def confirm_reports():
-    url = f"{API_BASE_URL}/repairs/pending"
-    response = requests.get(url, timeout=10)
-    if response.status_code == 200:
-        repairs = response.json()
-    else:
-        repairs = []
+    repairs = [repair.as_json()
+               for repair in Repairs.query.filter_by(status=RepairStatus.PENDING.value).all()]
     return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
    
 @admin.route("/admin/scooter/report", methods=['POST'])
 def report_scooter():
-    try:
-        repair_id = request.form.get('repair_id')
-        url = f"{API_BASE_URL}/repair/{repair_id}"
-        
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()  
-        repair = response.json()
-         
-        repair["status"] = RepairStatus.ACTIVE.value
-        response = requests.put(url, json=repair, timeout=10)
-        response.raise_for_status() 
-        
-        # Send notifications to engineers
-        notify_engineers(repair["scooter_id"], repair["report"])
-    
-        return redirect(url_for("admin.confirm_reports"))
-    
-    except RequestException as error:
-        print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500  # Return a meaningful error response
+    repair_id = request.form.get('repair_id')
+    repair = Repairs.query.get(int(repair_id))
+    repair.status = RepairStatus.ACTIVE.value
+    db.session.commit()
+    notify_engineers(repair["scooter_id"], repair["report"])
+    return redirect(url_for("admin.confirm_reports"))
     
 @admin.route("/admin/notify/<int:scooter_id>/<string:report>", methods=["GET"])
 def notify_engineers(scooter_id, report):
     """
     Notifies engineers about a reported scooter repair request via email.
     """
-    try: 
-        scooter_data = requests.get(f"{API_BASE_URL}/scooters/{scooter_id}", timeout=5).json()
-        latitude = scooter_data.get('latitude')
-        longitude = scooter_data.get('longitude')
+    try:
+        scooter = Scooter.get(int(scooter_id))
+        latitude = scooter.latitude
+        longitude = scooter.longitude
         steet_address = helpers.get_street_address(latitude, longitude)
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
         # engineer_emails = requests.get(f"{API_BASE_URL}/engineer_emails", timeout=5).json()
