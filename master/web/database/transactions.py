@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from database.models import Transaction
-from database.database_manager import db
+from master.database.models import Transaction
+from master.database.database_manager import db
 
 transaction_api = Blueprint("transaction_api", __name__)
 
@@ -12,16 +12,7 @@ def get_transactions():
     Returns:
         JSON response with a list of transaction objects.
     """
-    transactions = Transaction.query.all()
-    result = [
-        {
-            "id": transaction.id,
-            "user_id": transaction.user_id,
-            "amount": transaction.amount
-        }
-        for transaction in transactions
-    ]
-    return jsonify(result)
+    return jsonify([transaction.as_json() for transaction in Transaction.query.all()])
 
 @transaction_api.route("/transaction/<int:transaction_id>", methods=["GET"])
 def get_transaction(transaction_id):
@@ -36,12 +27,7 @@ def get_transaction(transaction_id):
     """
     transaction = Transaction.query.get(transaction_id)
     if transaction:
-        result = {
-            "id": transaction.id,
-            "user_id": transaction.user_id,
-            "amount": transaction.amount
-        }
-        return jsonify(result)
+        return jsonify(transaction.as_json())
     else:
         return jsonify({"message": "Transaction not found"}), 404
 
@@ -61,13 +47,7 @@ def add_transaction():
 
     db.session.add(new_transaction)
     db.session.commit()
-
-    result = {
-        "id": new_transaction.id,
-        "user_id": new_transaction.user_id,
-        "amount": new_transaction.amount
-    }
-    return jsonify(result), 201
+    return jsonify(new_transaction.as_json()), 201
 
 @transaction_api.route("/transactions/user/<int:user_id>", methods=["GET"])
 def get_transactions_by_user(user_id):
@@ -81,12 +61,4 @@ def get_transactions_by_user(user_id):
         JSON response with a list of transaction objects for the specified user.
     """
     transactions = Transaction.query.filter_by(user_id=user_id).all()
-    result = [
-        {
-            "id": transaction.id,
-            "user_id": transaction.user_id,
-            "amount": transaction.amount
-        }
-        for transaction in transactions
-    ]
-    return jsonify(result)
+    return jsonify([transaction.as_json() for transaction in transactions])

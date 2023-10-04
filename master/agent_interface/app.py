@@ -1,52 +1,45 @@
-import requests
-from passlib.hash import sha256_crypt
-from requests.exceptions import RequestException
-from master.agent_interface import comms
-from agent_common import socket_utils
-from database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
-from database.database_manager import db
+from agent.common import socket_utils
 from constants import API_BASE_URL
-# from credentials.email import send_email
+from flask import jsonify
 import json
-
+from master.agent_interface import comms
+from master.database.database_manager import db
+from master.database.models import Booking, RepairStatus, Repairs, Scooter, ScooterStatus, Transaction, User, UserType
+import master.database.queries as queries
+from passlib.hash import sha256_crypt
 
 app = None
 
 @comms.action("register", ["start"])
-def register(handler, message):
-    if message["role"] not in [UserType.CUSTOMER.value, UserType.ENGINEER.value]:
+def register(handler, request):
+    if request["role"] not in [UserType.CUSTOMER.value, UserType.ENGINEER.value]:
         raise ValueError("role must be either customer or engineer")
-    password_hash = sha256_crypt.hash(message["password"])
-    user = User(username=message["password"],
-                password=password_hash,
-                email=message["email"],
-                first_name=message["first_name"],
-                last_name=message["last_name"],
-                role=message["role"])
+    password_hash = sha256_crypt.hash(request["password"])
     with app.app_context():
+        user = User(username=request["password"],
+                    password=password_hash,
+                    email=request["email"],
+                    first_name=request["first_name"],
+                    last_name=request["last_name"],
+                    role=request["role"])
+        json = user.as_json()
         db.session.add(user)
         db.session.commit()
-        return {"role": user.role, "response": "yes"}
+    handler.state = request["role"]
+    return {"user": json, "response": "yes"}
 
 @comms.action("login", ["start"])
-def login(handler, message):
-    password_hash = sha256_crypt.hash(message["password"])
-    email = message["email"]
+def login(handler, request):
+    email = request["email"]
     with app.app_context():
         user = User.query.filter_by(email=email).first()
-        data = {
-            'id': user.id,
-            'password': password_hash,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'role': user.role,
-            'balance': user.balance
-        }
-    return {"user": data, "response": "yes"}
+        if user is None or not sha256_crypt.verify(request["password"], user.password):
+            return {"error": "Login info is incorrect."}
+        else:
+            handler.state = user.role
+            return {"user": user.as_json()}
 
-@comms.action("locations", ["start"])
+@comms.action("locations", ["engineer"])
 def fetch_reported_scooters(handler, request):
     """
     Fetch a list of scooters reported for repair.
@@ -54,19 +47,10 @@ def fetch_reported_scooters(handler, request):
     Returns:
         dict: A dictionary containing the fetched data or an error message.
     """
-    try:
-        url = f"{API_BASE_URL}/scooters/awaiting-repairs"
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        return {"status_code": response.status_code, "data": response.json()}
-    except RequestException as req_error:
-        return {"status_code": 500, "error": f"{req_error}"}
-    except ValueError as json_error:
-        return {"status_code": 500, "error": f"JSON decoding error while processing response: {json_error}"}
-    except Exception as error:
-        return {"status_code": 500, "error": f"An unexpected error occurred: {error}"}
+    with app.app_context():
+        return {"data": queries.scooters_awaiting_repairs()}
 
-@comms.action("repair-fixed", ["start"])
+@comms.action("repair-fixed", ["engineer"])
 def update_scooter_status(handler, request):
     """
     Mark scooter as repaired by updating its status as available.
@@ -78,124 +62,47 @@ def update_scooter_status(handler, request):
     Returns:
         dict: A dictionary containing the response data or an error message.
     """
-    try:
-        repair_id = request["repair_id"]
-        scooter_id = request["scooter_id"]
-        fixed_url = f"{API_BASE_URL}/scooters/fixed/{scooter_id}/{repair_id}"
-        response = requests.put(fixed_url, timeout=5)
-
-        if response.status_code == 200:
-            return {"status_code": response.status_code, "message": "Scooter status updated successfully"}
+    with app.app_context():
+        message, status = queries.fix_scooter(request["scooter_id"], request["repair_id"])
+        if status == 200:
+            return {"message": message}
         else:
-            return {"status_code": response.status_code, "error": f"Failed to update scooter status. Status code: {response.status_code}"}
-
-    except RequestException as req_error:
-        return {"status_code": 500, "error": f"Request error while updating scooter status: {req_error}"}
-    except Exception as error:
-        return {"status_code": 500, "error": f"An unexpected error occurred: {error}"}
-
-@comms.action("customer-homepage", ["start"])
-def fetch_homepage_data(handler, request):
+            return {"error": status}
+    
+@comms.action("customer-homepage", ["customer"])
+def fetch_available_scooters(handler, request):
     """
     Fetch a list of available scooters.
 
     Returns:
         dict: A dictionary containing the fetched data or an error message.
     """
-    def scooter_to_dict(scooter):
-        return {
-            "id": scooter.id,
-            "make": scooter.make,
-            "longitude": scooter.longitude,
-            "latitude": scooter.latitude,
-            "remaining_power": scooter.remaining_power,
-            "cost_per_time": scooter.cost_per_time,
-            "status": scooter.status,
+    with app.app_context():
+        scooters = Scooter.query.filter_by(status="available")
+        bookings = Booking.query.filter_by(user_id=request["customer_id"])
+        data = {
+            "scooters" : [s.as_json() for s in scooters],
+            "bookings" : [b.as_json() for b in bookings]
         }
-
-    def booking_to_dict(booking):
-        return {
-            "id": booking.id,
-            "scooter_id": booking.scooter_id,
-            "date": booking.date.strftime("%a %d %b, %H:%M, %Y"),
-            "start_time": booking.start_time.strftime("%a %d %b, %H:%M, %Y"),
-            "status": booking.status,
-            "event_id": booking.event_id
-        }
-    try:
-        with app.app_context():
-            scooters = Scooter.query.filter_by(status=ScooterStatus.AVAILABLE.value)
-            bookings = Booking.query.filter_by(user_id=request["customer_id"])
-            scooters_list = [scooter_to_dict(scooter) for scooter in scooters]
-            bookings_list = [booking_to_dict(booking) for booking in bookings]
-            user = User.query.get(request["customer_id"])
-
-            user_data = {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'role': user.role,
-                'balance': user.balance
-            }
-
-            data = {
-                "scooters": scooters_list,
-                "bookings": bookings_list,
-                "customer": user_data
-            }
-
-            return data
-    except RequestException as req_error:
-        return {"status_code": 500, "error": f"{req_error}"}
-    except ValueError as json_error:
-        return {"status_code": 500, "error": f"JSON decoding error while processing response: {json_error}"}
-    except Exception as error:
-        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+        return data
     
-@comms.action("make-booking", ["start"])
+@comms.action("make-booking", ["customer"])
 def make_booking(handler, request):
-    """
-    Create a new booking and add to the database.
-
-    Returns:
-        dict: An empty dictionary if no errors occured.
-    """
-    try: 
-        # json_data = json.dumps(request["data"])
-        # headers = {"Content-Type": "application/json"}
-
-        # url = f"{API_BASE_URL}/bookings"
-        # response = requests.post(url, data=request["data"], timeout=5)
-
-        # # mark scooter as occupied
-        # response.raise_for_status()
-
-        booking_data = request["data"]
-
+    booking_data = request["data"]
+    with app.app_context():
         booking = Booking(user_id=booking_data["user_id"],
-                scooter_id=booking_data["scooter_id"],
-                date=booking_data["date"],
-                start_time=booking_data["start_time"],
-                end_time=booking_data["end_time"],
-                status=booking_data["status"],
-                event_id=booking_data["event_id"])
-        
-        with app.app_context():
-            scooter = Scooter.query.get(booking_data["scooter_id"])
-            scooter.status = ScooterStatus.OCCUPYING.value
-            db.session.add(booking)
-            db.session.commit()
-            return {}
-    except RequestException as req_error:
-        return {"status_code":500,"error": f"{req_error}" }
-    except ValueError as json_error:
-        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
-    except Exception as error:
-        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
-    
-@comms.action("cancel-booking", ["start"])
+                          scooter_id=booking_data["scooter_id"],
+                          date=booking_data["date"],
+                          start_time=booking_data["start_time"],
+                          end_time=booking_data["end_time"],
+                          status=booking_data["status"])
+        scooter = Scooter.query.get(booking_data["scooter_id"])
+        scooter.status = ScooterStatus.OCCUPYING.value
+        db.session.add(booking)
+        db.session.commit()
+    return {}
+
+@comms.action("cancel-booking", ["customer"])
 def cancel_booking(handler, request):
     """
     Updates a booking to have the status 'cancelled' in the database.
@@ -203,23 +110,15 @@ def cancel_booking(handler, request):
     Returns:
         dict: An empty dictionary if no errors occured.
     """
-    try:
-        with app.app_context():
-            booking = Booking.query.filter_by(id=request["booking-id"]).first()
-            booking.status = BookingState.CANCELLED.value
-            scooter = Scooter.query.get(booking.scooter_id)
-            scooter.status = ScooterStatus.AVAILABLE.value
-            db.session.commit()
-            return {}
-        
-    except RequestException as req_error:
-        return {"status_code":500,"error": f"{req_error}" }
-    except ValueError as json_error:
-        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
-    except Exception as error:
-        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+    with app.app_context():
+        booking = Booking.query.filter_by(id=request["booking-id"]).first()
+        booking.status = BookingState.CANCELLED.value
+        scooter = Scooter.query.get(booking.scooter_id)
+        scooter.status = ScooterStatus.AVAILABLE.value
+        db.session.commit()
+        return {}
     
-@comms.action("report-issue", ["start"])
+@comms.action("report-issue", ["customer"])
 def cancel_booking(handler, request):
     """
     Updates a scooter to have the status 'awaiting-repair' in the database.
@@ -227,45 +126,29 @@ def cancel_booking(handler, request):
     Returns:
         dict: An empty dictionary if no errors occured.
     """
-    try:
-        repair = Repairs(scooter_id=request["scooter-id"],
-                report=request["report"],
-                status=RepairStatus.PENDING.value)
-        with app.app_context():
-            db.session.add(repair)
-            db.session.commit()
-        
-    except RequestException as req_error:
-        return {"status_code":500,"error": f"{req_error}" }
-    except ValueError as json_error:
-        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
-    except Exception as error:
-        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+    repair = Repairs(scooter_id=request["scooter-id"],
+                     report=request["report"],
+                     status=RepairStatus.PENDING.value)
+    with app.app_context():
+        db.session.add(repair)
+        db.session.commit()
     
-@comms.action("top-up-balance", ["start"])
+@comms.action("top-up-balance", ["customer"])
 def top_up_balance(handler, request):
     """
-    Updates a scooter to have the status 'awaiting-repair' in the database.
+    Updates the balance of a user.
 
     Returns:
         dict: An empty dictionary if no errors occured.
     """
-    try:
-        amount = float(request["amount"])
-        transation = Transaction(user_id=request["user-id"],
-                amount=amount)
-        with app.app_context():
-            user = User.query.get(request["user-id"])
-            user.balance = user.balance + amount
-            db.session.add(transation)
-            db.session.commit()
-            return {"new_balance": user.balance}
-    except RequestException as req_error:
-        return {"status_code":500,"error": f"{req_error}" }
-    except ValueError as json_error:
-        return {"status_code":500, "error": f"JSON decoding error while processing response: {json_error}" }
-    except Exception as error:
-        return {"status_code":500, "error": f"An unexpected error occurred: {error}" }
+    amount = float(request["amount"])
+    transation = Transaction(user_id=request["user-id"], amount=amount)
+    with app.app_context():
+        user = User.query.get(request["user-id"])
+        user.balance = user.balance + amount
+        db.session.add(transation)
+        db.session.commit()
+        return {"new_balance": user.balance}
 
 def run_agent_server(master):
     global app

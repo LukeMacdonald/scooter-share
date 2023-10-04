@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from database.models import Repairs, RepairStatus
-from database.database_manager import db
+from master.database.models import Repairs, RepairStatus
+from master.database.database_manager import db
 
 repairs_api = Blueprint("repairs_api", __name__)
 
@@ -12,17 +12,7 @@ def get_repairs():
     Returns:
         JSON response with a list of repair records or an error message if no records are found.
     """
-    repairs = Repairs.query.all()
-    result = [
-        {
-            "repair_id": repair.id,
-            "scooter_id": repair.scooter_id,
-            "report": repair.report,
-            "status": repair.status
-        }
-        for repair in repairs
-    ]
-    return jsonify(result)
+    return jsonify([repair.as_json() for repair in Repairs.query.all()])
 
 @repairs_api.route("/repair/<int:repair_id>", methods=["GET"])
 def get_repair(repair_id):
@@ -87,14 +77,7 @@ def add_repair():
 
     db.session.add(new_repair)
     db.session.commit()
-
-    result = {
-        "repair_id": new_repair.id,
-        "scooter_id": new_repair.scooter_id,
-        "report": new_repair.report,
-        "status": new_repair.status
-    }
-    return jsonify(result), 201
+    return jsonify(new_repair.as_json()), 201
 
 @repairs_api.route("/repair/<int:repair_id>", methods=["PUT"])
 def update_repair(repair_id):
@@ -115,14 +98,7 @@ def update_repair(repair_id):
         repair.status = data.get("status")
 
         db.session.commit()
-
-        result = {
-            "repair_id": repair.id,
-            "scooter_id": repair.scooter_id,
-            "report": repair.report,
-            "status": repair.status
-        }
-        return jsonify(result)
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "Repair not found"}), 404
 
@@ -141,13 +117,7 @@ def delete_repair(repair_id):
     if repair:
         db.session.delete(repair)
         db.session.commit()
-        result = {
-            "repair_id": repair.id,
-            "scooter_id": repair.scooter_id,
-            "report": repair.report,
-            "status": repair.status
-        }
-        return jsonify(result)
+        return jsonify(repair.as_json())
     else:
         return jsonify({"message": "Repair not found"}), 404
 

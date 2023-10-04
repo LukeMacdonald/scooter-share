@@ -7,11 +7,10 @@ from requests.exceptions import RequestException
 from flask import Blueprint, render_template, redirect, url_for, request
 from master.agent_interface import helpers
 from master.web.mail import send_email
-from database.api.repairs import get_repair
-from database.models import Repairs, RepairStatus
+from master.database.models import Repairs, RepairStatus
 from constants import API_BASE_URL
-from database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
-from database.database_manager import db
+from master.database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
+from master.database.database_manager import db
 from passlib.hash import sha256_crypt
 
 
@@ -43,6 +42,7 @@ def login():
         password = request.form.get("password")
         if sha256_crypt.verify(password, admin.password):
             return redirect(url_for('admin.home'))
+    return redirect("/")
 
 @admin.route("/home")
 def home():
@@ -52,37 +52,9 @@ def home():
     Returns:
         Flask response: The admin home page.
     """
-    s = Scooter.query.all()
-    b = Booking.query.all()
+    scooters = Scooter.query.all()
+    bookings = Booking.query.all()
     customers = User.query.filter_by(role="customer")
-
-    scooters = [
-        {
-            'scooter_id': scooter.id,
-            'make': scooter.make,
-            'location': helpers.get_street_address(scooter.latitude, scooter.longitude),
-            'remaining_power': scooter.remaining_power,
-            'cost_per_time': scooter.cost_per_time,
-            'status': scooter.status,
-            'colour': scooter.colour
-        }
-        for scooter in s
-    ]
-
-    bookings = [
-        {
-            "BookingID": booking.id,
-            "UserID": booking.user_id,
-            "ScooterID": booking.scooter_id,
-            "date": booking.date.strftime("%Y-%m-%d"),
-            "status": booking.status,
-            "duration": str(booking.end_time - booking.start_time)
-        }
-        for booking in b
-    ]
-
-    # data = jsonify(result)
-
     return render_template("admin/pages/home.html", scooters=scooters, bookings=bookings, customers=customers)
 
 @admin.route("/scooter/bookings")

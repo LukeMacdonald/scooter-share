@@ -5,26 +5,14 @@ This blueprint defines routes related to user management, including login, signu
 and role-based redirections to customer and engineer home pages.
 
 """
-from flask import Blueprint, render_template, request, redirect, url_for, session
-from database.models import UserType, User
-from agent_common import comms, socket_utils
-from datetime import datetime, date, timedelta
+from agent.common import comms, socket_utils
+from agent.web.connection import get_connection
 from agent.web.google_api import calendar
-from flask_login import login_user, login_required, logout_user, current_user
-
-# Create a Blueprint for user routes
-user = Blueprint("user", __name__)
-
-# Connect the first time that we use a connection.
-conn = None
-
-def get_connection() -> comms.Connection:
-    global conn
-    if conn is None:
-        conn = comms.Connection(socket_utils.PUBLIC_HOST, socket_utils.SOCKET_PORT)
-    return conn
+from datetime import datetime, date, timedelta
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
 
 calendar = calendar.GoogleCalendar()
+user = Blueprint("user", __name__)
 
 @user.route("/")
 def login():
@@ -54,29 +42,14 @@ def login_post():
         
     # communicate with the master
     response = get_connection().send(data)
-
-    # Check if the login is successful
-    if response["response"] == "yes":
-        if response["user"]["role"] == UserType.CUSTOMER.value:
-            # # Create a user object and log in the user
-            # user = User(
-            #     id=response["user"]["id"],
-            #     username=response["user"]["username"], 
-            #     password="",  # You shouldn't store the actual password here
-            #     email=response["user"]["email"], 
-            #     first_name=response["user"]["first_name"],
-            #     last_name=response["user"]["last_name"],
-            #     is_active=True
-            # )
-            # login_user(user)
-
-            # Redirect to the customer home page
-            session["user_info"] = response["user"]
+    if "user" in response:
+        session['user_info'] = response["user"]
+        if response["user"]["role"] == "customer":
             return redirect(url_for('user.customer_home'))
-        elif response["user"]["role"] == UserType.ENGINEER.value:
-            # Redirect to the engineer home page
+        elif response["user"]["role"] == "engineer":
             return redirect(url_for('engineer.home'))
-
+    else:
+        return redirect("/")
         
 
 @user.route("/signup")
@@ -107,15 +80,18 @@ def signup_post():
     }
 
     response = get_connection().send(data)
-
-    if response["response"] == "yes":
-        if response["role"] == "customer":
+    if "user" in response:
+        session["user_info"] = response["user"]
+        if response["user"]["role"] == "customer":
             return redirect(url_for('user.customer_home'))
-        elif response["role"] == "engineer":
+        elif response["user"] == "engineer":
             return redirect(url_for('engineer.home'))
+        else:
+            raise ValueError("wat")
+    else:
+        return redirect("/signup")
 
 @user.route("/customer")
-# @login_required
 def customer_home():
     """
     Display the customer home page.
@@ -131,12 +107,12 @@ def customer_home():
     }
 
     response = get_connection().send(data)
-
-    return render_template("customer/pages/home.html", scooters=response["scooters"], customer=response["customer"], 
+    return render_template("customer/pages/home.html",
+                           scooters=response["scooters"],
+                           customer=customer_info,
                            bookings=response["bookings"])
 
 @user.route('/make_booking/<int:scooter_id>/<float:balance>/<float:cost_per_time>')
-# @login_required
 def make_booking(scooter_id, balance, cost_per_time):
     """
     Display the page for booking a scooter.
@@ -147,7 +123,6 @@ def make_booking(scooter_id, balance, cost_per_time):
     return render_template("customer/pages/make-booking.html", scooter_id=scooter_id, balance=balance, cost_per_time=cost_per_time)
 
 @user.route('/make_booking/<int:scooter_id>', methods=["POST"])
-# @login_required
 def make_booking_post(scooter_id):
     """
     Display the page for booking a scooter.
@@ -197,7 +172,6 @@ def make_booking_post(scooter_id):
     return redirect(url_for('user.customer_home'))
 
 @user.route('/cancel-booking/<int:booking_id>/<string:event_id>', methods=["POST"])
-# @login_required
 def cancel_booking(booking_id, event_id):
     get_connection().send({"name" : "cancel-booking", "booking-id" : booking_id})
 
@@ -206,14 +180,12 @@ def cancel_booking(booking_id, event_id):
     return redirect(url_for('user.customer_home'))
 
 @user.route('/report-issue/<int:scooter_id>', methods=["POST"])
-# @login_required
 def report_issue(scooter_id):
     response = get_connection().send({"name" : "report-issue", "scooter-id" : scooter_id, "report": request.form.get("issue_description")})
 
     return redirect(url_for('user.customer_home'))
 
 @user.route('/top-up-balance')
-# @login_required
 def top_up_balance():
     """
     Display the page for topping up balance.
@@ -224,7 +196,6 @@ def top_up_balance():
     return render_template("customer/pages/top-up-balance.html")
 
 @user.route('/top-up-balance', methods=["POST"])
-# @login_required
 def top_up_balance_post():
     """
     Display the page for topping up balance.

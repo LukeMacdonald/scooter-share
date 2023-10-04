@@ -52,7 +52,7 @@
                 {% for booking in bookings %}
                 {% if booking.status == 'completed' %}
                 <tr>
-                    <td>{{ booking.ScooterID }}</td>
+                    <td>{{ booking.id }}</td>
                     <td>{{ booking.date }}</td>
                     <td>{{ booking.duration }}</td>
                     <td class="status" style="background-color: yellow;">{{ booking.status }}</td>
@@ -74,7 +74,7 @@
             <tbody>
                 {% for booking in bookings %}
                 <tr>
-                    <td>{{ booking.ScooterID }}</td>
+                    <td>{{ booking.id }}</td>
                     <td>{{ booking.date }}</td>
                     <td>{{ booking.duration }}</td>
                     {% if booking.status == 'active' %}
