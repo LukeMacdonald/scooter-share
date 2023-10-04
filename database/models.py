@@ -74,6 +74,7 @@ class Scooter(db.Model):
     cost_per_time = db.Column(db.Float(precision=2), nullable=False)
     status = db.Column(db.Enum(ScooterStatus.AVAILABLE.value,ScooterStatus.AWAITING_REPAIR.value,ScooterStatus.OCCUPYING.value), 
                        nullable=False)
+    colour = db.Column(db.String(100), nullable=False)
 
 class Booking(db.Model):
     """

@@ -15,7 +15,7 @@ class GoogleCalendar:
         store = file.Storage("token.json")
         creds = store.get()
         if(not creds or creds.invalid):
-            flow = client.flow_from_clientsecrets("/assignment-2-scooter-share-application-team-7/agent/web/google_api/credentials.json", SCOPES)
+            flow = client.flow_from_clientsecrets("agent/web/google_api/credentials.json", SCOPES)
             creds = tools.run_flow(flow, store)
         self.service = build("calendar", "v3", http=creds.authorize(Http()))
 
