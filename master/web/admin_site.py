@@ -105,7 +105,27 @@ def manage_customers():
         Flask response: The customer management page.
     """
     return render_template("admin/pages/home.html")
+@admin.route("/customers/edit/<int:user_id>")
+def edit_customer(user_id):
+    customer = user_api.get(user_id)
+    print(customer)
+    
+    return render_template("admin/pages/edit_user.html", data=customer)
 
+@admin.route("/customer/update", methods=['POST'])
+def update_customer():
+    try:
+        user_id = request.form.get('user_id')
+        user = user_api.get(user_id)
+        user["first_name"] = request.form.get('first_name')
+        user["last_name"] = request.form.get('last_name')  
+        user["phone_number"] = request.form.get('phone_number')
+        user_api.update(user_id, user)
+        return redirect(url_for("admin.home")) 
+    except Exception as error:
+        print(f"Error during API request: {error}")
+        return {"error": "Internal Server Error"}, 500  
+    
 @admin.route("/customers/info")
 def customers_info():
     """

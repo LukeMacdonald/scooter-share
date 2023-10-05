@@ -95,7 +95,7 @@ def user_data():
         {
             "username": "customer1",
             "password": "password",
-            "email": "customer1@gmailer.com",
+            "email": "customer1@gmail.com",
             "first_name": "John",
             "last_name": "Doe",
             "role": UserType.CUSTOMER.value,
@@ -104,11 +104,11 @@ def user_data():
             "is_active": False
         },
         {
-            "username": "engineer1",
+            "username": "LukeMacca123",
             "password": "password",
-            "email": "engineer1@gmail.com",
-            "first_name": "Jane",
-            "last_name": "Smith",
+            "email": "lukemacdonald21@gmail.com",
+            "first_name": "Luke",
+            "last_name": "Macdonald",
             "role": UserType.ENGINEER.value,
             "phone_number": "047 6543 210",
             "balance":0.0,
@@ -117,7 +117,7 @@ def user_data():
         {
             "username": "admin",
             "password": "admin",
-            "email": "admin@example.com",
+            "email": "admin@gmail.com",
             "first_name": "Adam",
             "last_name": "Joe",
             "role": UserType.ADMIN.value,

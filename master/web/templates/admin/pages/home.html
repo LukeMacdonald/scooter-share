@@ -124,7 +124,7 @@
         </table>
     </div>
     <div>
-        <h3>Cusotmers:</h3>
+        <h3>Customers:</h3>
         <table>
             <thead>
                 <th>First name</th>
@@ -132,6 +132,7 @@
                 <th>Phone</th>
                 <th>Email</th>
                 <th>Balance</th>
+                <th>Edit</th>
             </thead>
             <tbody>
                 {% for customer in customers %}
@@ -141,6 +142,7 @@
                     <td>{{ customer.phone_number }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.balance }}</td>
+                    <td><a href="{{ url_for('admin.edit_customer', user_id=customer.id) }}" class="btn btn-primary">Edit</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
