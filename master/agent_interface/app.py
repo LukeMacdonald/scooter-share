@@ -10,7 +10,6 @@ import master.web.database.transactions as transaction_api
 import master.web.database.repairs as repair_api
 
 # todo: Add validation to all functions
-# todo: Fix bug which causes unauthorised message when trying to log into different account (Implementing logout should fix this)
 
 app = None
 
@@ -23,7 +22,7 @@ def register(handler, request):
     handler.state = request["role"]
     return {"user": user, "response": "yes"}
 
-@comms.action("login", ["start"])
+@comms.action("login", ["start", "customer", "engineer"])
 def login(handler, request):
     email = request["email"]
     with app.app_context():
