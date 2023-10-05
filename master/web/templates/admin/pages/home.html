@@ -7,7 +7,7 @@
 
     table {
         border-collapse: collapse;
-        width:80%
+        width:90%
     }
 
     th, td {
@@ -90,8 +90,6 @@
     </div>
     <div>
         <h3>Scooters:</h3>
-        <a href="{{ url_for('admin.add_scooter') }}" class="btn btn-primary">Add Scooter</a>
-        
         <table>
             <thead>
                 <th>Scooter</th>
@@ -101,6 +99,7 @@
                 <th>Remaining power</th>
                 <th>Cost per time</th>
                 <th>Status</th>
+                <th>Edit</th>
             </thead>
             <tbody>
                 {% for scooter in scooters %}
@@ -120,8 +119,13 @@
                     {% elif scooter.status == 'pending' %}
                     <td class="status" style="color: blue;">{{ scooter.status }}</td>
                     {% endif %}
+                    <td><a href="{{ url_for('admin.edit_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-secondary"><i class="fa fa-pen-to-square"></i></a></td>
                 </tr>
                 {% endfor %}
+                <tr>
+                    <td colspan="8" class="text-center">
+                        <a href="{{ url_for('admin.add_scooter') }}" class="btn btn-outline-success" style="width:8rem"><i class="fa fa-plus"></i></a>
+                    </td>
             </tbody>
         </table>
     </div>
@@ -144,7 +148,7 @@
                     <td>{{ customer.phone_number }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.balance }}</td>
-                    <td><a href="{{ url_for('admin.edit_customer', user_id=customer.id) }}" class="btn btn-primary">Edit</a></td>
+                    <td><a href="{{ url_for('admin.edit_customer', user_id=customer.id) }}" class="btn btn-outline-secondary"><i class="fa fa-pen-to-square"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>

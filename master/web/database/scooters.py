@@ -100,12 +100,12 @@ def update(scooter_id, data):
     """
     scooter = Scooter.query.get(scooter_id)
     if scooter:
-        scooter.make = data.make
-        scooter.longitude = data.longitude
-        scooter.latitude = data.latitude
-        scooter.remaining_power = data.remaining_power
-        scooter.cost_per_time = data.cost_per_time
-        scooter.status = data.status
+        scooter.make = data["make"]
+        scooter.longitude = data["longitude"]
+        scooter.latitude = data["latitude"]
+        scooter.remaining_power = data["remaining_power"]
+        scooter.cost_per_time = data["cost_per_time"]
+        scooter.colour = data["colour"]
         db.session.commit()
         return scooter.as_json()
      

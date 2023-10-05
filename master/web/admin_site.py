@@ -128,7 +128,34 @@ def update_customer():
 @admin.route("/scooter/add")
 def add_scooter():
     return render_template("admin/pages/add_scooter.html")
+@admin.route("/scooter/edit/<int:scooter_id>")
+def edit_scooter(scooter_id):
+    try:
+        scooter = scooters_api.get(scooter_id)
+        return render_template("admin/pages/edit_scooter.html", data=scooter)
+    except Exception as error:
+        print(f"Error during API request: {error}")
+        return {"error": "Internal Server Error"}, 500 
 
+@admin.route("/scooter/update", methods=['POST'])
+def scooter_update():
+    try:
+        scooter_id = request.form.get('scooter_id')
+        scooter = scooters_api.get(scooter_id)
+        scooter["colour"] = request.form.get("colour")
+        scooter["make"] = request.form.get('make')
+        scooter["cost_per_time"] = float(request.form.get('cost'))
+        scooter["remaining_power"] = float(request.form.get('charge'))
+        scooter["longitude"] = float(request.form.get('longitude'))
+        scooter["latitude"] = float(request.form.get('latitude'))
+        scooters_api.update(scooter_id, scooter)
+        return redirect(url_for("admin.home")) 
+    except Exception as error:
+        print(f"Error during API request: {error}")
+        return {"error": "Internal Server Error"}, 500 
+        
+        
+    
 @admin.route("/scooter/submit", methods=['POST'])
 def submit_scooter():
     data = {

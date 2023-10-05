@@ -3,8 +3,7 @@
 {% block content %}
 <div class="container mt-5" style="width:60%;">
     <h1>Add New Scooter</h1>
-    <form id="add_scooter" action="{{ url_for('admin.submit_scooter') }}" method="post">
-        <input type="hidden" name="user_id">
+    <form id="add_scooter" action="{{ url_for('admin.submit_scooter') }}" method="post"> 
         <div class="mb-3">
             <label for="make" class="form-label">Make:</label>
             <input type="text" class="form-control" id="make" name="make" required>
