@@ -16,7 +16,6 @@ def get_all_scooters():
     scooters = Scooter.query.all()
     return jsonify([scooter.as_json() for scooter in scooters])
 
-@scooter_api.route("/scooters/<int:scooter_id>", methods=["GET"])
 def get_scooter(scooter_id):
     """
     Get a scooter by its ID.
@@ -29,9 +28,9 @@ def get_scooter(scooter_id):
     """
     scooter = Scooter.query.get(scooter_id)
     if scooter:
-        return jsonify(scooter.as_json())
+        return scooter.as_json()
     else:
-        return jsonify({'message': 'Scooter not found'}), 404
+        return jsonify({'message': 'Scooter not found'})
 
 @scooter_api.route("/scooters/status/<string:status>", methods=["GET"])
 def get_scooters_by_status(status):

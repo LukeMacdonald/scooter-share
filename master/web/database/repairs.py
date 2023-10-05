@@ -14,7 +14,6 @@ def get_repairs():
     """
     return jsonify([repair.as_json() for repair in Repairs.query.all()])
 
-@repairs_api.route("/repair/<int:repair_id>", methods=["GET"])
 def get_repair(repair_id):
     """
     Get a specific repair record by its ID.
@@ -33,9 +32,8 @@ def get_repair(repair_id):
             "report": repair.report,
             "status": repair.status
         }
-        return jsonify(result)
-    else:
-        return jsonify({"message": "Repair not found"}), 404
+    return result
+
 
 @repairs_api.route("/repairs/scooter/<int:scooter_id>", methods=["GET"])
 def get_first_repair_by_scooter(scooter_id):
@@ -80,7 +78,7 @@ def add_repair():
     return jsonify(new_repair.as_json()), 201
 
 @repairs_api.route("/repair/<int:repair_id>", methods=["PUT"])
-def update_repair(repair_id):
+def update_repair(repair_id, new_repair):
     """
     Update an existing repair record by its ID.
 
@@ -92,13 +90,12 @@ def update_repair(repair_id):
     """
     repair = Repairs.query.get(repair_id)
     if repair:
-        data = request.json
-        repair.scooter_id = data.get("scooter_id")
-        repair.report = data.get("report")
-        repair.status = data.get("status")
+        repair.scooter_id = new_repair["scooter_id"]
+        repair.report = new_repair["report"]
+        repair.status = new_repair["status"]
 
         db.session.commit()
-        return jsonify(repair.as_json())
+        return repair.as_json()
     else:
         return jsonify({"message": "Repair not found"}), 404
 
@@ -121,7 +118,6 @@ def delete_repair(repair_id):
     else:
         return jsonify({"message": "Repair not found"}), 404
 
-@repairs_api.route("/repairs/pending", methods=["GET"])
 def get_pending_repairs():
     """
     Get repair records based on their status.
@@ -133,7 +129,7 @@ def get_pending_repairs():
         JSON response with a list of repair records matching the given status or an error message if none are found.
     """
     repairs = Repairs.query.filter_by(status=RepairStatus.PENDING.value).all()
-    print(repairs)
+
     result = [
         {
             "repair_id": repair.id,
@@ -143,7 +139,5 @@ def get_pending_repairs():
         }
         for repair in repairs
     ]
-    if repairs:
-        return jsonify(result)
-    else:
-        return jsonify({"message": "No repairs found with the specified status"}), 204
+
+    return result

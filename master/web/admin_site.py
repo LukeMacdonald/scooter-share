@@ -7,11 +7,12 @@ from requests.exceptions import RequestException
 from flask import Blueprint, render_template, redirect, url_for, request
 from master.agent_interface import helpers
 from master.web.mail import send_email
-from master.database.models import Repairs, RepairStatus
-from constants import API_BASE_URL
-from master.database.models import User, UserType, Scooter, Booking, ScooterStatus, BookingState, RepairStatus, Repairs, Transaction
-from master.database.database_manager import db
+from master.database.models import User,Scooter, Booking, RepairStatus
+import master.web.database.repairs as repairs_api
+import master.web.database.scooters as scooters_api
+import master.web.database.users as user_api
 from passlib.hash import sha256_crypt
+
 
 
 admin = Blueprint("admin", __name__)
@@ -109,30 +110,19 @@ def customers_info():
 
 @admin.route("/admin/repairs")
 def confirm_reports():
-    url = f"{API_BASE_URL}/repairs/pending"
-    response = requests.get(url, timeout=10)
-    if response.status_code == 200:
-        repairs = response.json()
-    else:
-        repairs = []
+    repairs = repairs_api.get_pending_repairs()
     return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
    
 @admin.route("/admin/scooter/report", methods=['POST'])
 def report_scooter():
     try:
         repair_id = request.form.get('repair_id')
-        url = f"{API_BASE_URL}/repair/{repair_id}"
-        
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()  
-        repair = response.json()
-         
+        repair = repairs_api.get_repair(repair_id)
         repair["status"] = RepairStatus.ACTIVE.value
-        response = requests.put(url, json=repair, timeout=10)
-        response.raise_for_status() 
+        updated_repair = repairs_api.update_repair(repair_id, repair)
         
         # Send notifications to engineers
-        notify_engineers(repair["scooter_id"], repair["report"])
+        notify_engineers(updated_repair["scooter_id"],updated_repair["report"])
     
         return redirect(url_for("admin.confirm_reports"))
     
@@ -146,12 +136,11 @@ def notify_engineers(scooter_id, report):
     Notifies engineers about a reported scooter repair request via email.
     """
     try: 
-        scooter_data = requests.get(f"{API_BASE_URL}/scooters/{scooter_id}", timeout=5).json()
-        latitude = scooter_data.get('latitude')
-        longitude = scooter_data.get('longitude')
-        steet_address = helpers.get_street_address(latitude, longitude)
+        
+        scooter = scooters_api.get_scooter(scooter_id)
+        steet_address = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
-        # engineer_emails = requests.get(f"{API_BASE_URL}/engineer_emails", timeout=5).json()
+        # engineer_emails = user_api.get_engineer_emails()
         engineer_emails = ["lukemacdonald560@gmail.com","lukemacdonald21@gmail.com"]
         email_subject = 'URGENT: Scooter Repair Request'
         email_body = helpers.get_email_body(scooter_id, report, steet_address, email_subject)
