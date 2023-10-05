@@ -41,7 +41,6 @@ def scooter_locations():
     try:
         data = {"name": "locations"}
         response = get_connection().send(data)
-        print(response["data"])
         return render_template("engineer/pages/locations.html", scooter_data=response["data"])
     except Exception as error:
         # Log the exception for debugging purposes
@@ -80,7 +79,6 @@ def scooter_fixed():
         repair_id = request.form.get("repair_id")
         data = {"name": "repair-fixed", "scooter_id": scooter_id, "repair_id": repair_id}
         response = get_connection().send(data)
-        print(response)
         return redirect(url_for("engineer.update_report"))
     except Exception as error:
         # Log the exception for debugging purposes

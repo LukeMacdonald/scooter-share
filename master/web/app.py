@@ -26,6 +26,8 @@ def create_master_app():
     """
     app = Flask(__name__)
     
+    app.secret_key = 'abc123'
+    
     init_db(app)
     init_mail(app)
    

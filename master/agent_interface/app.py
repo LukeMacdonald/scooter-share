@@ -128,7 +128,6 @@ def top_up_balance(handler, request):
             user = user_api.get(int(user_id))
             if user is None: 
                 raise ValueError("User not found")
-            print(user)
             user["balance"] += amount
             updated_user = user_api.update(user_id, user)
             if updated_user is None:

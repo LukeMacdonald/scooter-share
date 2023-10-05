@@ -1,5 +1,5 @@
 from flask_mail import Mail, Message
-from flask import current_app
+from flask import current_app, flash
 
 mail = Mail()
 
@@ -32,6 +32,7 @@ def send_email(subject, receipients, body):
             )
             msg.content_type = "text/html"
             mail.send(msg)
-            print("Email sent successfully!")
+            
+            flash("Email sent successfully!", "success")
     except Exception as error:
         print("Email sending failed:", str(error))
