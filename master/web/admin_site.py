@@ -2,7 +2,7 @@
 Blueprint for Admin Routes
 
 """
-import requests
+from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from flask import Blueprint, render_template, redirect, url_for, request
 from master.agent_interface import helpers
@@ -11,9 +11,6 @@ from master.database.models import User,Scooter, Booking, RepairStatus
 import master.web.database.repairs as repairs_api
 import master.web.database.scooters as scooters_api
 import master.web.database.users as user_api
-from passlib.hash import sha256_crypt
-
-
 
 admin = Blueprint("admin", __name__)
 
@@ -110,16 +107,20 @@ def customers_info():
 
 @admin.route("/admin/repairs")
 def confirm_reports():
-    repairs = repairs_api.get_pending_repairs()
-    return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
+    try:
+        repairs = repairs_api.get_pending_repairs()
+        return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
+    except Exception as error:
+        print(f"Error during repairs API request: {error}")
+        return {"error": "Internal Server Error"}, 500
    
 @admin.route("/admin/scooter/report", methods=['POST'])
 def report_scooter():
     try:
         repair_id = request.form.get('repair_id')
-        repair = repairs_api.get_repair(repair_id)
+        repair = repairs_api.get(repair_id)
         repair["status"] = RepairStatus.ACTIVE.value
-        updated_repair = repairs_api.update_repair(repair_id, repair)
+        updated_repair = repairs_api.update(repair_id, repair)
         
         # Send notifications to engineers
         notify_engineers(updated_repair["scooter_id"],updated_repair["report"])
@@ -137,7 +138,7 @@ def notify_engineers(scooter_id, report):
     """
     try: 
         
-        scooter = scooters_api.get_scooter(scooter_id)
+        scooter = scooters_api.get(scooter_id)
         steet_address = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
         # engineer_emails = user_api.get_engineer_emails()

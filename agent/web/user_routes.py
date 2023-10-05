@@ -107,6 +107,7 @@ def customer_home():
     }
 
     response = get_connection().send(data)
+    print(customer_info)
     return render_template("customer/pages/home.html",
                            scooters=response["scooters"],
                            customer=customer_info,
@@ -171,11 +172,11 @@ def make_booking_post(scooter_id):
 
     return redirect(url_for('user.customer_home'))
 
-@user.route('/cancel-booking/<int:booking_id>/<string:event_id>', methods=["POST"])
-def cancel_booking(booking_id, event_id):
-    get_connection().send({"name" : "cancel-booking", "booking-id" : booking_id})
+@user.route('/cancel-booking', methods=["POST"])
+def cancel_booking():
+    get_connection().send({"name" : "cancel-booking", "booking-id" : request.form.get("booking_id")})
 
-    calendar.remove(event_id)
+    calendar.remove(request.form.get("event_id"))
 
     return redirect(url_for('user.customer_home'))
 

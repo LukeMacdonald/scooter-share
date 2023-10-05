@@ -1,19 +1,25 @@
 from passlib.hash import sha256_crypt
 from agent.common import socket_utils
 from master.agent_interface import comms
-from master.database.database_manager import db
-import master.database.models as models
+from master.database.models import RepairStatus, ScooterStatus, BookingState, UserType
 import master.database.queries as queries
-from master.web.database.users import add_user
+import master.web.database.scooters as scooter_api
+import master.web.database.bookings as booking_api
+import master.web.database.users as user_api
+import master.web.database.transactions as transaction_api
+import master.web.database.repairs as repair_api
+
+# todo: Add validation to all functions
+# todo: Fix bug which causes unauthorised message when trying to log into different account (Implementing logout should fix this)
 
 app = None
 
 @comms.action("register", ["start"])
 def register(handler, request):
-    if request["role"] not in [models.UserType.CUSTOMER.value, models.UserType.ENGINEER.value]:
+    if request["role"] not in [UserType.CUSTOMER.value, UserType.ENGINEER.value]:
         raise ValueError("role must be either customer or engineer")
     with app.app_context():
-        user = add_user(request)
+        user = user_api.post(request)
     handler.state = request["role"]
     return {"user": user, "response": "yes"}
 
@@ -21,7 +27,7 @@ def register(handler, request):
 def login(handler, request):
     email = request["email"]
     with app.app_context():
-        user = models.User.query.filter_by(email=email).first()
+        user = user_api.get_by_email(email) 
         if user is None or not sha256_crypt.verify(request["password"], user.password):
             return {"error": "Login info is incorrect."}
         else:
@@ -40,7 +46,7 @@ def fetch_reported_scooters(handler, request):
         return {"data": queries.scooters_awaiting_repairs()}
 
 @comms.action("repair-fixed", ["engineer"])
-def update_scooter_status(handler, request):
+def update_status(handler, request):
     """
     Mark scooter as repaired by updating its status as available.
 
@@ -67,11 +73,11 @@ def fetch_available_scooters(handler, request):
         dict: A dictionary containing the fetched data or an error message.
     """
     with app.app_context():
-        scooters = models.Scooter.query.filter_by(status="available")
-        bookings = models.Booking.query.filter_by(user_id=request["customer_id"])
+        scooters = scooter_api.get_by_status(ScooterStatus.AVAILABLE.value)
+        bookings = booking_api.get_by_user(request["customer_id"])
         data = {
-            "scooters" : [s.as_json() for s in scooters],
-            "bookings" : [b.as_json() for b in bookings]
+            "scooters" : scooters,
+            "bookings" : bookings
         }
         return data
     
@@ -79,16 +85,8 @@ def fetch_available_scooters(handler, request):
 def make_booking(handler, request):
     booking_data = request["data"]
     with app.app_context():
-        booking = models.Booking(user_id=booking_data["user_id"],
-                          scooter_id=booking_data["scooter_id"],
-                          date=booking_data["date"],
-                          start_time=booking_data["start_time"],
-                          end_time=booking_data["end_time"],
-                          status=booking_data["status"])
-        scooter = models.Scooter.query.get(booking_data["scooter_id"])
-        scooter.status = models.ScooterStatus.OCCUPYING.value
-        db.session.add(booking)
-        db.session.commit()
+        booking = booking_api.post(booking_data)
+        scooter_api.update_status(booking["scooter_id"], ScooterStatus.OCCUPYING.value)
     return {}
 
 @comms.action("cancel-booking", ["customer"])
@@ -100,11 +98,8 @@ def cancel_booking(handler, request):
         dict: An empty dictionary if no errors occured.
     """
     with app.app_context():
-        booking = models.Booking.query.filter_by(id=request["booking-id"]).first()
-        booking.status = models.BookingState.CANCELLED.value
-        scooter = models.Scooter.query.get(booking.scooter_id)
-        scooter.status = models.ScooterStatus.AVAILABLE.value
-        db.session.commit()
+        booking = booking_api.update_status(request["booking-id"], BookingState.CANCELLED.value)
+        scooter = scooter_api.update_status(booking["scooter_id"], ScooterStatus.AVAILABLE.value )
         return {}
     
 @comms.action("report-issue", ["customer"])
@@ -115,12 +110,8 @@ def submit_repair_request(handler, request):
     Returns:
         dict: An empty dictionary if no errors occured.
     """
-    repair = models.Repairs(scooter_id=request["scooter-id"],
-                     report=request["report"],
-                     status=models.RepairStatus.PENDING.value)
     with app.app_context():
-        db.session.add(repair)
-        db.session.commit()
+        repair = repair_api.post(request["scooter-id"],request["report"],RepairStatus.PENDING.value)
     
 @comms.action("top-up-balance", ["customer"])
 def top_up_balance(handler, request):
@@ -130,14 +121,24 @@ def top_up_balance(handler, request):
     Returns:
         dict: An empty dictionary if no errors occured.
     """
-    amount = float(request["amount"])
-    transation = models.Transaction(user_id=request["user-id"], amount=amount)
-    with app.app_context():
-        user = models.User.query.get(request["user-id"])
-        user.balance = user.balance + amount
-        db.session.add(transation)
-        db.session.commit()
-        return {"new_balance": user.balance}
+    try:
+        with app.app_context():
+            amount = float(request.get("amount", 0))
+            user_id = request.get("user-id")
+            user = user_api.get(int(user_id))
+            if user is None: 
+                raise ValueError("User not found")
+            print(user)
+            user["balance"] += amount
+            updated_user = user_api.update(user_id, user)
+            if updated_user is None:
+                raise ValueError("Update User Failed!") 
+            transaction_api.post(user_id, amount=amount)
+            return {"new_balance": user["balance"]}
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error: 
+        return {"error": "Internal Server Error"}
 
 def run_agent_server(master):
     global app

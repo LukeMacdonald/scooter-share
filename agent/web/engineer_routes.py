@@ -41,6 +41,7 @@ def scooter_locations():
     try:
         data = {"name": "locations"}
         response = get_connection().send(data)
+        print(response["data"])
         return render_template("engineer/pages/locations.html", scooter_data=response["data"])
     except Exception as error:
         # Log the exception for debugging purposes
@@ -49,7 +50,7 @@ def scooter_locations():
         return render_template("error.html", error="An unexpected error occurred."), 500
 
 @engineer.route("/engineer/scooters/repairs")
-def update_repair_report():
+def update_report():
     """
     Display the update repair report page for engineers.
 
@@ -80,7 +81,7 @@ def scooter_fixed():
         data = {"name": "repair-fixed", "scooter_id": scooter_id, "repair_id": repair_id}
         response = get_connection().send(data)
         print(response)
-        return redirect(url_for("engineer.update_repair_report"))
+        return redirect(url_for("engineer.update_report"))
     except Exception as error:
         # Log the exception for debugging purposes
         logging.error("Error occurred: %s", error)

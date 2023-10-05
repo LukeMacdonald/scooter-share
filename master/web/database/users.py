@@ -1,22 +1,19 @@
-from flask import Blueprint, request, jsonify
-from passlib.hash import sha256_crypt
+from flask import Blueprint, jsonify
 from master.database.models import User, UserType
 from master.database.database_manager import db
 
 users_api = Blueprint("db_user", __name__)
 
-@users_api.route("/users", methods=["GET"])
-def get_users():
+def get_all():
     """
     Get a list of all users.
 
     Returns:
         JSON response with a list of user objects.
     """
-    return jsonify([user.as_json() for user in User.query.all()])
+    return [user.as_json() for user in User.query.all()]
 
-@users_api.route("/user/<int:user_id>", methods=["GET"])
-def get_user(user_id):
+def get(user_id):
     """
     Get a user by their ID.
 
@@ -26,14 +23,16 @@ def get_user(user_id):
     Returns:
         JSON response with the user object or a "User not found" message.
     """
+    
     user = User.query.get(user_id)
+    
+    print(user.as_json()) 
     if user:
-        return jsonify(user.as_json())
+        return user.as_json()
     else:
-        return jsonify({"message": "User not found"}), 404
+        return None
 
-# @users_api.route("/users", methods=["POST"])
-def add_user(data):
+def post(data):
     """
     Create a new user.
 
@@ -66,8 +65,7 @@ def add_user(data):
     db.session.commit()
     return new_user.as_json()
 
-@users_api.route("/user/<int:user_id>", methods=["PUT"])
-def update_user(user_id):
+def update(user_id, data):
     """
     Update a user by their ID.
 
@@ -77,24 +75,24 @@ def update_user(user_id):
     Returns:
         JSON response with the updated user object or a "User not found" message.
     """
-    user = User.query.get(user_id)
+    user = User.query.get(user_id) 
     if user:
-        data = request.json
-        user.username = data.get("username")
-        user.email = data.get("email")
-        user.first_name = data.get("first_name")
-        user.last_name = data.get("last_name")
-        user.role = data.get("role")
-        user.phone_number = data.get("phone_number")
-        user.balance = data.get("balance")
+       
+        user.username = data["username"]
+        user.email = data["email"]
+        user.first_name = data["first_name"]
+        user.last_name = data["last_name"]
+        user.role = data["role"]
+        user.phone_number = data["phone_number"]
+        user.balance = data["balance"]
 
         db.session.commit()
-        return jsonify(user.as_json())
+        
+        return user.as_json()
     else:
-        return jsonify({"message": "User not found"}), 404
+        return None
 
-@users_api.route("/user/<int:user_id>", methods=["DELETE"])
-def delete_user(user_id):
+def delete(user_id):
     """
     Delete a user by their ID.
 
@@ -123,3 +121,6 @@ def get_engineer_emails():
     engineer_emails = [user.email for user in engineer_users]
     
     return engineer_emails
+
+def get_by_email(email):
+    return User.query.filter_by(email=email).first()

@@ -1,102 +1,130 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint
 from master.database.models import Booking
 from master.database.database_manager import db
 
 booking_api = Blueprint("booking_api", __name__)
 
-@booking_api.route("/bookings", methods=["GET"])
-def get_bookings():
-    bookings = Booking.query.all()
-    result = [
-        {
-            "booking_id": booking.id,
-            "user_id": booking.user_id,
-            "scooter_id": booking.scooter_id,
-            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "status": booking.status
-        }
-        for booking in bookings
-    ]
-    return jsonify(result)
+def get_all():
+    """
+    Retrieve all bookings from the database.
 
-@booking_api.route("/booking/<int:booking_id>", methods=["GET"])
-def get_booking(booking_id):
+    Returns:
+        list: A list of booking objects in JSON format.
+    """
+    bookings = Booking.query.all()
+    return [booking.as_json() for booking in bookings]
+    
+def get(booking_id):
+    """
+    Retrieve a booking by its ID from the database.
+
+    Args:
+        booking_id (int): The ID of the booking to retrieve.
+
+    Returns:
+        dict: A dictionary representing the booking object in JSON format, or None if not found.
+    """
     booking = Booking.query.get(booking_id)
     if booking:
-        result = {
-            "booking_id": booking.id,
-            "user_id": booking.user_id,
-            "scooter_id": booking.scooter_id,
-            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "status": booking.status
-        }
-        return jsonify(result)
+        return booking.as_json()
     else:
-        return jsonify({"message": "Booking not found"}), 404
-    
-@booking_api.route("/bookings", methods=["POST"])
-def add_booking():
-    data = request.json
-    print(f"Here: {data}")
+        return None
+
+def post(data):
+    """
+    Add a new booking to the database.
+
+    Args:
+        data (dict): A dictionary containing booking data.
+
+    Returns:
+        dict: A dictionary representing the newly created booking object in JSON format.
+    """
     new_booking = Booking(
-        user_id=data.get("user_id"),
-        scooter_id=data.get("scooter_id"),
-        date=data.get("date"),
-        start_time=data.get("start_time"),
-        end_time=data.get("end_time"),
-        status=data.get("status")
+        user_id=data["user_id"],
+        scooter_id=data["scooter_id"],
+        date=data["date"],
+        start_time=data["start_time"],
+        end_time=data["end_time"],
+        status=data["status"],
+        event_id = data["event_id"]
     )
 
     db.session.add(new_booking)
     db.session.commit()
+    
+    return new_booking.as_json()
 
-    result = {
-        "booking_id": new_booking.id,
-        "user_id": new_booking.user_id,
-        "scooter_id": new_booking.scooter_id,
-        "date": new_booking.date.strftime("%Y-%m-%d %H:%M:%S"),
-        "start_time": new_booking.start_time.strftime("%H:%M:%S"),
-        "end_time": new_booking.end_time.strftime("%H:%M:%S"),
-        "status": new_booking.status
-    }
-    return jsonify(result), 201
+def update(booking_id, new_booking):
+    """
+    Update an existing booking in the database.
 
-@booking_api.route("/booking/<int:booking_id>", methods=["PUT"])
-def update_booking(booking_id):
+    Args:
+        booking_id (int): The ID of the booking to update.
+        new_booking (dict): A dictionary containing updated booking data.
+
+    Returns:
+        dict: A dictionary representing the updated booking object in JSON format, or None if not found.
+    """
     booking = Booking.query.get(booking_id)
     if booking:
-        data = request.json
-        booking.user_id = data.get("user_id")
-        booking.scooter_id = data.get("scooter_id")
-        booking.time = data.get("time")
-        booking.status = data.get("status")
-
+        booking.user_id = new_booking["user_id"]
+        booking.scooter_id =  new_booking["scooter_id"]
+        booking.time =  new_booking["time"]
+        booking.status =  new_booking["status"]
         db.session.commit()
-
-        result = {
-            "booking_id": booking.id,
-            "user_id": booking.user_id,
-            "scooter_id": booking.scooter_id,
-            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "status": booking.status
-        }
-        return jsonify(result)
+        return booking.as_json()
     else:
-        return jsonify({"message": "Booking not found"}), 404
+        return None
 
-@booking_api.route("/booking/<int:booking_id>", methods=["DELETE"])
-def delete_booking(booking_id):
+def update_status(booking_id, status):
+    """
+    Update an existing booking in the database.
+
+    Args:
+        booking_id (int): The ID of the booking to update.
+        new_booking (dict): A dictionary containing updated booking data.
+
+    Returns:
+        dict: A dictionary representing the updated booking object in JSON format, or None if not found.
+    """
     booking = Booking.query.get(booking_id)
+
+    if booking:
+        booking.status = status
+        db.session.commit()
+        return booking.as_json()
+    else:
+        return None
+
+def delete(booking_id):
+    """
+    Delete a booking from the database.
+
+    Args:
+        booking_id (int): The ID of the booking to delete.
+
+    Returns:
+        dict: A dictionary representing the deleted booking object in JSON format, or None if not found.
+    """
+    booking = get(booking_id)
     if booking:
         db.session.delete(booking)
         db.session.commit()
-        result = {
-            "booking_id": booking.id,
-            "user_id": booking.user_id,
-            "scooter_id": booking.scooter_id,
-            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
-            "status": booking.status
-        }
-        return jsonify(result)
+        return booking.as_json()
     else:
-        return jsonify({"message": "Booking not found"}), 404
+        return None
+
+def get_by_user(user_id):
+    """
+    Retrieve bookings associated with a specific user from the database.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        list: A list of booking objects in JSON format associated with the specified user.
+    """
+    bookings = Booking.query.filter_by(user_id=user_id)
+    return [booking.as_json() for booking in bookings]
+

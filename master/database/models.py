@@ -62,6 +62,7 @@ class User(UserMixin, db.Model):
 
     def as_json(self):
         "A dictionary with all the values other than the password hash of this user."
+        phone_number = self.phone_number if self.phone_number is not None else ""
         return {
             'id': self.id,
             'username': self.username,
@@ -69,7 +70,7 @@ class User(UserMixin, db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'role': self.role,
-            'phone_number': self.phone_number,
+            'phone_number': phone_number,
             'balance': self.balance
         }
 
