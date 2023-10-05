@@ -106,11 +106,10 @@ def customer_home():
         "name": "customer-homepage"
     }
 
-    response = get_connection().send(data)
-    print(customer_info)
+    response = get_connection().send(data) 
     return render_template("customer/pages/home.html",
                            scooters=response["scooters"],
-                           customer=customer_info,
+                           customer=response["user_details"],
                            bookings=response["bookings"])
 
 @user.route('/make_booking/<int:scooter_id>/<float:balance>/<float:cost_per_time>')

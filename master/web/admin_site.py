@@ -76,16 +76,6 @@ def bookings():
     """
     return render_template("admin/pages/bookings.html")
 
-@admin.route("/scooters/manage")
-def manage_scooters():
-    """
-    Display the admin page for managing scooters.
-
-    Returns:
-        Flask response: The scooter management page.
-    """
-    return render_template("admin/pages/home.html")
-
 @admin.route("/scooters/usage")
 def scooter_usage():
     """
@@ -105,8 +95,18 @@ def manage_customers():
         Flask response: The customer management page.
     """
     return render_template("admin/pages/home.html")
+
 @admin.route("/customers/edit/<int:user_id>")
 def edit_customer(user_id):
+    """
+    Edit customer information.
+
+    Args:
+        user_id (int): The unique identifier for the customer.
+
+    Returns:
+        str: Rendered template for editing user information.
+    """
     customer = user_api.get(user_id)
     print(customer)
     
@@ -114,6 +114,12 @@ def edit_customer(user_id):
 
 @admin.route("/customer/update", methods=['POST'])
 def update_customer():
+    """
+    Update customer information based on the form data.
+
+    Returns:
+        response: Redirect to the admin home page if successful, or error message with status code 500 if there is an error.
+    """
     try:
         user_id = request.form.get('user_id')
         user = user_api.get(user_id)
@@ -128,6 +134,15 @@ def update_customer():
 
 @admin.route("/customer/delete/<int:user_id>")
 def delete_customer(user_id):
+    """
+    Delete a customer record.
+
+    Args:
+        user_id (int): The unique identifier for the customer.
+
+    Returns:
+        response: Redirect to the admin home page if successful, or error message with status code 500 if there is an error.
+    """
     try:
         user_api.delete(user_id)
         return redirect(url_for("admin.home"))
@@ -137,10 +152,26 @@ def delete_customer(user_id):
 
 @admin.route("/scooter/add")
 def add_scooter():
+    """
+    Render the template for adding a new scooter.
+
+    Returns:
+        str: Rendered template for adding a new scooter.
+    """
     return render_template("admin/pages/add_scooter.html")
 
 @admin.route("/scooter/edit/<int:scooter_id>")
 def edit_scooter(scooter_id):
+    """
+    Edit scooter information based on the provided scooter ID.
+
+    Args:
+        scooter_id (int): The unique identifier for the scooter to be edited.
+
+    Returns:
+        str: Rendered template for editing scooter information if successful.
+             If there is an error, returns a dictionary with an error message and status code 500.
+    """
     try:
         scooter = scooters_api.get(scooter_id)
         return render_template("admin/pages/edit_scooter.html", data=scooter)
@@ -150,6 +181,13 @@ def edit_scooter(scooter_id):
 
 @admin.route("/scooter/update", methods=['POST'])
 def scooter_update():
+    """
+    Update scooter information based on the form data provided via a POST request.
+
+    Returns:
+        response: Redirect to the admin home page if the update is successful.
+                 If there is an error, returns a dictionary with an error message and status code 500.
+    """
     try:
         scooter_id = request.form.get('scooter_id')
         scooter = scooters_api.get(scooter_id)
@@ -167,16 +205,32 @@ def scooter_update():
         
 @admin.route("/scooter/delete/<int:scooter_id>")
 def delete_scooter(scooter_id):
+    """
+    Delete a scooter record based on the provided scooter ID.
+
+    Args:
+        scooter_id (int): The unique identifier for the scooter to be deleted.
+
+    Returns:
+        response: Redirect to the admin home page if the deletion is successful.
+                 If there is an error, returns a dictionary with an error message and status code 500.
+    """
     try:
         scooters_api.delete(scooter_id)
         return redirect(url_for("admin.home"))
     except Exception as error:
         print(f"Error during API request: {error}")
         return {"error": "Internal Server Error"}, 500  
-       
-    
+      
 @admin.route("/scooter/submit", methods=['POST'])
 def submit_scooter():
+
+    """
+    Handle the submission of a new scooter based on the form data provided via a POST request.
+
+    Returns:
+        response: Redirect to the admin home page if the submission is successful.
+    """
     data = {
         "make": request.form.get('make'),
         "cost_per_time": request.form.get('cost'),

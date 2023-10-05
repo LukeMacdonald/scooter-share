@@ -75,9 +75,11 @@ def fetch_available_scooters(handler, request):
     with app.app_context():
         scooters = scooter_api.get_by_status(ScooterStatus.AVAILABLE.value)
         bookings = booking_api.get_by_user(request["customer_id"])
+        customer = user_api.get(int(request["customer_id"]))
         data = {
             "scooters" : scooters,
-            "bookings" : bookings
+            "bookings" : bookings,
+            "user_details": customer
         }
         return data
     
@@ -111,7 +113,8 @@ def submit_repair_request(handler, request):
         dict: An empty dictionary if no errors occured.
     """
     with app.app_context():
-        repair = repair_api.post(request["scooter-id"],request["report"],RepairStatus.PENDING.value)
+        repair_api.post(request["scooter-id"],request["report"], RepairStatus.PENDING.value)
+        scooter_api.update_status(request["scooter-id"], ScooterStatus.AWAITING_REPAIR.value)
     
 @comms.action("top-up-balance", ["customer"])
 def top_up_balance(handler, request):
@@ -139,6 +142,7 @@ def top_up_balance(handler, request):
     except Exception as error: 
         return {"error": "Internal Server Error"}
 
+# def lock_scooter(handler, request):-
 def run_agent_server(master):
     global app
     app = master
