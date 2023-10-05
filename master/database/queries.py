@@ -10,16 +10,16 @@ def scooters_awaiting_repairs():
 
     # Join the Scooter and Repairs tables using the subquery to fetch data.
     query = db.session.query(
-        Scooter.id.label("ScooterID"),
-        Scooter.make.label("Make"),
-        Scooter.longitude.label("Longitude"),
-        Scooter.latitude.label("Latitude"),
-        Scooter.remaining_power.label("RemainingPower"),
-        Scooter.cost_per_time.label("CostPerTime"),
-        Scooter.status.label("ScooterStatus"),
-        Repairs.report.label("Report"),
-        Repairs.status.label("RepairStatus"),
-        subquery.c.repair_id.label("RepairID")
+        Scooter.id.label("scooter_id"),
+        Scooter.make.label("make"),
+        Scooter.longitude.label("longitude"),
+        Scooter.latitude.label("latitude"),
+        Scooter.remaining_power.label("remaining_power"),
+        Scooter.cost_per_time.label("cost_per_time"),
+        Scooter.status.label("scooter_status"),
+        Repairs.report.label("report"),
+        Repairs.status.label("repair_status"),
+        subquery.c.repair_id.label("repair_id")
     ).join(
         subquery, Scooter.id == subquery.c.scooter_id, isouter=True
     ).join(
@@ -29,17 +29,17 @@ def scooters_awaiting_repairs():
     results = query.all()
     result_list = []
     for row in results:
-        if row.ScooterStatus == ScooterStatus.AWAITING_REPAIR.value and row.RepairStatus == "active":
+        if row.scooter_status == ScooterStatus.AWAITING_REPAIR.value and row.repair_status == RepairStatus.ACTIVE.value:
             scooter_data = {
-                "scooter_id": row.ScooterID,
-                "make": row.Make,
-                "longitude": row.Longitude,
-                "latitude": row.Latitude,
-                "remaining_power": row.RemainingPower,
-                "cost_per_id": row.CostPerTime,
-                "scooter_status": row.ScooterStatus,
-                "repair_report": row.Report,
-                "repair_id": row.RepairID
+                "scooter_id": row.scooter_id,
+                "make": row.make,
+                "longitude": row.longitude,
+                "latitude": row.latitude,
+                "remaining_power": row.remaining_power,
+                "cost_per_id": row.cost_per_time,
+                "scooter_status": row.scooter_status,
+                "repair_report": row.report,
+                "repair_id": row.repair_id
             }
             result_list.append(scooter_data)
     return result_list

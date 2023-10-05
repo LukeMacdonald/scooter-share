@@ -29,7 +29,7 @@ def get_scooter(scooter_id):
     """
     scooter = Scooter.query.get(scooter_id)
     if scooter:
-        return jsonify(result.as_json())
+        return jsonify(scooter.as_json())
     else:
         return jsonify({'message': 'Scooter not found'}), 404
 
@@ -67,11 +67,11 @@ def update_scooter(scooter_id):
     scooter = Scooter.query.get(scooter_id)
     if scooter:
         data = request.get_json()
-        scooter.make = data['Make']
-        scooter.longitude = data['Longitude']
-        scooter.latitude = data['Latitude']
-        scooter.remaining_power = data['RemainingPower']
-        scooter.cost_per_time = data['CostPerTime']
+        scooter.make = data['make']
+        scooter.longitude = data['longitude']
+        scooter.latitude = data['latitude']
+        scooter.remaining_power = data['remaining_power']
+        scooter.cost_per_time = data['cost_per_time']
         scooter.status = data['status']
         db.session.commit()
         return jsonify({'message': 'Scooter updated successfully'})

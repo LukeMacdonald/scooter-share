@@ -32,19 +32,24 @@ def get_user(user_id):
     else:
         return jsonify({"message": "User not found"}), 404
 
-@users_api.route("/users", methods=["POST"])
-def add_user():
+# @users_api.route("/users", methods=["POST"])
+def add_user(data):
     """
     Create a new user.
 
     Returns:
         JSON response with the newly created user object and a status code of 201.
     """
-    data = request.json
+    # data = request.json
     password = data.get("password")
     
     if not password:
         return jsonify({"message": "Password is required"}), 400
+    
+    if "balance" in data:
+        balance = data["balance"]
+    else:
+        balance = 0.0
 
     new_user = User(
         username=data.get("username"),
@@ -54,12 +59,12 @@ def add_user():
         last_name=data.get("last_name"),
         role=data.get("role"),
         phone_number=data.get("phone_number"),
-        balance=data.get("balance")
+        balance=balance
     )
 
     db.session.add(new_user)
     db.session.commit()
-    return jsonify(new_user.as_json()), 201
+    return new_user.as_json()
 
 @users_api.route("/user/<int:user_id>", methods=["PUT"])
 def update_user(user_id):

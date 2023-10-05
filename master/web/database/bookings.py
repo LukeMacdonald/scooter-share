@@ -9,10 +9,10 @@ def get_bookings():
     bookings = Booking.query.all()
     result = [
         {
-            "BookingID": booking.id,
-            "UserID": booking.user_id,
+            "booking_id": booking.id,
+            "user_id": booking.user_id,
             "scooter_id": booking.scooter_id,
-            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
         for booking in bookings
@@ -24,10 +24,10 @@ def get_booking(booking_id):
     booking = Booking.query.get(booking_id)
     if booking:
         result = {
-            "BookingID": booking.id,
-            "UserID": booking.user_id,
+            "booking_id": booking.id,
+            "user_id": booking.user_id,
             "scooter_id": booking.scooter_id,
-            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
         return jsonify(result)
@@ -61,30 +61,28 @@ def add_booking():
     }
     return jsonify(result), 201
 
-
 @booking_api.route("/booking/<int:booking_id>", methods=["PUT"])
 def update_booking(booking_id):
     booking = Booking.query.get(booking_id)
     if booking:
         data = request.json
-        booking.user_id = data.get("UserID")
+        booking.user_id = data.get("user_id")
         booking.scooter_id = data.get("scooter_id")
-        booking.time = data.get("Time")
+        booking.time = data.get("time")
         booking.status = data.get("status")
 
         db.session.commit()
 
         result = {
-            "BookingID": booking.id,
-            "UserID": booking.user_id,
+            "booking_id": booking.id,
+            "user_id": booking.user_id,
             "scooter_id": booking.scooter_id,
-            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
         return jsonify(result)
     else:
         return jsonify({"message": "Booking not found"}), 404
-
 
 @booking_api.route("/booking/<int:booking_id>", methods=["DELETE"])
 def delete_booking(booking_id):
@@ -93,10 +91,10 @@ def delete_booking(booking_id):
         db.session.delete(booking)
         db.session.commit()
         result = {
-            "BookingID": booking.id,
-            "UserID": booking.user_id,
+            "booking_id": booking.id,
+            "user_id": booking.user_id,
             "scooter_id": booking.scooter_id,
-            "Time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
+            "time": booking.time.strftime("%Y-%m-%d %H:%M:%S"),
             "status": booking.status
         }
         return jsonify(result)
