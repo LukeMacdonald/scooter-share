@@ -7,38 +7,37 @@
 
     table {
         border-collapse: collapse;
-        width: 100%;
+        width:80%
     }
 
     th, td {
         border: 1px solid #ddd;
         padding: 8px;
         text-align: left;
-        text-align: center;
+     
+        width: max-content; 
     }
 
     thead {
-        background-color: cadetblue; /* Header background color */
-        color: white; /* Header text color */
+        background-color: cadetblue; 
+        color: white; 
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
     }
 
     .status {
-        border-radius: 10px; /* Border radius */
+        border-radius: 10px;
         padding: 6px;
-        width: 90px;
-        text-align: center;
+     
     }
 
     div {
         padding-bottom: 50px;
     }
 </style>
-    <div style="margin-left:2rem">
-        <h1 style="color:black; font-size:3rem">Welcome Back</h1>
-        <hr/>
-    </div>
+<div style="width:90%; margin:0 auto; text-align:left">
+    <h1 style="color:black; font-size:3rem">Welcome Back</h1>
+    <hr/>
     <div>
         <h3>Scooter usage history:</h3>
         <table>
@@ -55,7 +54,7 @@
                     <td>{{ booking.id }}</td>
                     <td>{{ booking.date }}</td>
                     <td>{{ booking.duration }}</td>
-                    <td class="status" style="background-color: yellow;">{{ booking.status }}</td>
+                    <td class="status" style="color: green;">{{ booking.status }}</td>
                 </tr>
                 {% endif %}
                 {% endfor %}
@@ -78,11 +77,11 @@
                     <td>{{ booking.date }}</td>
                     <td>{{ booking.duration }}</td>
                     {% if booking.status == 'active' %}
-                    <td class="status" style="background-color: greenyellow;">{{ booking.status }}</td>
+                    <td class="status" style="color: orange;">{{ booking.status }}</td>
                     {% elif booking.status == 'completed' %}
-                    <td class="status" style="background-color: yellow;">{{ booking.status }}</td>
+                    <td class="status" style="color: green;">{{ booking.status }}</td>
                     {% elif booking.status == 'cancelled' %}
-                    <td class="status" style="background-color: red;">{{ booking.status }}</td>
+                    <td class="status" style="color: red;">{{ booking.status }}</td>
                     {% endif %}
                 </tr>
                 {% endfor %}
@@ -110,7 +109,15 @@
                     <td>{{ scooter.location }}</td>
                     <td>{{ scooter.remaining_power }}%</td>
                     <td>${{ scooter.cost_per_time }}</td>
-                    <td>{{ scooter.status }}</td>
+                    {% if scooter.status == 'occupying' %}
+                    <td class="status" style="color: orange;">{{ scooter.status }}</td>
+                    {% elif scooter.status == 'available' %}
+                    <td class="status" style="color: green;">{{ scooter.status }}</td>
+                    {% elif scooter.status == 'awaiting repair' %}
+                    <td class="status" style="color: red;">{{ scooter.status }}</td>
+                    {% elif scooter.status == 'pending' %}
+                    <td class="status" style="color: blue;">{{ scooter.status }}</td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -139,6 +146,7 @@
             </tbody>
         </table>
     </div>
+</div>
 {% endblock %}
 
 
