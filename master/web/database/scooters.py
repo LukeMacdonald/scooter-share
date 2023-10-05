@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 from master.database.database_manager import db
-from master.database.models import Scooter, ScooterStatus
+from master.database.models import Scooter, ScooterStatus, Repairs, Booking
 import master.database.queries as queries
 
 scooter_api = Blueprint("scooter_api", __name__)
@@ -143,6 +143,8 @@ def delete(scooter_id):
     """
     scooter = Scooter.query.get(scooter_id)
     if scooter:
+        Booking.query.filter_by(scooter_id=scooter_id).delete()
+        Repairs.query.filter_by(scooter_id=scooter_id).delete()
         db.session.delete(scooter)
         db.session.commit()
         return jsonify({'message': 'Scooter deleted successfully'})

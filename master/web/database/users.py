@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from master.database.models import User, UserType
+from master.database.models import User, UserType, Booking, Transaction
 from master.database.database_manager import db
 
 users_api = Blueprint("db_user", __name__)
@@ -114,6 +114,8 @@ def delete(user_id):
     """
     user = User.query.get(user_id)
     if user:
+        Booking.query.filter_by(user_id=user_id).delete()
+        Transaction.query.filter_by(user_id=user_id).delete()
         db.session.delete(user)
         db.session.commit()
         return jsonify(user.as_json())

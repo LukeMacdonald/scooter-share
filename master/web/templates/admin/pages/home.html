@@ -92,12 +92,12 @@
         <h3>Scooters:</h3>
         <table>
             <thead>
-                <th>Scooter</th>
+                <th>ID</th>
                 <th>Make</th>
                 <th>Colour</th>
                 <th>Location</th>
-                <th>Remaining power</th>
-                <th>Cost per time</th>
+                <th>Charge</th>
+                <th>Cost</th>
                 <th>Status</th>
                 <th>Edit</th>
             </thead>
@@ -119,7 +119,10 @@
                     {% elif scooter.status == 'pending' %}
                     <td class="status" style="color: blue;">{{ scooter.status }}</td>
                     {% endif %}
-                    <td><a href="{{ url_for('admin.edit_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-secondary"><i class="fa fa-pen-to-square"></i></a></td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-secondary"><i class="fa fa-pen-to-square"></i></a>
+                        <a href="{{ url_for('admin.delete_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
+                    </td>
                 </tr>
                 {% endfor %}
                 <tr>
@@ -148,7 +151,14 @@
                     <td>{{ customer.phone_number }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.balance }}</td>
-                    <td><a href="{{ url_for('admin.edit_customer', user_id=customer.id) }}" class="btn btn-outline-secondary"><i class="fa fa-pen-to-square"></i></a></td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_customer', user_id=customer.id) }}" class="btn btn-outline-secondary">
+                            <i class="fa fa-pen-to-square"></i>
+                        </a>
+                        <a href="{{ url_for('admin.delete_customer', user_id=customer.id ) }}" class="btn btn-outline-danger">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

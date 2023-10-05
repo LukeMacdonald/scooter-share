@@ -124,10 +124,21 @@ def update_customer():
         return redirect(url_for("admin.home")) 
     except Exception as error:
         print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500  
+        return {"error": "Internal Server Error"}, 500
+
+@admin.route("/customer/delete/<int:user_id>")
+def delete_customer(user_id):
+    try:
+        user_api.delete(user_id)
+        return redirect(url_for("admin.home"))
+    except Exception as error:
+        print(f"Error during API request: {error}")
+        return {"error": "Internal Server Error"}, 500   
+
 @admin.route("/scooter/add")
 def add_scooter():
     return render_template("admin/pages/add_scooter.html")
+
 @admin.route("/scooter/edit/<int:scooter_id>")
 def edit_scooter(scooter_id):
     try:
@@ -154,7 +165,15 @@ def scooter_update():
         print(f"Error during API request: {error}")
         return {"error": "Internal Server Error"}, 500 
         
-        
+@admin.route("/scooter/delete/<int:scooter_id>")
+def delete_scooter(scooter_id):
+    try:
+        scooters_api.delete(scooter_id)
+        return redirect(url_for("admin.home"))
+    except Exception as error:
+        print(f"Error during API request: {error}")
+        return {"error": "Internal Server Error"}, 500  
+       
     
 @admin.route("/scooter/submit", methods=['POST'])
 def submit_scooter():
