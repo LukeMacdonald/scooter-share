@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% block title %}Add Scooter{% endblock %}
+{% block content %}
+<div class="container mt-5" style="width:60%;">
+    <h1>Add New Scooter</h1>
+    <form id="add_scooter" action="{{ url_for('admin.submit_scooter') }}" method="post">
+        <input type="hidden" name="user_id">
+        <div class="mb-3">
+            <label for="make" class="form-label">Make:</label>
+            <input type="text" class="form-control" id="make" name="make" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="colour" class="form-label">Colour</label>
+            <input type="text" class="form-control" id="colour" name="colour" required>
+        </div>
+        <div class="mb-3">
+            <label for="cost" class="form-label">Cost Per Minute</label>
+            <input type="number" class="form-control" id="cost" name="cost" required step="0.01" min="0">
+        </div>
+        <div class="mb-3">
+            <label for="longitude" class="form-label">Longitude:</label>
+            <input type="number" class="form-control" id="longitude" name="longitude" required step="0.000001">
+        </div>
+
+        <div class="mb-3">
+            <label for="latitude" class="form-label">Latitude:</label>
+            <input type="number" class="form-control" id="latitude" name="latitude" required step="0.000001">
+        </div>
+        <div style="text-align:center">
+            <button type="submit" class="btn btn-primary" >Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

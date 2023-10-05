@@ -5,6 +5,42 @@ import master.database.queries as queries
 
 scooter_api = Blueprint("scooter_api", __name__)
 
+def post(data):
+    """
+    Create a new scooter record.
+
+    Returns:
+        JSON response with the newly created scooter object or an error message if the data is invalid.
+    """
+    
+    make = data['make']
+    longitude = data['longitude']
+    latitude = data['latitude']
+    remaining_power = 100.0
+    cost_per_time = data['cost_per_time']
+    colour = data['colour']
+    status = ScooterStatus.AVAILABLE.value
+
+    # Validate the required fields
+    if not make or not longitude or not latitude or not remaining_power or not cost_per_time or not status:
+        return jsonify({'message': 'Invalid data provided'}), 400
+
+    # Create a new scooter object
+    new_scooter = Scooter(
+        make=make,
+        longitude=longitude,
+        latitude=latitude,
+        remaining_power=remaining_power,
+        cost_per_time=cost_per_time,
+        status=status,
+        colour=colour
+    )
+
+    # Add the new scooter to the database
+    db.session.add(new_scooter)
+    db.session.commit()
+
+    return new_scooter.as_json(), 201
 def get_all():
     """
     Get a list of all scooters.

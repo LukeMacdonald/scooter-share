@@ -125,7 +125,21 @@ def update_customer():
     except Exception as error:
         print(f"Error during API request: {error}")
         return {"error": "Internal Server Error"}, 500  
-    
+@admin.route("/scooter/add")
+def add_scooter():
+    return render_template("admin/pages/add_scooter.html")
+
+@admin.route("/scooter/submit", methods=['POST'])
+def submit_scooter():
+    data = {
+        "make": request.form.get('make'),
+        "cost_per_time": request.form.get('cost'),
+        "colour": request.form.get('colour'),
+        "latitude": request.form.get('latitude'),
+        "longitude": request.form.get('longitude')
+    }
+    scooters_api.post(data)
+    return redirect(url_for("admin.home")) 
 @admin.route("/customers/info")
 def customers_info():
     """
