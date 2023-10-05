@@ -13,6 +13,16 @@ def get_all():
     """
     return [user.as_json() for user in User.query.all()]
 
+def get_all_by_role(role):
+    """
+    Get a list of all users.
+
+    Returns:
+        JSON response with a list of user objects.
+    """
+    users = User.query.filter_by(role=role).all()
+    return [user.as_json() for user in users]
+
 def get(user_id):
     """
     Get a user by their ID.
@@ -117,8 +127,8 @@ def get_engineer_emails():
     Returns:
         JSON response with a list of email addresses.
     """
-    engineer_users = User.query.filter_by(role=UserType.ENGINEER.value).all()
-    engineer_emails = [user.email for user in engineer_users]
+    engineer_users = get_all_by_role(UserType.ENGINEER.value)
+    engineer_emails = [user["email"] for user in engineer_users]
     
     return engineer_emails
 

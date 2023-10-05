@@ -100,6 +100,7 @@ class Scooter(db.Model):
             "remaining_power": self.remaining_power,
             "cost_per_time": self.cost_per_time,
             "status": self.status,
+            "colour": self.colour
         }
 
 class Booking(db.Model):
@@ -129,7 +130,8 @@ class Booking(db.Model):
             "scooter_id": self.scooter_id,
             "start_time": self.start_time.strftime("%a %d %b, %H:%M, %Y"),
             "end_time": self.end_time.strftime("%a %d %b, %H:%M, %Y"),
-            "status": self.status
+            "status": self.status,
+            "date": self.date.strftime("%Y-%m-%d"),
         }
 
 class Repairs(db.Model):

@@ -2,12 +2,14 @@
 Blueprint for Admin Routes
 
 """
+from datetime import datetime
 from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from flask import Blueprint, render_template, redirect, url_for, request
 from master.agent_interface import helpers
 from master.web.mail import send_email
-from master.database.models import User,Scooter, Booking, RepairStatus
+from master.database.models import User, RepairStatus, UserType
+import master.web.database.bookings as bookings_api
 import master.web.database.repairs as repairs_api
 import master.web.database.scooters as scooters_api
 import master.web.database.users as user_api
@@ -50,9 +52,18 @@ def home():
     Returns:
         Flask response: The admin home page.
     """
-    scooters = Scooter.query.all()
-    bookings = Booking.query.all()
-    customers = User.query.filter_by(role="customer")
+    scooters = scooters_api.get_all()
+    bookings = bookings_api.get_all()
+    customers = user_api.get_all_by_role(UserType.CUSTOMER.value)
+    
+    for scooter in scooters:
+        scooter['location'] = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
+    for booking in bookings:
+        start_time = datetime.strptime(booking["start_time"], "%a %d %b, %H:%M, %Y")
+        end_time = datetime.strptime(booking["end_time"], "%a %d %b, %H:%M, %Y")
+        time_difference = (end_time - start_time).total_seconds()/60
+        booking['duration'] = str(time_difference)
+    
     return render_template("admin/pages/home.html", scooters=scooters, bookings=bookings, customers=customers)
 
 @admin.route("/scooter/bookings")
@@ -107,6 +118,12 @@ def customers_info():
 
 @admin.route("/admin/repairs")
 def confirm_reports():
+    """
+    Endpoint to retrieve and display pending repair reports for admin confirmation.
+
+    Returns:
+        str: Rendered HTML template containing pending repair reports.
+    """
     try:
         repairs = repairs_api.get_pending_repairs()
         return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
@@ -116,11 +133,16 @@ def confirm_reports():
    
 @admin.route("/admin/scooter/report", methods=['POST'])
 def report_scooter():
+    """
+    Endpoint to process scooter repair reports submitted by users.
+
+    Returns:
+        Response: Redirects admin to the confirm_reports endpoint after processing the report.
+    """
     try:
         repair_id = request.form.get('repair_id')
-        repair = repairs_api.get(repair_id)
-        repair["status"] = RepairStatus.ACTIVE.value
-        updated_repair = repairs_api.update(repair_id, repair)
+        
+        updated_repair = repairs_api.update_status(repair_id, RepairStatus.ACTIVE.value)     
         
         # Send notifications to engineers
         notify_engineers(updated_repair["scooter_id"],updated_repair["report"])
@@ -129,7 +151,7 @@ def report_scooter():
     
     except RequestException as error:
         print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500  # Return a meaningful error response
+        return {"error": "Internal Server Error"}, 500  
     
 @admin.route("/admin/notify/<int:scooter_id>/<string:report>", methods=["GET"])
 def notify_engineers(scooter_id, report):

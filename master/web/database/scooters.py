@@ -13,7 +13,7 @@ def get_all():
         JSON response with a list of all scooter objects.
     """
     scooters = Scooter.query.all()
-    return jsonify([scooter.as_json() for scooter in scooters])
+    return [scooter.as_json() for scooter in scooters]
 
 def get(scooter_id):
     """
