@@ -1,30 +1,32 @@
 
 
 from sense_hat import SenseHat
-from database.models import Scooter
-from database.database_manager import db
-
+from agent.web.connection import get_connection
 
 class Status:
 
-    def __init__(self, scooter_id:int, db) -> None:
+    def __init__(self, scooter_id:int) -> None:
         self.sense = SenseHat()
         self.scooter_id = scooter_id
-        self.session = db.session
+        self.get_status()
+        self.display_status()
 
+
+    def update_local_status(self):
+        self.get_status()
+        self.display_status()
+        
     def get_status(self):
         '''
-        get scooter status from database
+            get scooter status from database
         '''
 
-        # I'm not all too sure how SQLAlchemy works gotta get this checked
-        self.status = self.session.query(Scooter.status).filter_by(id=self.scooter_id).first()
-        
-
+        response = get_connection().send({'scooter_id': self.scooter_id, 'name': 'get-scooter-by-id'})
+        self.status = response['scooters']['status']
 
     def display_status(self):
         '''
-        display the color representation of the status
+            display the color representation of the status
         '''
         if self.status == 'available':
             self.sense.clear((0, 255, 0))
@@ -35,6 +37,3 @@ class Status:
         else:
             self.sense.clear()
 
-
-if __name__ == '__main__':
-    status = Status(0, db)

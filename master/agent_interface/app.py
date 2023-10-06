@@ -140,7 +140,22 @@ def top_up_balance(handler, request):
         return {"error": str(error)}
     except Exception as error: 
         return {"error": "Internal Server Error"}
+    
 
+@comms.action("get-scooter-by-id", ['start'])
+def fetch_scooters_by_id(handler, request):
+    """
+    Fetch a list of scooters.
+
+    Returns:
+        dict: A dictionary containing the fetched data or an error message.
+    """
+    with app.app_context():
+        scooters = scooter_api.get(request['scooter_id'])
+        data = {
+            "scooters" : scooters,
+        }
+        return data
 # def lock_scooter(handler, request):-
 def run_agent_server(master):
     global app
