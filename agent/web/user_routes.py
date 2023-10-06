@@ -84,6 +84,7 @@ def signup_post():
             'first_name': request.form.get('first_name'),
             'last_name': request.form.get('last_name'),
             'role': request.form.get('role'),
+            'phone_number': request.form.get('phone_number'),
             "name": "register"
     }
 
@@ -95,9 +96,13 @@ def signup_post():
         elif response["user"] == "engineer":
             return redirect(url_for('engineer.home'))
         else:
-            raise ValueError("wat")
+            error_message = "Invalid role!"
+            flash(error_message, category='signup_error')  # Flash the error message
+            return redirect(url_for('user.signup'))
     else:
-        return redirect("/signup")
+        error_message = response.get("error", "Signup failed. Please try again.")
+        flash(error_message, category='signup_error')  # Flash the error message
+        return redirect(url_for('user.signup'))
 
 @user.route("/customer")
 @user_login_req
