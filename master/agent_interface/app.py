@@ -1,3 +1,4 @@
+import re
 from passlib.hash import sha256_crypt
 from functools import wraps
 from agent.common import socket_utils
@@ -27,12 +28,19 @@ def register(handler, request):
     try:
         role = request.get("role")
         email = request.get("email")
-        
-        #todo: add validation for email format
+        phone_number = request.get('phone_number')
+         
+        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if not re.match(email_regex, email):
+            raise ValueError("Invalid email address format.")
                  
         existing_user = user_api.get_by_email(email)
         if existing_user:
             raise ValueError("Email address already registered.")
+        
+        phone_regex = r'^[0-9]{10}$'
+        if not re.match(phone_regex, phone_number):
+            raise ValueError("Invalid phone number format.")
         
         user = user_api.post(request)
         handler.state = role
@@ -46,12 +54,14 @@ def register(handler, request):
 @app_context
 def login(handler, request):
     email = request["email"]
-    user = user_api.get_by_email(email) 
-    if user is None or not sha256_crypt.verify(request["password"], user.password):
-        return {"error": "Login info is incorrect."}
-    else:
-        handler.state = user.role
-        return {"user": user.as_json()}
+    user = user_api.get_by_email(email)
+    if user is None:
+        return {"error": "Email not found."} 
+    if not sha256_crypt.verify(request["password"], user.password):
+        return {"error": "Password is incorrect."}
+    
+    handler.state = user.role
+    return {"user": user.as_json()}
 
 @comms.action("locations", ["engineer"])
 @app_context
