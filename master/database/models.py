@@ -44,7 +44,7 @@ class User(db.Model):
     last_name = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum(UserType.CUSTOMER.value,UserType.ENGINEER.value,UserType.ADMIN.value), 
                      nullable=False, default=UserType.CUSTOMER.value)
-    phone_number = db.Column(db.String(12))
+    phone_number = db.Column(db.String(10))
     balance = db.Column(db.Float(precision=2), nullable=False)
     
     def __init__(self, username, password, email, first_name, last_name, role=UserType.CUSTOMER.value, phone_number=None, balance=0.0):
