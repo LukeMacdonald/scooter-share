@@ -9,8 +9,7 @@ from agent.common import comms, socket_utils
 from agent.web.connection import get_connection
 from agent.web.google_api import calendar
 from datetime import datetime, date, timedelta
-from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
-
+from flask import Flask, Blueprint, render_template, request, redirect, url_for, session, flash
 calendar = calendar.GoogleCalendar()
 user = Blueprint("user", __name__)
 
@@ -49,7 +48,9 @@ def login_post():
         elif response["user"]["role"] == "engineer":
             return redirect(url_for('engineer.home'))
     else:
-        return redirect("/")
+        error_message = response.get("error", "Login failed. Please try again.")
+        flash(error_message, category='login_error')  # Flash the error message
+        return redirect(url_for('user.login'))
         
 
 @user.route("/signup")
@@ -166,24 +167,29 @@ def make_booking_post(scooter_id):
         "name": "make-booking"
     }
 
-    get_connection().send(data)
-
-
-    return redirect(url_for('user.customer_home'))
+    response = get_connection().send(data)
+    if "error" in response:
+        return redirect(url_for('user.error',message=response['error'] ))
+    else:
+        return redirect(url_for('user.customer_home'))
 
 @user.route('/cancel-booking', methods=["POST"])
 def cancel_booking():
-    get_connection().send({"name" : "cancel-booking", "booking-id" : request.form.get("booking_id")})
-
-    calendar.remove(request.form.get("event_id"))
-
-    return redirect(url_for('user.customer_home'))
+    response = get_connection().send({"name" : "cancel-booking", "booking-id" : request.form.get("booking_id")})
+    if "error" in response:
+        return redirect(url_for('user.error',message=response['error'] ))
+    else:
+        calendar.remove(request.form.get("event_id"))
+        return redirect(url_for('user.customer_home'))
 
 @user.route('/report-issue/<int:scooter_id>', methods=["POST"])
 def report_issue(scooter_id):
+    
     response = get_connection().send({"name" : "report-issue", "scooter-id" : scooter_id, "report": request.form.get("issue_description")})
-
-    return redirect(url_for('user.customer_home'))
+    if "error" in response:
+        return redirect(url_for('user.error',message=response['error'] ))
+    else: 
+        return redirect(url_for('user.customer_home'))
 
 @user.route('/top-up-balance')
 def top_up_balance():
@@ -203,7 +209,14 @@ def top_up_balance_post():
     Returns:
         Flask response: The top-up-balance page.
     """
-    get_connection().send({"user-id": session.get('user_info')['id'], 
+    response = get_connection().send({"user-id": session.get('user_info')['id'], 
                                       "amount": request.form.get("amount"), "name": "top-up-balance"})
+    if "error" in response:
+        return redirect(url_for('user.error',message=response['error'] ))
+    else:
+        return redirect(url_for('user.customer_home'))
 
-    return redirect(url_for('user.customer_home'))
+@user.route('/error', defaults={'message': 'An error occurred.'})
+@user.route('/error/<string:message>')
+def error(message):
+    return render_template('error.html', message=message, role=session['user_info']["role"])

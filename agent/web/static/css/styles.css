@@ -34,9 +34,7 @@
 }
 .error-message{
     color: red; 
-    font-weight: bold; 
-    font-style: italic; 
-    font-size: 0.9rem
+    font-weight:500; 
 }
 #gmp-map {
     height: 80vh;   

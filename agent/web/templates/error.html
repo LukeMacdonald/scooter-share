@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}" rel="stylesheet" media="screen">
+    <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}" charset="utf-8"></script>
     <title>Error Page</title>
     <style>
         body {
@@ -36,6 +38,14 @@
     <div class="error-container">
         <h1>Oops! Something went wrong.</h1>
         <p>We're sorry, but there seems to be an error on this page. Please try again later.</p>
+        <p>{{ message }}</p>
+        {% if role == 'engineer' %}
+            <a href="{{ url_for('engineer.home') }}" class="btn btn-primary">Return Home</a>
+        {% elif role == 'customer' %}
+            <a href="{{ url_for('user.customer_home') }}" class="btn btn-primary">Return Home</a>
+        {% else %}
+            <a href="{{ url_for('user.login') }}" class="btn btn-primary">Return Home</a>
+        {% endif %}
     </div>
 </body>
 
