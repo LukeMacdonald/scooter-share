@@ -7,12 +7,14 @@ This module defines the routes and views related to the engineer's functionality
 import logging
 from flask import Blueprint, render_template, url_for, redirect, request
 from agent.web.connection import get_connection
+from agent.web.login import eng_login_req
 
 engineer = Blueprint("engineer", __name__)
 
 logging.basicConfig(level=logging.ERROR)
 
 @engineer.route("/engineer")
+@eng_login_req
 def home():
     """
     Display the engineer home page.
@@ -31,6 +33,7 @@ def home():
         return render_template("error.html", error="An unexpected error occurred."), 500
 
 @engineer.route("/engineer/scooters/locations")
+@eng_login_req
 def scooter_locations():
     """
     Display the locations of reported scooters page.
@@ -52,6 +55,7 @@ def scooter_locations():
         return render_template("error.html", error="An unexpected error occurred."), 500
 
 @engineer.route("/engineer/scooters/repairs")
+@eng_login_req
 def update_report():
     """
     Display the update repair report page for engineers.
@@ -73,6 +77,7 @@ def update_report():
         return render_template("error.html", error="An unexpected error occurred."), 500
 
 @engineer.route("/engineer/scooter/fixed", methods=["POST"])
+@eng_login_req
 def scooter_fixed():
     """
     Handle the scooter fixed form submission for engineers.
