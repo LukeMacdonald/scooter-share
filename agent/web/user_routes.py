@@ -10,6 +10,7 @@ from agent.web.connection import get_connection
 from agent.web.google_api import calendar
 from datetime import datetime, date, timedelta
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
+from agent.web.login import user_login_req
 
 calendar = calendar.GoogleCalendar()
 user = Blueprint("user", __name__)
@@ -43,10 +44,11 @@ def login_post():
     # communicate with the master
     response = get_connection().send(data)
     if "user" in response:
-        session['user_info'] = response["user"]
         if response["user"]["role"] == "customer":
+            session['user_info'] = response["user"]
             return redirect(url_for('user.customer_home'))
         elif response["user"]["role"] == "engineer":
+            session['eng_info'] = response["user"]
             return redirect(url_for('engineer.home'))
     else:
         return redirect("/")
@@ -92,6 +94,7 @@ def signup_post():
         return redirect("/signup")
 
 @user.route("/customer")
+@user_login_req
 def customer_home():
     """
     Display the customer home page.
@@ -113,6 +116,7 @@ def customer_home():
                            bookings=response["bookings"])
 
 @user.route('/make_booking/<int:scooter_id>/<float:balance>/<float:cost_per_time>')
+@user_login_req
 def make_booking(scooter_id, balance, cost_per_time):
     """
     Display the page for booking a scooter.
@@ -123,6 +127,7 @@ def make_booking(scooter_id, balance, cost_per_time):
     return render_template("customer/pages/make-booking.html", scooter_id=scooter_id, balance=balance, cost_per_time=cost_per_time)
 
 @user.route('/make_booking/<int:scooter_id>', methods=["POST"])
+@user_login_req
 def make_booking_post(scooter_id):
     """
     Display the page for booking a scooter.
@@ -172,6 +177,7 @@ def make_booking_post(scooter_id):
     return redirect(url_for('user.customer_home'))
 
 @user.route('/cancel-booking', methods=["POST"])
+@user_login_req
 def cancel_booking():
     get_connection().send({"name" : "cancel-booking", "booking-id" : request.form.get("booking_id")})
 
@@ -186,6 +192,7 @@ def report_issue(scooter_id):
     return redirect(url_for('user.customer_home'))
 
 @user.route('/top-up-balance')
+@user_login_req
 def top_up_balance():
     """
     Display the page for topping up balance.
@@ -196,6 +203,7 @@ def top_up_balance():
     return render_template("customer/pages/top-up-balance.html")
 
 @user.route('/top-up-balance', methods=["POST"])
+@user_login_req
 def top_up_balance_post():
     """
     Display the page for topping up balance.
@@ -207,3 +215,8 @@ def top_up_balance_post():
                                       "amount": request.form.get("amount"), "name": "top-up-balance"})
 
     return redirect(url_for('user.customer_home'))
+
+@user.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('user.login'))

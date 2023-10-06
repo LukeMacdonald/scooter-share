@@ -5,7 +5,7 @@ Blueprint for Admin Routes
 from datetime import datetime
 from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, session
 from master.agent_interface import helpers
 from master.web.mail import send_email
 from master.database.models import User, RepairStatus, UserType
@@ -13,6 +13,7 @@ import master.web.database.bookings as bookings_api
 import master.web.database.repairs as repairs_api
 import master.web.database.scooters as scooters_api
 import master.web.database.users as user_api
+from master.web.login import admin_login_req
 
 admin = Blueprint("admin", __name__)
 
@@ -41,10 +42,12 @@ def login():
     if admin is not None:
         password = request.form.get("password")
         if sha256_crypt.verify(password, admin.password):
+            session['admin_info'] = admin.email
             return redirect(url_for('admin.home'))
     return redirect("/")
 
 @admin.route("/home")
+@admin_login_req
 def home():
     """
     Display the admin home page.
@@ -67,6 +70,7 @@ def home():
     return render_template("admin/pages/home.html", scooters=scooters, bookings=bookings, customers=customers)
 
 @admin.route("/scooter/bookings")
+@admin_login_req
 def bookings():
     """
     Display the admin page for scooter bookings.
@@ -77,6 +81,7 @@ def bookings():
     return render_template("admin/pages/bookings.html")
 
 @admin.route("/scooters/usage")
+@admin_login_req
 def scooter_usage():
     """
     Display the admin page for scooter usage statistics.
@@ -87,6 +92,7 @@ def scooter_usage():
     return render_template("admin/pages/home.html")
 
 @admin.route("/customers/manage")
+@admin_login_req
 def manage_customers():
     """
     Display the admin page for managing customers.
@@ -97,6 +103,7 @@ def manage_customers():
     return render_template("admin/pages/home.html")
 
 @admin.route("/customers/edit/<int:user_id>")
+@admin_login_req
 def edit_customer(user_id):
     """
     Edit customer information.
@@ -113,6 +120,7 @@ def edit_customer(user_id):
     return render_template("admin/pages/edit_user.html", data=customer)
 
 @admin.route("/customer/update", methods=['POST'])
+@admin_login_req
 def update_customer():
     """
     Update customer information based on the form data.
@@ -133,6 +141,7 @@ def update_customer():
         return {"error": "Internal Server Error"}, 500
 
 @admin.route("/customer/delete/<int:user_id>")
+@admin_login_req
 def delete_customer(user_id):
     """
     Delete a customer record.
@@ -151,6 +160,7 @@ def delete_customer(user_id):
         return {"error": "Internal Server Error"}, 500   
 
 @admin.route("/scooter/add")
+@admin_login_req
 def add_scooter():
     """
     Render the template for adding a new scooter.
@@ -161,6 +171,7 @@ def add_scooter():
     return render_template("admin/pages/add_scooter.html")
 
 @admin.route("/scooter/edit/<int:scooter_id>")
+@admin_login_req
 def edit_scooter(scooter_id):
     """
     Edit scooter information based on the provided scooter ID.
@@ -180,6 +191,7 @@ def edit_scooter(scooter_id):
         return {"error": "Internal Server Error"}, 500 
 
 @admin.route("/scooter/update", methods=['POST'])
+@admin_login_req
 def scooter_update():
     """
     Update scooter information based on the form data provided via a POST request.
@@ -204,6 +216,7 @@ def scooter_update():
         return {"error": "Internal Server Error"}, 500 
         
 @admin.route("/scooter/delete/<int:scooter_id>")
+@admin_login_req
 def delete_scooter(scooter_id):
     """
     Delete a scooter record based on the provided scooter ID.
@@ -223,6 +236,7 @@ def delete_scooter(scooter_id):
         return {"error": "Internal Server Error"}, 500  
       
 @admin.route("/scooter/submit", methods=['POST'])
+@admin_login_req
 def submit_scooter():
 
     """
@@ -240,7 +254,9 @@ def submit_scooter():
     }
     scooters_api.post(data)
     return redirect(url_for("admin.home")) 
+
 @admin.route("/customers/info")
+@admin_login_req
 def customers_info():
     """
     Display the admin page for customer information.
@@ -251,6 +267,7 @@ def customers_info():
     return render_template("admin/pages/home.html")
 
 @admin.route("/admin/repairs")
+@admin_login_req
 def confirm_reports():
     """
     Endpoint to retrieve and display pending repair reports for admin confirmation.
@@ -266,6 +283,7 @@ def confirm_reports():
         return {"error": "Internal Server Error"}, 500
    
 @admin.route("/admin/scooter/report", methods=['POST'])
+@admin_login_req
 def report_scooter():
     """
     Endpoint to process scooter repair reports submitted by users.
@@ -288,6 +306,7 @@ def report_scooter():
         return {"error": "Internal Server Error"}, 500  
     
 @admin.route("/admin/notify/<int:scooter_id>/<string:report>", methods=["GET"])
+@admin_login_req
 def notify_engineers(scooter_id, report):
     """
     Notifies engineers about a reported scooter repair request via email.
@@ -306,4 +325,9 @@ def notify_engineers(scooter_id, report):
         return "Email sent successfully!", 200
     except Exception as error:
         print(str(error))
-        return "Email sending failed", 500   
+        return "Email sending failed", 500 
+
+@admin.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('admin.index'))
