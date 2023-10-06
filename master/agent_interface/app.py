@@ -1,9 +1,9 @@
 import re
-from passlib.hash import sha256_crypt
 from functools import wraps
+from passlib.hash import sha256_crypt
 from agent.common import socket_utils
 from master.agent_interface import comms
-from master.database.models import RepairStatus, ScooterStatus, BookingState, UserType
+from master.database.models import RepairStatus, ScooterStatus, BookingState
 import master.database.queries as queries
 import master.web.database.scooters as scooter_api
 import master.web.database.bookings as booking_api

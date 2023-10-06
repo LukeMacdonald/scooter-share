@@ -15,7 +15,6 @@ from master.web.database.bookings import booking_api
 from master.web.database.repairs import repairs_api
 from master.web.database.transactions import transaction_api
 from master.web.mail import init_mail
-from master.database.seed import seed_data
 
 def create_master_app():
     """

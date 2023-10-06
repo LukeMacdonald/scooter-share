@@ -5,12 +5,12 @@ This blueprint defines routes related to user management, including login, signu
 and role-based redirections to customer and engineer home pages.
 
 """
-from agent.common import comms, socket_utils
+
+from datetime import datetime, date, timedelta
+from flask import Blueprint, render_template, request, redirect, url_for, session,flash
+from agent.web.login import user_login_req
 from agent.web.connection import get_connection
 from agent.web.google_api import calendar
-from datetime import datetime, date, timedelta
-from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
-from agent.web.login import user_login_req
 
 calendar = calendar.GoogleCalendar()
 user = Blueprint("user", __name__)
