@@ -31,10 +31,10 @@ def register(handler, request):
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         if not re.match(email_regex, email):
             raise ValueError("Invalid email address format.")
-        response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5)
-        
-        if response.status_code == 200: 
-            raise ValueError("Email already exists.")
+
+        existing_user_request = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5)
+        if existing_user_request.status_code == 200:
+            raise ValueError("Email address already registered.")
         
         phone_regex = r'^[0-9]{10}$'
         if not re.match(phone_regex, phone_number):
