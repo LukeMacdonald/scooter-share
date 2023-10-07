@@ -248,12 +248,20 @@ def fetch_scooters_by_id(handler, request):
     Returns:
         dict: A dictionary containing the fetched data or an error message.
     """
-    with app.app_context():
-        scooters = scooter_ap.get(request['scooter_id'])
-        data = {
-            "scooters" : scooters,
-        }
+    try:
+        scooter_id = int(request.get("scooter_id"))
+        if scooter_id is None:
+            raise ValueError("ScooterID not found passed!")
+        
+        scooters = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
+        data = scooters
+        
         return data
+
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error:
+        return {"error": 'internal server error'}
 # def lock_scooter(handler, request):-
 def run_agent_server(master):
     global app

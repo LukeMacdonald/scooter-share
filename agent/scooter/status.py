@@ -22,7 +22,7 @@ class Status:
         '''
 
         response = get_connection().send({'scooter_id': self.scooter_id, 'name': 'get-scooter-by-id'})
-        self.status = response['scooters']['status']
+        self.status = response['status']
 
     def display_status(self):
         '''
