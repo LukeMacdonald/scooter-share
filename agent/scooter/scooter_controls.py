@@ -4,11 +4,13 @@ from time import sleep
 
 from agent.scooter.status import Status
 from agent.scooter.facial_recognition.facial_recognition import FacialRecognition
+from agent.scooter.crash_detection import CrashDetection
 from agent.web.connection import get_connection
 
 
 class ScooterInterface():
     def __init__(self, scooter_id:int) -> None:
+        self.crash_detection = CrashDetection(scooter_id)
         self.sense = SenseHat()
         self.scooter_id = scooter_id
 
@@ -20,14 +22,16 @@ class ScooterInterface():
             'name': 'unlock-scooter'
         })
         print(message['message'])
-        being_used = True
-        while being_used:
-            for event in self.sense.stick.get_events():
-                if event.action == 'pressed':
-                    being_used = False
-                    break
-        self.deactivate_scooter()
-
+        if message['message'] == 'Scooter Successfully Booked':
+            being_used = True
+            self.crash_detection_thread = threading.Thread(target=self.crash_detection.starting_detection)
+            self.crash_detection_thread.start()
+            while being_used:
+                for event in self.sense.stick.get_events():
+                    if event.action == 'pressed':
+                        being_used = False
+                        break
+            self.deactivate_scooter()
 
 
     def deactivate_scooter(self):
@@ -35,6 +39,7 @@ class ScooterInterface():
             'scooter_id': self.scooter_id,
             'name': 'lock-scooter'
         })
+        self.crash_detection.in_use = False
         self.run_facial_recognition()
         
 
