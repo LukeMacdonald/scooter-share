@@ -158,4 +158,4 @@ def update_status(repair_id):
         db.session.commit()
         return repair.as_json()
     else:
-        return None
+        return jsonify({"message": "Repair not found"}), 404
