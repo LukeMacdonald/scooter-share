@@ -8,6 +8,10 @@ from master.database.models import RepairStatus, ScooterStatus, BookingState
 import master.database.queries as queries
 
 API_BASE_URL = "http://localhost:5000"
+
+# Functions which check the status, because most of the time we just
+# want to fail fast if they fail somehow. Pass check_status=False if you
+# will handle errors.
 def get_request(endpoint, check_status=True):
     request = requests.get(API_BASE_URL + endpoint)
     if check_status:
