@@ -142,7 +142,8 @@ def get_engineer_emails():
 
 @users_api.route("/user/email/<string:email>", methods=["GET"])
 def get_by_email(email):
-    user = User.query.filter_by(email=email).first() 
+    user = User.query.filter_by(email=email).first()
     if user:
         return user.as_json()
-    return jsonify({"message": "User not found"}), 404
+    else:
+        return jsonify({"message": "User not found"}), 404
