@@ -68,7 +68,8 @@ class User(db.Model):
             'last_name': self.last_name,
             'role': self.role,
             'phone_number': phone_number,
-            'balance': self.balance
+            'balance': self.balance,
+            'password': self.password
         }
 
 class Scooter(db.Model):
