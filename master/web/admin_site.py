@@ -10,8 +10,6 @@ from flask import Blueprint, render_template, redirect, url_for, request, sessio
 from master.agent_interface import helpers
 from master.web.mail import send_email
 from master.database.models import User, RepairStatus, UserType
-import master.web.database.repairs as repairs_api
-import master.web.database.scooters as scooters_api
 from master.web.login import admin_login_req
 
 API_BASE_URL = "http://localhost:5000"
@@ -56,7 +54,8 @@ def home():
     Returns:
         Flask response: The admin home page.
     """
-    scooters = scooters_api.get_all()
+    scooters =  requests.get(f"{API_BASE_URL}/scooters/all", timeout=5).json() 
+    # scooters = scooters_api.get_all()
     # bookings = bookings_api.get_all()
     bookings = requests.get(f"{API_BASE_URL}/bookings", timeout=5).json() 
     # customers = user_api.get_all_by_role(UserType.CUSTOMER.value)
@@ -190,7 +189,8 @@ def edit_scooter(scooter_id):
              If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
-        scooter = scooters_api.get(scooter_id)
+        scooter = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
+        # scooter = scooters_api.get(scooter_id)
         return render_template("admin/pages/edit_scooter.html", data=scooter)
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -208,14 +208,15 @@ def scooter_update():
     """
     try:
         scooter_id = request.form.get('scooter_id')
-        scooter = scooters_api.get(scooter_id)
+        scooter = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
         scooter["colour"] = request.form.get("colour")
         scooter["make"] = request.form.get('make')
         scooter["cost_per_time"] = float(request.form.get('cost'))
         scooter["remaining_power"] = float(request.form.get('charge'))
         scooter["longitude"] = float(request.form.get('longitude'))
         scooter["latitude"] = float(request.form.get('latitude'))
-        scooters_api.update(scooter_id, scooter)
+        updated_scooter = requests.put(f"{API_BASE_URL}/scooter/id/{scooter_id}", json=scooter, timeout=5).json() 
+        #scooters_api.update(scooter_id, scooter)
         return redirect(url_for("admin.home")) 
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -235,7 +236,8 @@ def delete_scooter(scooter_id):
                  If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
-        scooters_api.delete(scooter_id)
+        requests.delete(f"{API_BASE_URL}/scooter/{scooter_id}", timeout=5).json() 
+        #scooters_api.delete(scooter_id)
         return redirect(url_for("admin.home"))
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -258,7 +260,7 @@ def submit_scooter():
         "latitude": request.form.get('latitude'),
         "longitude": request.form.get('longitude')
     }
-    scooters_api.post(data)
+    scooter = requests.post(f"{API_BASE_URL}/scooter", json=data, timeout=5).json() 
     return redirect(url_for("admin.home")) 
 
 @admin.route("/customers/info")
@@ -282,7 +284,7 @@ def confirm_reports():
         str: Rendered HTML template containing pending repair reports.
     """
     try:
-        repairs = repairs_api.get_pending_repairs()
+        repairs = requests.get(f"{API_BASE_URL}/repairs/pending", timeout=5).json()  
         return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
     except Exception as error:
         print(f"Error during repairs API request: {error}")
@@ -299,9 +301,9 @@ def report_scooter():
     """
     try:
         repair_id = request.form.get('repair_id')
-        
-        updated_repair = repairs_api.update_status(repair_id, RepairStatus.ACTIVE.value)     
-        
+        data = {"status": RepairStatus.ACTIVE.value}
+        updated_repair = requests.put(f"{API_BASE_URL}/repair/status/{repair_id}", json=data, timeout=5).json()  
+         
         # Send notifications to engineers
         notify_engineers(updated_repair["scooter_id"],updated_repair["report"])
     
@@ -319,7 +321,7 @@ def notify_engineers(scooter_id, report):
     """
     try: 
         
-        scooter = scooters_api.get(scooter_id)
+        scooter = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
         steet_address = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
         # engineer_emails = user_api.get_engineer_emails()

@@ -80,7 +80,7 @@ def post():
     return new_user.as_json()
 
 @users_api.route("/user/<int:user_id>", methods=["PUT"])
-def update(user_id, data):
+def update(user_id):
     """
     Update a user by their ID.
 
