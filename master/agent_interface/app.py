@@ -31,9 +31,9 @@ def register(handler, request):
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         if not re.match(email_regex, email):
             raise ValueError("Invalid email address format.")
-        response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5).json()
+        response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5)
         
-        if not "message" in response:
+        if response.status_code == 200: 
             raise ValueError("Email already exists.")
         
         phone_regex = r'^[0-9]{10}$'
@@ -50,13 +50,12 @@ def register(handler, request):
 @app_context
 def login(handler, request):
     email = request["email"]
-    user = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5).json()
-    print(user)
-    if user is None:
-        return {"error": "Email not found."} 
+    response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5)
+    if response.status_code == 404:
+        return {"error": "Email not found."}
+    user = response.json()
     if not sha256_crypt.verify(request["password"], user["password"]):
         return {"error": "Password is incorrect."}
-    
     handler.state = user["role"]
     return {"user": user}
 
@@ -106,15 +105,15 @@ def fetch_available_scooters(handler, request):
         
         scooters = requests.get(f"{API_BASE_URL}/scooters/status/{ScooterStatus.AVAILABLE.value}", timeout=5).json() 
         bookings = requests.get(f"{API_BASE_URL}/bookings/user/{customer_id}", timeout=5).json()
-        customer = requests.get(f"{API_BASE_URL}/user/id/{customer_id}", timeout=5).json() 
+        response = requests.get(f"{API_BASE_URL}/user/id/{customer_id}", timeout=5)
             
-        if customer is None:
+        if response.status_code == 404: 
             raise ValueError("Customer not found.")
         
         data = {
             "scooters": scooters,
             "bookings": bookings,
-            "user_details": customer
+            "user_details": response.json()
         }
         return data
     except ValueError as error:
@@ -166,11 +165,12 @@ def cancel_booking(handler, request):
     try:
         booking_id = request.get("booking-id")
         data = {"status": BookingState.CANCELLED.value }
-        booking = requests.put(f"{API_BASE_URL}/booking/{booking_id}", json=data, timeout=5).json() 
-        if booking:
+        response = requests.put(f"{API_BASE_URL}/booking/status/{booking_id}", json=data, timeout=5)
+        if response.status_code != 404:
+            booking = response.json()
             scooter_id = booking["scooter_id"]
             data = {"status":ScooterStatus.AVAILABLE.value}
-            updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()  
+            updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()
             return {"message": "Booking successfully cancelled."}
         else:
             return {"error": "Booking not found."}
@@ -193,6 +193,7 @@ def submit_repair_request(handler, request):
         report_text = request.get("report")
         if report_text is None:
             raise ValueError("Report Details Not Passed!") 
+        
         data = {
             "scooter_id": scooter_id,
             "report": report_text,
@@ -201,7 +202,7 @@ def submit_repair_request(handler, request):
         
         repair = requests.post(f"{API_BASE_URL}/repair", json=data, timeout=5).json()
         data = {"status":ScooterStatus.AWAITING_REPAIR.value}
-        updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()   
+        updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()
         
         return {"message": "Repair request submitted successfully."}
     except ValueError as e:
@@ -221,13 +222,15 @@ def top_up_balance(handler, request):
     try:
         amount = float(request.get("amount", 0))
         user_id = request.get("user-id")
-        user = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5).json() 
-        if user is None: 
+        response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)
+        if response.status_code == 404: 
             raise ValueError("User not found")
+        user = response.json()
         user["balance"] += amount
-        updated_user = requests.put(f"{API_BASE_URL}/user/{user_id}",json=user, timeout=5).json() 
-        if updated_user is None:
+        response = requests.put(f"{API_BASE_URL}/user/{user_id}",json=user, timeout=5)
+        if response.status_code == 404: 
             raise ValueError("Update user failed!") 
+        
         data = {"user_id": user_id, "amount":amount}
         requests.post(f"{API_BASE_URL}/transaction",json=data, timeout=5).json() 
         return {"new_balance": user["balance"]}
