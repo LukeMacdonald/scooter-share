@@ -31,8 +31,8 @@ def barf(handler, request):
     raise ValueError("Your mother was a hamster, and your father smelt of elderberries")
 
 class MockHandler:
-    def __init__(self):
-        self.state = "start"
+    def __init__(self, state="start"):
+        self.state = state
 
 class TestComms(unittest.TestCase):
     def test_states(self):
@@ -47,6 +47,7 @@ class TestComms(unittest.TestCase):
 # Master server tests
 
 class TestApp(unittest.TestCase):
+    # Login
     def test_unauthorised(self):
         handler = MockHandler()
         self.assertEqual("Unauthorised", comms.handle(handler, {"name": "locations"}).get("error"))
@@ -58,6 +59,7 @@ class TestApp(unittest.TestCase):
         handler = MockHandler()
         comms.handle(handler, {"name": "login", "email": "john@john.com", "password": "1111"})
         self.assertEqual("start", handler.state)
+    # Registration
     def test_register(self):
         handler = MockHandler()
         resp = comms.handle(handler,
@@ -70,8 +72,10 @@ class TestApp(unittest.TestCase):
                              "first_name": "Bob",
                              "last_name": "Bobsson"})
         self.assertTrue("user" in resp)
+        self.assertEqual("customer", handler.state)
     def test_existing_register(self):
         handler = MockHandler()
+        # This user already exists -- see master/database/seed.py
         resp = comms.handle(handler,
                             {"name": "register",
                              "role": "customer",
@@ -81,4 +85,5 @@ class TestApp(unittest.TestCase):
                              "phone_number": "0412345678",
                              "first_name": "Bob",
                              "last_name": "Bobsson"})
-        self.assertTrue("error" in resp)
+        self.assertTrue("Email address already registered", resp.get("error"))
+        self.assertEqual("start", handler.state)
