@@ -160,7 +160,7 @@ def make_booking(handler, request):
         
         booking = post_request(f"/bookings", json=booking_data).json()
         scooter_id = booking.get("scooter_id")
-        
+
         if scooter_id:
             data = {"status":ScooterStatus.OCCUPYING.value}
             updated_repair = put_request(f"/scooter/status/{scooter_id}", json=data).json()  
@@ -281,6 +281,153 @@ def fetch_scooters_by_id(handler, request):
         return {"error": str(error)}
     except Exception as error:
         return {"error": 'internal server error'}
+
+
+@comms.action("create-face", ['start'])
+def create_face(handler, request):
+    """
+        add a face to the registry
+
+    Returns:
+        dict: A dictionary containing the fetched data or an error message.
+    """
+    try:
+
+        data = {
+            'user_id': request.get('user_id'),
+            'face': request.get('face')
+        }
+        
+        requests.post(f"{API_BASE_URL}/face", json=data, timeout=5).json() 
+
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error:
+        return {"error": 'internal server error'}
+
+
+@comms.action("get-faces", ['start'])
+def get_faces(handler, request):
+    """
+        add a face to the registry
+
+    Returns:
+        dict: A dictionary containing the fetched data or an error message.
+    """
+    try:
+        
+        response = requests.get(f"{API_BASE_URL}/face/all", timeout=5).json()
+        return response
+
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error:
+        return {"error": str(error)}
+
+
+@comms.action('unlock-scooter', ['start'])
+def unlock_scooter(handler, request):
+
+    data = {
+        'scooter_id': request.get('scooter_id'),
+        'user_id': request.get('user_id')
+    }
+
+    user_info = requests.get(f"{API_BASE_URL}/user/id/{data['user_id']}", timeout=5).json()
+    scooter_info = requests.get(f"{API_BASE_URL}/scooter/id/{data['scooter_id']}", timeout=5).json()
+
+    if scooter_info['status'] != ScooterStatus.AVAILABLE.value:
+        return {"message": "Scooter Not Available"}
+
+    if user_info['balance'] < scooter_info['cost_per_time']:
+        return {"message": "insufficient funds"}
+    else:
+        user_info['balance'] -= scooter_info['cost_per_time']
+        scooter_update = {"status": ScooterStatus.OCCUPYING.value}
+        print(user_info)
+        requests.put(f"{API_BASE_URL}/user/{data['user_id']}", json=user_info, timeout=5).json()
+        requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
+        return {"message": "Scooter Successfully Booked"}
+
+
+@comms.action("create-face", ['start'])
+def create_face(handler, request):
+    """
+        add a face to the registry
+
+    Returns:
+        dict: A dictionary containing the fetched data or an error message.
+    """
+    try:
+
+        data = {
+            'user_id': request.get('user_id'),
+            'face': request.get('face')
+        }
+        
+        requests.post(f"{API_BASE_URL}/face", json=data, timeout=5).json() 
+
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error:
+        return {"error": 'internal server error'}
+
+
+@comms.action("get-faces", ['start'])
+def get_faces(handler, request):
+    """
+        add a face to the registry
+
+    Returns:
+        dict: A dictionary containing the fetched data or an error message.
+    """
+    try:
+        
+        response = requests.get(f"{API_BASE_URL}/face/all", timeout=5).json()
+        return response
+
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error:
+        return {"error": str(error)}
+
+
+@comms.action('unlock-scooter', ['start'])
+def unlock_scooter(handler, request):
+
+    data = {
+        'scooter_id': request.get('scooter_id'),
+        'user_id': request.get('user_id')
+    }
+
+    user_info = requests.get(f"{API_BASE_URL}/user/id/{data['user_id']}", timeout=5).json()
+    scooter_info = requests.get(f"{API_BASE_URL}/scooter/id/{data['scooter_id']}", timeout=5).json()
+
+    if scooter_info['status'] != ScooterStatus.AVAILABLE.value:
+        return {"message": "Scooter Not Available"}
+
+    if user_info['balance'] < scooter_info['cost_per_time']:
+        return {"message": "insufficient funds"}
+    else:
+        user_info['balance'] -= scooter_info['cost_per_time']
+        scooter_update = {"status": ScooterStatus.OCCUPYING.value}
+        print(user_info)
+        requests.put(f"{API_BASE_URL}/user/{data['user_id']}", json=user_info, timeout=5).json()
+        requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
+        return {"message": "Scooter Successfully Booked"}
+
+
+@comms.action('lock-scooter', ['start'])
+def lock_scooter(handler, request):
+
+    data = {
+        'scooter_id': request.get('scooter_id'),
+    }
+
+    scooter_update = {'status': ScooterStatus.AVAILABLE.value}
+    requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
+    return {"message": "Scooter Successfully Returned"}
+
 
 def run_agent_server(master):
     global app
