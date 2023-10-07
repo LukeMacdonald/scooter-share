@@ -1,9 +1,10 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, request
 from master.database.models import Transaction
 from master.database.database_manager import db
 
 transaction_api = Blueprint("transaction_api", __name__)
 
+@transaction_api.route("/transactions/all", methods=["GET"])
 def get_all():
     """
     Get a list of all transactions.
@@ -11,8 +12,8 @@ def get_all():
     Returns:
         JSON response with a list of transaction objects.
     """
-    return jsonify([transaction.as_json() for transaction in Transaction.query.all()])
-
+    return [transaction.as_json() for transaction in Transaction.query.all()]
+@transaction_api.route("/transaction/<int:transaction_id>", methods=["GET"])
 def get(transaction_id):
     """
     Get a transaction by its ID.
@@ -25,26 +26,30 @@ def get(transaction_id):
     """
     transaction = Transaction.query.get(transaction_id)
     if transaction:
-        return jsonify(transaction.as_json())
+        return transaction.as_json()
     else:
-        return jsonify({"message": "Transaction not found"}), 404
+        return None
 
-def post(user_id, amount):
+@transaction_api.route("/transaction", methods=["POST"])
+def post():
     """
     Create a new transaction.
 
     Returns:
         JSON response with the newly created transaction object and a status code of 201.
     """
+    data = request.json
+    
     new_transaction = Transaction(
-        user_id=user_id,
-        amount=amount
+        user_id=data["user_id"],
+        amount=data["amount"]
     )
 
     db.session.add(new_transaction)
     db.session.commit()
     return new_transaction.as_json()
 
+@transaction_api.route("/transactions/user/<int:user_id>", methods=["GET"])
 def get_by_user(user_id):
     """
     Get all transactions for a specific user by their user ID.
@@ -56,4 +61,4 @@ def get_by_user(user_id):
         JSON response with a list of transaction objects for the specified user.
     """
     transactions = Transaction.query.filter_by(user_id=user_id).all()
-    return jsonify([transaction.as_json() for transaction in transactions])
+    return [transaction.as_json() for transaction in transactions]

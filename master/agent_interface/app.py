@@ -6,9 +6,6 @@ from agent.common import socket_utils
 from master.agent_interface import comms
 from master.database.models import RepairStatus, ScooterStatus, BookingState
 import master.database.queries as queries
-import master.web.database.scooters as scooter_api
-import master.web.database.transactions as transaction_api
-import master.web.database.repairs as repair_api
 
 API_BASE_URL = "http://localhost:5000"
 
@@ -107,8 +104,7 @@ def fetch_available_scooters(handler, request):
         customer_id = int(request.get("customer_id"))
         if customer_id is None:
             raise ValueError("CustomerID not found passed!") 
-        
-        scooters = scooter_api.get_by_status(ScooterStatus.AVAILABLE.value)
+        scooters = requests.get(f"{API_BASE_URL}/scooters/status/{ScooterStatus.AVAILABLE.value}", timeout=5).json() 
         bookings = requests.get(f"{API_BASE_URL}/bookings", timeout=5).json()
         customer = requests.get(f"{API_BASE_URL}/user/id/{customer_id}", timeout=5).json() 
             
@@ -148,7 +144,8 @@ def make_booking(handler, request):
         scooter_id = booking.get("scooter_id")
         
         if scooter_id:
-            scooter_api.update_status(scooter_id, ScooterStatus.OCCUPYING.value)
+            data = {"status":ScooterStatus.OCCUPYING.value}
+            updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()  
             return {"message": "Booking created successfully."}
         else:
             raise ValueError("Invalid scooter ID in the booking data.")
@@ -172,7 +169,8 @@ def cancel_booking(handler, request):
         booking = requests.put(f"{API_BASE_URL}/booking/{booking_id}", json=data, timeout=5).json() 
         if booking:
             scooter_id = booking["scooter_id"]
-            scooter_api.update_status(scooter_id, ScooterStatus.AVAILABLE.value)
+            data = {"status":ScooterStatus.AVAILABLE.value}
+            updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()  
             return {"message": "Booking successfully cancelled."}
         else:
             return {"error": "Booking not found."}
@@ -195,9 +193,15 @@ def submit_repair_request(handler, request):
         report_text = request.get("report")
         if report_text is None:
             raise ValueError("Report Details Not Passed!") 
+        data = {
+            "scooter_id": scooter_id,
+            "report": report_text,
+            "status": RepairStatus.PENDING.value
+        }
         
-        repair_api.post(scooter_id, report_text, RepairStatus.PENDING.value)
-        scooter_api.update_status(scooter_id, ScooterStatus.AWAITING_REPAIR.value)
+        repair = requests.post(f"{API_BASE_URL}/repair", json=data, timeout=5).json()
+        data = {"status":ScooterStatus.AWAITING_REPAIR.value}
+        updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()   
         
         return {"message": "Repair request submitted successfully."}
     except ValueError as e:
@@ -221,10 +225,11 @@ def top_up_balance(handler, request):
         if user is None: 
             raise ValueError("User not found")
         user["balance"] += amount
-        updated_user = requests.put(f"{API_BASE_URL}/user",json=user, timeout=5).json() 
+        updated_user = requests.put(f"{API_BASE_URL}/user/{user_id}",json=user, timeout=5).json() 
         if updated_user is None:
             raise ValueError("Update user failed!") 
-        transaction_api.post(user_id, amount=amount)
+        data = {"user_id": user_id, "amount":amount}
+        requests.post(f"{API_BASE_URL}/transaction",json=data, timeout=5).json() 
         return {"new_balance": user["balance"]}
     except ValueError as error:
         return {"error": str(error)}

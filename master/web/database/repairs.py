@@ -1,9 +1,10 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from master.database.models import Repairs, RepairStatus
 from master.database.database_manager import db
 
 repairs_api = Blueprint("repairs_api", __name__)
 
+@repairs_api.route("/repairs/all", methods=["GET"])
 def get_all():
     """
     Get a list of all repair records.
@@ -13,6 +14,7 @@ def get_all():
     """
     return [repair.as_json() for repair in Repairs.query.all()]
 
+@repairs_api.route("/repair/<int:repair_id>", methods=["GET"])
 def get(repair_id):
     """
     Get a specific repair record by its ID.
@@ -33,6 +35,7 @@ def get(repair_id):
         }
     return result
 
+@repairs_api.route("/repairs/scooter/<int:scooter_id>", methods=["GET"])
 def get_by_scooter(scooter_id):
     """
     Get the first repair record for a specified scooter by its ID.
@@ -49,24 +52,28 @@ def get_by_scooter(scooter_id):
     else:
         return jsonify({"message": "No repairs found for the specified scooter_id"}), 404
 
-def post(scooter_id,report,status):
+@repairs_api.route("/repair", methods=["POST"])
+def post():
+    
     """
     Add a new repair record.
 
     Returns:
         JSON response with the added repair record or an error message if the record could not be added.
     """
+    data = request.json
     new_repair = Repairs(
-        scooter_id=scooter_id,
-        report=report,
-        status=status
+        scooter_id=data["scooter_id"],
+        report=data["report"],
+        status=data["status"]
     )
 
     db.session.add(new_repair)
     db.session.commit()
     return new_repair.as_json()
 
-def update(repair_id, new_repair):
+@repairs_api.route("/repair/id/<int:repair_id>", methods=["PUT"])
+def update(repair_id):
     """
     Update an existing repair record by its ID.
 
@@ -76,6 +83,7 @@ def update(repair_id, new_repair):
     Returns:
         JSON response with the updated repair record or an error message if the record could not be updated.
     """
+    new_repair = request.json 
     repair = Repairs.query.get(repair_id)
     if repair:
         repair.scooter_id = new_repair["scooter_id"]
@@ -87,6 +95,7 @@ def update(repair_id, new_repair):
     else:
         return jsonify({"message": "Repair not found"}), 404
 
+@repairs_api.route("/repair/<int:repair_id>", methods=["DELETE"])
 def delete(repair_id):
     """
     Delete an existing repair record by its ID.
@@ -105,6 +114,7 @@ def delete(repair_id):
     else:
         return jsonify({"message": "Repair not found"}), 404
 
+@repairs_api.route("/repairs/pending", methods=["GET"])
 def get_pending_repairs():
     """
     Get repair records based on their status.
@@ -129,7 +139,8 @@ def get_pending_repairs():
 
     return result
 
-def update_status(repair_id, status):
+@repairs_api.route("/repair/status/<int:repair_id>", methods=["PUT"])
+def update_status(repair_id):
     """
     Update an existing repair record by its ID.
 
@@ -139,9 +150,10 @@ def update_status(repair_id, status):
     Returns:
         JSON response with the updated repair record or an error message if the record could not be updated.
     """
+    data = request.json
     repair = Repairs.query.get(repair_id)
     if repair:
-        repair.status = status
+        repair.status = data["status"]
 
         db.session.commit()
         return repair.as_json()
