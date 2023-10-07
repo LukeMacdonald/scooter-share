@@ -429,6 +429,17 @@ def lock_scooter(handler, request):
     return {"message": "Scooter Successfully Returned"}
 
 
+@comms.action('request-repair', ['start'])
+def request_repair(handler, request):
+
+    data = {
+        'scooter_id': request.get('scooter_id')
+    }
+
+    scooter_update = {'status': ScooterStatus.AWAITING_REPAIR.value}
+    requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
+    return {"message": "Scooter Waiting for Repair"}
+
 def run_agent_server(master):
     global app
     app = master
