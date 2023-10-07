@@ -38,12 +38,10 @@ def get(user_id):
     """
     
     user = User.query.get(user_id)
-    
-    print(user.as_json()) 
     if user:
         return user.as_json()
     else:
-        return None
+        return jsonify(message="User not found"), 200
 
 @users_api.route("/user", methods=["POST"])
 def post():
@@ -54,10 +52,10 @@ def post():
         JSON response with the newly created user object and a status code of 201.
     """
     data = request.json
-    password = data.get("password")
+    password = data["password"]
     
     if not password:
-        return jsonify({"message": "Password is required"}), 400
+        return {"message": "Password is required"}
     
     if "balance" in data:
         balance = data["balance"]
@@ -65,13 +63,13 @@ def post():
         balance = 0.0
 
     new_user = User(
-        username=data.get("username"),
+        username=data["username"],
         password=password,
-        email=data.get("email"),
-        first_name=data.get("first_name"),
-        last_name=data.get("last_name"),
-        role=data.get("role"),
-        phone_number=data.get("phone_number"),
+        email=data["email"],
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        role=data["role"],
+        phone_number=data["phone_number"],
         balance=balance
     )
 
@@ -145,4 +143,6 @@ def get_engineer_emails():
 @users_api.route("/user/email/<string:email>", methods=["GET"])
 def get_by_email(email):
     user = User.query.filter_by(email=email).first() 
-    return user.as_json()
+    if user:
+        return user.as_json()
+    return jsonify({"message": "User not found"}), 404

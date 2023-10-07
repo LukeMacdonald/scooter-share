@@ -27,13 +27,14 @@ def register(handler, request):
         role = request.get("role")
         email = request.get("email")
         phone_number = request.get('phone_number')
-         
+     
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         if not re.match(email_regex, email):
             raise ValueError("Invalid email address format.")
-        existing_user = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5).json() 
-        if existing_user:
-            raise ValueError("Email address already registered.")
+        response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5).json()
+        
+        if not "message" in response:
+            raise ValueError("Email already exists.")
         
         phone_regex = r'^[0-9]{10}$'
         if not re.match(phone_regex, phone_number):
@@ -44,8 +45,6 @@ def register(handler, request):
         return {"user": user, "response": "yes"}
     except ValueError as error:
         return {"error": str(error)}
-    except Exception as error:
-        return {"error": "Internal Server Error."}
 
 @comms.action("login", ["start", "customer", "engineer"])
 @app_context
@@ -103,9 +102,10 @@ def fetch_available_scooters(handler, request):
     try:
         customer_id = int(request.get("customer_id"))
         if customer_id is None:
-            raise ValueError("CustomerID not found passed!") 
+            raise ValueError("CustomerID not found passed!")
+        
         scooters = requests.get(f"{API_BASE_URL}/scooters/status/{ScooterStatus.AVAILABLE.value}", timeout=5).json() 
-        bookings = requests.get(f"{API_BASE_URL}/bookings", timeout=5).json()
+        bookings = requests.get(f"{API_BASE_URL}/bookings/user/{customer_id}", timeout=5).json()
         customer = requests.get(f"{API_BASE_URL}/user/id/{customer_id}", timeout=5).json() 
             
         if customer is None:
@@ -236,7 +236,6 @@ def top_up_balance(handler, request):
     except Exception as error: 
         return {"error": "Internal Server Error"}
 
-# def lock_scooter(handler, request):-
 def run_agent_server(master):
     global app
     app = master
