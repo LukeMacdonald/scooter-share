@@ -3,17 +3,18 @@ Blueprint for Admin Routes
 
 """
 from datetime import datetime
+import requests
 from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from flask import Blueprint, render_template, redirect, url_for, request, session
 from master.agent_interface import helpers
 from master.web.mail import send_email
 from master.database.models import User, RepairStatus, UserType
-import master.web.database.bookings as bookings_api
 import master.web.database.repairs as repairs_api
 import master.web.database.scooters as scooters_api
-import master.web.database.users as user_api
 from master.web.login import admin_login_req
+
+API_BASE_URL = "http://localhost:5000"
 
 admin = Blueprint("admin", __name__)
 
@@ -56,8 +57,10 @@ def home():
         Flask response: The admin home page.
     """
     scooters = scooters_api.get_all()
-    bookings = bookings_api.get_all()
-    customers = user_api.get_all_by_role(UserType.CUSTOMER.value)
+    # bookings = bookings_api.get_all()
+    bookings = requests.get(f"{API_BASE_URL}/bookings", timeout=5).json() 
+    # customers = user_api.get_all_by_role(UserType.CUSTOMER.value)
+    customers = requests.get(f"{API_BASE_URL}/user/role/{UserType.CUSTOMER.value}", timeout=5).json() 
     
     for scooter in scooters:
         scooter['location'] = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
@@ -114,7 +117,8 @@ def edit_customer(user_id):
     Returns:
         str: Rendered template for editing user information.
     """
-    customer = user_api.get(user_id)
+    customer = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5).json() 
+    # customer = user_api.get(user_id)
     print(customer)
     
     return render_template("admin/pages/edit_user.html", data=customer)
@@ -130,11 +134,12 @@ def update_customer():
     """
     try:
         user_id = request.form.get('user_id')
-        user = user_api.get(user_id)
+        user = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5).json()
         user["first_name"] = request.form.get('first_name')
         user["last_name"] = request.form.get('last_name')  
         user["phone_number"] = request.form.get('phone_number')
-        user_api.update(user_id, user)
+        updated_user = requests.put(f"{API_BASE_URL}/user", json=user, timeout=5).json()
+        # user_api.update(user_id, user)
         return redirect(url_for("admin.home")) 
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -153,7 +158,8 @@ def delete_customer(user_id):
         response: Redirect to the admin home page if successful, or error message with status code 500 if there is an error.
     """
     try:
-        user_api.delete(user_id)
+        requests.delete(f"{API_BASE_URL}/user/{user_id}", timeout=5).json()
+        # user_api.delete(user_id)
         return redirect(url_for("admin.home"))
     except Exception as error:
         print(f"Error during API request: {error}")

@@ -1,4 +1,5 @@
 import re
+import requests
 from functools import wraps
 from passlib.hash import sha256_crypt
 from agent.common import socket_utils
@@ -6,10 +7,10 @@ from master.agent_interface import comms
 from master.database.models import RepairStatus, ScooterStatus, BookingState
 import master.database.queries as queries
 import master.web.database.scooters as scooter_api
-import master.web.database.bookings as booking_api
-import master.web.database.users as user_api
 import master.web.database.transactions as transaction_api
 import master.web.database.repairs as repair_api
+
+API_BASE_URL = "http://localhost:5000"
 
 # todo: Add validation to all functions
 
@@ -33,8 +34,7 @@ def register(handler, request):
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         if not re.match(email_regex, email):
             raise ValueError("Invalid email address format.")
-                 
-        existing_user = user_api.get_by_email(email)
+        existing_user = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5).json() 
         if existing_user:
             raise ValueError("Email address already registered.")
         
@@ -42,7 +42,7 @@ def register(handler, request):
         if not re.match(phone_regex, phone_number):
             raise ValueError("Invalid phone number format.")
         
-        user = user_api.post(request)
+        user = requests.post(f"{API_BASE_URL}/user", json=request, timeout=5).json()
         handler.state = role
         return {"user": user, "response": "yes"}
     except ValueError as error:
@@ -54,14 +54,15 @@ def register(handler, request):
 @app_context
 def login(handler, request):
     email = request["email"]
-    user = user_api.get_by_email(email)
+    user = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5).json()
+    print(user)
     if user is None:
         return {"error": "Email not found."} 
-    if not sha256_crypt.verify(request["password"], user.password):
+    if not sha256_crypt.verify(request["password"], user["password"]):
         return {"error": "Password is incorrect."}
     
-    handler.state = user.role
-    return {"user": user.as_json()}
+    handler.state = user["role"]
+    return {"user": user}
 
 @comms.action("locations", ["engineer"])
 @app_context
@@ -108,9 +109,9 @@ def fetch_available_scooters(handler, request):
             raise ValueError("CustomerID not found passed!") 
         
         scooters = scooter_api.get_by_status(ScooterStatus.AVAILABLE.value)
-        bookings = booking_api.get_by_user(customer_id)
-        customer = user_api.get(customer_id)
-        
+        bookings = requests.get(f"{API_BASE_URL}/bookings", timeout=5).json()
+        customer = requests.get(f"{API_BASE_URL}/user/id/{customer_id}", timeout=5).json() 
+            
         if customer is None:
             raise ValueError("Customer not found.")
         
@@ -142,7 +143,8 @@ def make_booking(handler, request):
         booking_data = request.get("data")
         if booking_data is None:
             raise ValueError("Booking data not passed!")
-        booking = booking_api.post(booking_data)
+        
+        booking = requests.post(f"{API_BASE_URL}/bookings", json=booking_data, timeout=5).json()
         scooter_id = booking.get("scooter_id")
         
         if scooter_id:
@@ -166,7 +168,8 @@ def cancel_booking(handler, request):
     """
     try:
         booking_id = request.get("booking-id")
-        booking = booking_api.update_status(booking_id, BookingState.CANCELLED.value)
+        data = {"status": BookingState.CANCELLED.value }
+        booking = requests.put(f"{API_BASE_URL}/booking/{booking_id}", json=data, timeout=5).json() 
         if booking:
             scooter_id = booking["scooter_id"]
             scooter_api.update_status(scooter_id, ScooterStatus.AVAILABLE.value)
@@ -214,11 +217,11 @@ def top_up_balance(handler, request):
     try:
         amount = float(request.get("amount", 0))
         user_id = request.get("user-id")
-        user = user_api.get(int(user_id))
+        user = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5).json() 
         if user is None: 
             raise ValueError("User not found")
         user["balance"] += amount
-        updated_user = user_api.update(user_id, user)
+        updated_user = requests.put(f"{API_BASE_URL}/user",json=user, timeout=5).json() 
         if updated_user is None:
             raise ValueError("Update user failed!") 
         transaction_api.post(user_id, amount=amount)
