@@ -9,6 +9,25 @@ import master.database.queries as queries
 
 API_BASE_URL = "http://localhost:5000"
 
+# Functions which check the status, because most of the time we just
+# want to fail fast if they fail somehow. Pass check_status=False if you
+# will handle errors.
+def get_request(endpoint, check_status=True):
+    request = requests.get(API_BASE_URL + endpoint)
+    if check_status:
+        request.raise_for_status()
+    return request
+def post_request(endpoint, check_status=True, **kwargs):
+    request = requests.post(API_BASE_URL + endpoint, **kwargs)
+    if check_status:
+        request.raise_for_status()
+    return request
+def put_request(endpoint, check_status=True, **kwargs):
+    request = requests.put(API_BASE_URL + endpoint, **kwargs)
+    if check_status:
+        request.raise_for_status()
+    return request
+
 # todo: Add validation to all functions
 
 app = None
@@ -31,8 +50,8 @@ def register(handler, request):
         email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
         if not re.match(email_regex, email):
             raise ValueError("Invalid email address format.")
-        response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5)
-        
+
+        response = get_request(f"/user/email/{email}", check_status=False)
         if response.status_code == 200: 
             raise ValueError("Email address already registered.")
         
@@ -40,7 +59,7 @@ def register(handler, request):
         if not re.match(phone_regex, phone_number):
             raise ValueError("Invalid phone number format.")
         
-        user = requests.post(f"{API_BASE_URL}/user", json=request, timeout=5).json()
+        user = post_request(f"/user", json=request).json()
         handler.state = role
         return {"user": user, "response": "yes"}
     except ValueError as error:
@@ -50,7 +69,7 @@ def register(handler, request):
 @app_context
 def login(handler, request):
     email = request["email"]
-    response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5)
+    response = get_request(f"/user/email/{email}", check_status=False)
     if response.status_code == 404:
         return {"error": "Email not found."}
     user = response.json()
@@ -99,13 +118,13 @@ def fetch_available_scooters(handler, request):
         dict: A dictionary containing the fetched data or an error message.
     """
     try:
+        if "customer_id" not in request:
+            raise ValueError("customer_id was not supplied.")
         customer_id = int(request.get("customer_id"))
-        if customer_id is None:
-            raise ValueError("CustomerID not found passed!")
-        
-        scooters = requests.get(f"{API_BASE_URL}/scooters/status/{ScooterStatus.AVAILABLE.value}", timeout=5).json() 
-        bookings = requests.get(f"{API_BASE_URL}/bookings/user/{customer_id}", timeout=5).json()
-        response = requests.get(f"{API_BASE_URL}/user/id/{customer_id}", timeout=5)
+
+        scooters = get_request(f"/scooters/status/{ScooterStatus.AVAILABLE.value}").json()
+        bookings = get_request(f"/bookings/user/{customer_id}").json()
+        response = get_request(f"/user/id/{customer_id}", check_status=False)
             
         if response.status_code == 404: 
             raise ValueError("Customer not found.")
@@ -139,12 +158,12 @@ def make_booking(handler, request):
         if booking_data is None:
             raise ValueError("Booking data not passed!")
         
-        booking = requests.post(f"{API_BASE_URL}/bookings", json=booking_data, timeout=5).json()
+        booking = post_request(f"/bookings", json=booking_data).json()
         scooter_id = booking.get("scooter_id")
         
         if scooter_id:
             data = {"status":ScooterStatus.OCCUPYING.value}
-            updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()  
+            updated_repair = put_request(f"/scooter/status/{scooter_id}", json=data).json()  
             return {"message": "Booking created successfully."}
         else:
             raise ValueError("Invalid scooter ID in the booking data.")
@@ -164,13 +183,13 @@ def cancel_booking(handler, request):
     """
     try:
         booking_id = request.get("booking-id")
-        data = {"status": BookingState.CANCELLED.value }
-        response = requests.put(f"{API_BASE_URL}/booking/status/{booking_id}", json=data, timeout=5)
+        data = {"status": BookingState.CANCELLED.value}
+        response = put_request(f"/booking/status/{booking_id}", json=data)
         if response.status_code != 404:
             booking = response.json()
             scooter_id = booking["scooter_id"]
             data = {"status":ScooterStatus.AVAILABLE.value}
-            updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()
+            updated_repair = put_request(f"/scooter/status/{scooter_id}", json=data).json()
             return {"message": "Booking successfully cancelled."}
         else:
             return {"error": "Booking not found."}
@@ -200,10 +219,9 @@ def submit_repair_request(handler, request):
             "status": RepairStatus.PENDING.value
         }
         
-        repair = requests.post(f"{API_BASE_URL}/repair", json=data, timeout=5).json()
+        repair = post_request(f"/repair", json=data).json()
         data = {"status":ScooterStatus.AWAITING_REPAIR.value}
-        updated_repair = requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=data, timeout=5).json()
-        
+        updated_repair = put_request(f"/scooter/status/{scooter_id}", json=data).json()   
         return {"message": "Repair request submitted successfully."}
     except ValueError as e:
         return {"error": str(e)}
@@ -222,17 +240,18 @@ def top_up_balance(handler, request):
     try:
         amount = float(request.get("amount", 0))
         user_id = request.get("user-id")
-        response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)
+        response = get_request(f"/user/id/{user_id}")
         if response.status_code == 404: 
             raise ValueError("User not found")
         user = response.json()
         user["balance"] += amount
-        response = requests.put(f"{API_BASE_URL}/user/{user_id}",json=user, timeout=5)
-        if response.status_code == 404: 
+
+        response = put_request(f"/user/{user_id}", json=user, check_status=False)
+        if response.status_code == 404:
             raise ValueError("Update user failed!") 
         
         data = {"user_id": user_id, "amount":amount}
-        requests.post(f"{API_BASE_URL}/transaction",json=data, timeout=5).json() 
+        post_request(f"/transaction", json=data)
         return {"new_balance": user["balance"]}
     except ValueError as error:
         return {"error": str(error)}
