@@ -5,9 +5,9 @@ This module defines SQLAlchemy models representing various entities in the syste
 such as users, scooters, bookings, repairs, and user balances.
 
 """
+from enum import Enum
 from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
-from enum import Enum
 from master.database.database_manager import db
 
 class UserType(Enum):
