@@ -33,7 +33,8 @@ def get(repair_id):
             "report": repair.report,
             "status": repair.status
         }
-    return result
+        return result
+    return jsonify({"message":"Repair not found"}), 404
 
 @repairs_api.route("/repairs/scooter/<int:scooter_id>", methods=["GET"])
 def get_by_scooter(scooter_id):

@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime
 from master.database.database_manager import db
 from master.web.app import create_master_app
-from master.database.models import Booking, User, UserType, Scooter, ScooterStatus
+from master.database.models import Booking, User, UserType, Scooter, ScooterStatus, Repairs, RepairStatus, Transaction
 
 class APITestCase(unittest.TestCase):
     """
@@ -486,7 +486,7 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(emails), 0)
 
-    # Scooter API Unit T
+    # Scooter API Unit Tests
     def test_create_scooter_successful(self):
         scooter_data = {
             'make': 'ScooterX',
@@ -647,3 +647,271 @@ class APITestCase(unittest.TestCase):
         response = self.client.put('/scooter/status/1', json=updated_status_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json['message'], 'Invalid status provided')
+
+    # Repair API Unit Tests
+    def test_get_all_repairs(self):
+        """
+        Test the endpoint for retrieving all repair records from the database.
+        """
+        repair1 = Repairs(scooter_id=1, report='Issue 1', status=RepairStatus.PENDING.value)
+        repair2 = Repairs(scooter_id=2, report='Issue 2', status=RepairStatus.COMPLETED.value)
+        
+        db.session.add_all([repair1, repair2])
+        db.session.commit()
+        
+        response = self.client.get('/repairs/all')
+        
+        expected_data = [
+            {'repair_id': 1, 'scooter_id': 1, 'report': 'Issue 1', 'status': RepairStatus.PENDING.value},
+            {'repair_id': 2, 'scooter_id': 2, 'report': 'Issue 2', 'status': RepairStatus.COMPLETED.value}
+        ]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_get_repair_by_id(self):
+        """
+        Test the endpoint for retrieving a specific repair record by its ID when the repair exists.
+        """
+        repair = Repairs(scooter_id=1, report='Issue 1', status=RepairStatus.PENDING.value)
+        db.session.add(repair)
+        db.session.commit()
+
+        response = self.client.get('/repair/1')
+
+        expected_data = {
+            'repair_id': 1,
+            'scooter_id': 1,
+            'report': 'Issue 1',
+            'status': RepairStatus.PENDING.value
+        }
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_get_repair_by_id_failure(self):
+        """
+        Test the endpoint for retrieving a specific repair record by its ID when the repair does not exist.
+        """
+        response = self.client.get('/repair/1')
+        expected_data = {
+            'message': 'Repair not found'
+        }
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected_data)
+
+    def test_create_repair(self):
+        """
+        Test the endpoint for creating a new repair record in the database.
+        """
+        repair_data = {
+            'scooter_id': 1,
+            'report': 'Issue 1',
+            'status': RepairStatus.PENDING.value
+        }
+
+        response = self.client.post('/repair', json=repair_data)
+        self.assertEqual(response.status_code, 200)
+
+        created_repair_data = response.json
+        expected_data = {
+            'repair_id': 1,
+            'scooter_id': 1,
+            'report': 'Issue 1',
+            'status': RepairStatus.PENDING.value
+        }
+        self.assertEqual(created_repair_data, expected_data)
+
+    def test_update_repair(self):
+        """
+        Test the endpoint for updating an existing repair record in the database.
+        """
+        repair = Repairs(scooter_id=1, report='Issue 1', status=RepairStatus.PENDING.value)
+        db.session.add(repair)
+        db.session.commit()
+
+        updated_repair_data = {
+            'scooter_id': 2,
+            'report': 'Updated Issue',
+            'status': RepairStatus.COMPLETED.value
+        }
+
+        response = self.client.put('/repair/id/1', json=updated_repair_data)
+        self.assertEqual(response.status_code, 200)
+
+        updated_data = response.json
+        expected_data = {
+            'repair_id': 1,
+            'scooter_id': 2,
+            'report': 'Updated Issue',
+            'status': RepairStatus.COMPLETED.value
+        }
+        self.assertEqual(updated_data, expected_data)
+
+    def test_delete_repair(self):
+        """
+        Test the endpoint for deleting an existing repair record from the database.
+        """
+        repair = Repairs(scooter_id=1, report='Issue 1', status=RepairStatus.PENDING.value)
+        db.session.add(repair)
+        db.session.commit()
+
+        response = self.client.delete('/repair/1')
+        expected_data = {
+            'repair_id': 1,
+            'scooter_id': 1,
+            'report': 'Issue 1',
+            'status': RepairStatus.PENDING.value
+        }
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_delete_repair_failure(self):
+        """
+        Test the endpoint for deleting a non-existing repair record from the database.
+        """
+        response = self.client.delete('/repair/1')
+        expected_data = {
+            'message': 'Repair not found'
+        }
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected_data)
+
+    def test_get_pending_repairs(self):
+        """
+        Test the endpoint for retrieving all pending repair records from the database.
+        """
+        repair1 = Repairs(scooter_id=1, report='Issue 1', status=RepairStatus.PENDING.value)
+        repair2 = Repairs(scooter_id=2, report='Issue 2', status=RepairStatus.COMPLETED.value)
+
+        db.session.add_all([repair1, repair2])
+        db.session.commit()
+
+        response = self.client.get('/repairs/pending')
+
+        expected_data = [
+            {'repair_id': 1, 'scooter_id': 1, 'report': 'Issue 1', 'status': RepairStatus.PENDING.value}
+        ]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_update_repair_status(self):
+        """
+        Test the endpoint for updating the status of an existing repair record in the database.
+        """
+        repair = Repairs(scooter_id=1, report='Issue 1', status=RepairStatus.PENDING.value)
+        db.session.add(repair)
+        db.session.commit()
+
+        updated_status_data = {
+            'status': RepairStatus.COMPLETED.value
+        }
+
+        response = self.client.put('/repair/status/1', json=updated_status_data)
+        self.assertEqual(response.status_code, 200)
+
+        updated_data = response.json
+        expected_data = {
+            'repair_id': 1,
+            'scooter_id': 1,
+            'report': 'Issue 1',
+            'status': RepairStatus.COMPLETED.value
+        }
+        self.assertEqual(updated_data, expected_data)
+
+    def test_update_repair_status_failure(self):
+        """
+        Test the endpoint for updating the status of a non-existing repair record in the database.
+        """
+        updated_status_data = {
+            'status': RepairStatus.COMPLETED.value
+        }
+
+        response = self.client.put('/repair/status/1', json=updated_status_data)
+        expected_data = {
+            'message': 'Repair not found'
+        }
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected_data)
+    
+    # Transaction API Unit Tests
+    def test_get_all_transactions(self):
+        """
+        Test the endpoint for retrieving all transactions from the database.
+        """
+        transaction1 = Transaction(user_id=1, amount=100)
+        transaction2 = Transaction(user_id=2, amount=200)
+
+        db.session.add_all([transaction1, transaction2])
+        db.session.commit()
+
+        response = self.client.get('/transactions/all')
+
+        expected_data = [
+            {'id': 1, 'user_id': 1, 'amount': 100},
+            {'id': 2,'user_id': 2, 'amount': 200}
+        ]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_get_transaction_by_id(self):
+        """
+        Test the endpoint for retrieving a transaction by its ID from the database.
+        """
+        transaction = Transaction(user_id=1, amount=100)
+        db.session.add(transaction)
+        db.session.commit()
+
+        response = self.client.get('/transaction/1')
+
+        expected_data = {'id': 1,'user_id': 1, 'amount': 100}
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_get_non_existing_transaction(self):
+        """
+        Test the endpoint for retrieving a non-existing transaction by its ID from the database.
+        """
+        response = self.client.get('/transaction/1')
+        expected_data = {'message': 'Transaction not found'}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected_data)
+
+    def test_create_new_transaction(self):
+        """
+        Test the endpoint for creating a new transaction in the database.
+        """
+        new_transaction_data = {'user_id': 1, 'amount': 300}
+
+        response = self.client.post('/transaction', json=new_transaction_data)
+
+        expected_data = {'id': 1,'user_id': 1, 'amount': 300}
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_get_transactions_by_user(self):
+        """
+        Test the endpoint for retrieving all transactions for a specific user from the database.
+        """
+        transaction1 = Transaction(user_id=1, amount=100)
+        transaction2 = Transaction(user_id=1, amount=200)
+
+        db.session.add_all([transaction1, transaction2])
+        db.session.commit()
+
+        response = self.client.get('/transactions/user/1')
+
+        expected_data = [
+            {'id': 1,'user_id': 1, 'amount': 100},
+            {'id': 2,'user_id': 1, 'amount': 200}
+        ]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
+
+    def test_get_transactions_for_non_existing_user(self):
+        """
+        Test the endpoint for retrieving transactions for a non-existing user from the database.
+        """
+        response = self.client.get('/transactions/user/1')
+        expected_data = []
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_data)
