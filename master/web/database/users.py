@@ -1,9 +1,10 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from master.database.models import User, UserType, Booking, Transaction
 from master.database.database_manager import db
 
 users_api = Blueprint("db_user", __name__)
 
+@users_api.route("/users", methods=["GET"])
 def get_all():
     """
     Get a list of all users.
@@ -13,6 +14,7 @@ def get_all():
     """
     return [user.as_json() for user in User.query.all()]
 
+@users_api.route("/user/role/<string:role>", methods=["GET"])
 def get_all_by_role(role):
     """
     Get a list of all users.
@@ -23,6 +25,7 @@ def get_all_by_role(role):
     users = User.query.filter_by(role=role).all()
     return [user.as_json() for user in users]
 
+@users_api.route("/user/id/<int:user_id>", methods=["GET"])
 def get(user_id):
     """
     Get a user by their ID.
@@ -35,25 +38,24 @@ def get(user_id):
     """
     
     user = User.query.get(user_id)
-    
-    print(user.as_json()) 
     if user:
         return user.as_json()
     else:
-        return None
+        return jsonify(message="User not found"), 200
 
-def post(data):
+@users_api.route("/user", methods=["POST"])
+def post():
     """
     Create a new user.
 
     Returns:
         JSON response with the newly created user object and a status code of 201.
     """
-    # data = request.json
-    password = data.get("password")
+    data = request.json
+    password = data["password"]
     
     if not password:
-        return jsonify({"message": "Password is required"}), 400
+        return {"message": "Password is required"}
     
     if "balance" in data:
         balance = data["balance"]
@@ -61,13 +63,13 @@ def post(data):
         balance = 0.0
 
     new_user = User(
-        username=data.get("username"),
+        username=data["username"],
         password=password,
-        email=data.get("email"),
-        first_name=data.get("first_name"),
-        last_name=data.get("last_name"),
-        role=data.get("role"),
-        phone_number=data.get("phone_number"),
+        email=data["email"],
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        role=data["role"],
+        phone_number=data["phone_number"],
         balance=balance
     )
 
@@ -75,7 +77,8 @@ def post(data):
     db.session.commit()
     return new_user.as_json()
 
-def update(user_id, data):
+@users_api.route("/user/<int:user_id>", methods=["PUT"])
+def update(user_id):
     """
     Update a user by their ID.
 
@@ -85,6 +88,7 @@ def update(user_id, data):
     Returns:
         JSON response with the updated user object or a "User not found" message.
     """
+    data = request.json
     user = User.query.get(user_id) 
     if user:
        
@@ -102,6 +106,7 @@ def update(user_id, data):
     else:
         return None
 
+@users_api.route("/user/<int:user_id>", methods=["DELETE"])
 def delete(user_id):
     """
     Delete a user by their ID.
@@ -122,6 +127,7 @@ def delete(user_id):
     else:
         return jsonify({"message": "User not found"}), 404
 
+@users_api.route("/users/engineers/emails", methods=["GET"])
 def get_engineer_emails():
     """
     Get email addresses of users with the "engineer" role.
@@ -134,5 +140,10 @@ def get_engineer_emails():
     
     return engineer_emails
 
+@users_api.route("/user/email/<string:email>", methods=["GET"])
 def get_by_email(email):
-    return User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first()
+    if user:
+        return user.as_json()
+    else:
+        return jsonify({"message": "User not found"}), 404
