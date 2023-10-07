@@ -51,7 +51,6 @@ def register(handler, request):
 def login(handler, request):
     email = request["email"]
     user = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5).json()
-    print(user)
     if user is None:
         return {"error": "Email not found."} 
     if not sha256_crypt.verify(request["password"], user["password"]):

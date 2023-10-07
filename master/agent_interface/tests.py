@@ -2,9 +2,13 @@ import master.agent_interface.app as app
 import master.agent_interface.comms as comms
 import master.database.config as config
 from master.web.app import create_master_app
+import threading
 import unittest
 
 app.app = create_master_app()
+thread = threading.Thread(target=lambda: app.app.run(host="localhost", port=5000, threaded=True))
+thread.daemon = True
+thread.start()
 
 @comms.action("hello", ["start"])
 def hello(handler, request):
