@@ -16,7 +16,7 @@ from master.web.database.repairs import repairs_api
 from master.web.database.transactions import transaction_api
 from master.web.mail import init_mail
 
-def create_master_app():
+def create_master_app(testing=False):
     """
     Create and configure the Flask application.
 
@@ -27,11 +27,12 @@ def create_master_app():
     
     app.secret_key = 'abc123'
     
-    init_db(app)
+    init_db(app, testing)
     init_mail(app)
    
     with app.app_context():
-        seed_data()
+        if not testing:
+            seed_data()
    
     blueprints = [
         admin,

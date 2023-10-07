@@ -67,7 +67,7 @@ def post():
     return new_booking.as_json()
 
 @booking_api.route("/booking/id/<int:booking_id>", methods=["PUT"])
-def update(booking_id, new_booking):
+def update(booking_id):
     """
     Update an existing booking in the database.
 
@@ -78,11 +78,14 @@ def update(booking_id, new_booking):
     Returns:
         dict: A dictionary representing the updated booking object in JSON format, or None if not found.
     """
+    new_booking = request.json
     booking = Booking.query.get(booking_id)
     if booking:
         booking.user_id = new_booking["user_id"]
         booking.scooter_id =  new_booking["scooter_id"]
-        booking.time =  new_booking["time"]
+        booking.start_time =  parse_datetime(new_booking["start_time"])
+        booking.end_time = parse_datetime( new_booking["end_time"])
+        booking.date =  parse_date(new_booking["date"])
         booking.status =  new_booking["status"]
         db.session.commit()
         return booking.as_json()
@@ -123,11 +126,11 @@ def delete(booking_id):
     Returns:
         dict: A dictionary representing the deleted booking object in JSON format, or None if not found.
     """
-    booking = get(booking_id)
+    booking = Booking.query.get(booking_id)
     if booking:
         db.session.delete(booking)
         db.session.commit()
-        return booking.as_json()
+        return jsonify({"message": "Booking successfully deleted"}), 200
     else:
         return jsonify({"message": "Booking not found"}), 404
 
