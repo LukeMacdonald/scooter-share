@@ -9,6 +9,7 @@ from flask import Flask
 from master.database.database_manager import init_db
 from master.database.seed import seed_data
 from master.web.admin_site import admin
+from master.web.database.faces import face_api
 from master.web.database.users import users_api
 from master.web.database.scooters import scooter_api
 from master.web.database.bookings import booking_api
@@ -37,6 +38,7 @@ def create_master_app(testing=False):
     blueprints = [
         admin,
         users_api,
+        face_api,
         scooter_api,
         booking_api,
         repairs_api,

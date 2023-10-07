@@ -31,7 +31,7 @@ class Status:
         if self.status == 'available':
             self.sense.clear((0, 255, 0))
         elif self.status == 'occupying':
-            self.sense.clear((255, 0, 0))
+            self.sense.clear((0, 125, 200))
         elif self.status == 'awaiting repair':
             self.sense.clear((170, 100, 20))
         else:
