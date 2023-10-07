@@ -171,3 +171,28 @@ class Transaction(db.Model):
             "user_id": self.user_id,
             "amount": self.amount
         }
+
+class Faces(db.Model):
+    """
+        Represents a users face
+    """
+    __tablename__ = 'faces'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    faces = db.Column(db.String, nullable=False)
+
+    user = relationship('User')
+
+    def set_face(self, face):
+        self.face = pickle.dumps(face)
+    def get_face(self):
+        return pickle.loads(self.faces)
+
+    def as_json(self):
+        return {
+            "repair_id": self.id,
+            "scooter_id": self.scooter_id,
+            "report": self.report,
+            "status": self.status
+        }
