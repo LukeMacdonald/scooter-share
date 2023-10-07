@@ -1,7 +1,9 @@
+from agent.scooter.scooter_controls import ScooterInterface
 
 
-from agent.scooter.status import Status
+if __name__ == '__main__':
+    print('Please Input Scooter Id: ', end='')
+    scooter_id = int(input())
 
-
-status = Status(1)
-
+    scooter = ScooterInterface(scooter_id)
+    scooter.scooter_startup()
