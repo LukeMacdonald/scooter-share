@@ -5,11 +5,10 @@ This module defines SQLAlchemy models representing various entities in the syste
 such as users, scooters, bookings, repairs, and user balances.
 
 """
+from enum import Enum
 from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
-from enum import Enum
 from master.database.database_manager import db
-from flask_login import UserMixin
 
 class UserType(Enum):
     ADMIN = 'admin'
@@ -31,7 +30,7 @@ class RepairStatus(Enum):
     COMPLETED = 'completed' 
     PENDING = 'pending'
     
-class User(UserMixin, db.Model):
+class User(db.Model):
     """
     Represents a user in the system.
     """
@@ -45,11 +44,10 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum(UserType.CUSTOMER.value,UserType.ENGINEER.value,UserType.ADMIN.value), 
                      nullable=False, default=UserType.CUSTOMER.value)
-    phone_number = db.Column(db.String(12))
+    phone_number = db.Column(db.String(10))
     balance = db.Column(db.Float(precision=2), nullable=False)
-    is_active = db.Column(db.Boolean, default=True)
     
-    def __init__(self, username, password, email, first_name, last_name, role=UserType.CUSTOMER.value, phone_number=None, balance=0.0, is_active=False):
+    def __init__(self, username, password, email, first_name, last_name, role=UserType.CUSTOMER.value, phone_number=None, balance=0.0):
         self.username = username
         self.password = sha256_crypt.hash(password)
         self.email = email
@@ -58,7 +56,6 @@ class User(UserMixin, db.Model):
         self.role = role
         self.phone_number = phone_number
         self.balance = balance
-        self.is_active = is_active
 
     def as_json(self):
         "A dictionary with all the values other than the password hash of this user."

@@ -99,9 +99,8 @@ def user_data():
             "first_name": "John",
             "last_name": "Doe",
             "role": UserType.CUSTOMER.value,
-            "phone_number": "0434 567 890",
-            "balance": 100.0,
-            "is_active": False
+            "phone_number": "0434567890",
+            "balance": 100.0
         },
         {
             "username": "LukeMacca123",
@@ -110,9 +109,8 @@ def user_data():
             "first_name": "Luke",
             "last_name": "Macdonald",
             "role": UserType.ENGINEER.value,
-            "phone_number": "047 6543 210",
-            "balance":0.0,
-            "is_active": False
+            "phone_number": "0476543210",
+            "balance":0.0
         },
         {
             "username": "admin",
@@ -121,9 +119,8 @@ def user_data():
             "first_name": "Adam",
             "last_name": "Joe",
             "role": UserType.ADMIN.value,
-            "phone_number": "049 6823 921",
-            "balance": 0.0,
-            "is_active": False
+            "phone_number": "0496823921",
+            "balance": 0.0, 
         }
     ]
     seed_model(User,data)
