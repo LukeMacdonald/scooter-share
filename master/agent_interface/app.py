@@ -34,7 +34,7 @@ def register(handler, request):
         response = requests.get(f"{API_BASE_URL}/user/email/{email}", timeout=5)
         
         if response.status_code == 200: 
-            raise ValueError("Email already exists.")
+            raise ValueError("Email address already registered.")
         
         phone_regex = r'^[0-9]{10}$'
         if not re.match(phone_regex, phone_number):
