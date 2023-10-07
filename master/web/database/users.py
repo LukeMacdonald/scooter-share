@@ -41,7 +41,7 @@ def get(user_id):
     if user:
         return user.as_json()
     else:
-        return jsonify(message="User not found"), 200
+        return jsonify({"message": "User not found"}), 404
 
 @users_api.route("/user", methods=["POST"])
 def post():
@@ -104,7 +104,7 @@ def update(user_id):
         
         return user.as_json()
     else:
-        return None
+        return jsonify({"message": "User not found"}), 404
 
 @users_api.route("/user/<int:user_id>", methods=["DELETE"])
 def delete(user_id):

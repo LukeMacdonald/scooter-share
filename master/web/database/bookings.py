@@ -1,5 +1,5 @@
 import datetime
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from master.database.models import Booking
 from master.database.database_manager import db
 
@@ -36,7 +36,7 @@ def get(booking_id):
     if booking:
         return booking.as_json()
     else:
-        return None
+        return jsonify({"message": "Booking not found"}), 404
 
 @booking_api.route("/bookings", methods=["POST"])
 def post():
@@ -66,6 +66,7 @@ def post():
     
     return new_booking.as_json()
 
+@booking_api.route("/booking/id/<int:booking_id>", methods=["PUT"])
 def update(booking_id, new_booking):
     """
     Update an existing booking in the database.
@@ -86,9 +87,9 @@ def update(booking_id, new_booking):
         db.session.commit()
         return booking.as_json()
     else:
-        return None
+        return jsonify({"message": "Booking not found"}), 404
 
-@booking_api.route("/booking/<int:booking_id>", methods=["PUT"])
+@booking_api.route("/booking/status/<int:booking_id>", methods=["PUT"])
 def update_status(booking_id):
     """
     Update an existing booking in the database.
@@ -101,7 +102,6 @@ def update_status(booking_id):
         dict: A dictionary representing the updated booking object in JSON format, or None if not found.
     """
     data = request.json
-    print("Hello")
     status = data["status"]
     booking = Booking.query.get(booking_id)
 
@@ -110,7 +110,7 @@ def update_status(booking_id):
         db.session.commit()
         return booking.as_json()
     else:
-        return None
+        return jsonify({"message": "Booking not found"}), 404
 
 @booking_api.route("/booking/<int:booking_id>", methods=["DELETE"])
 def delete(booking_id):
@@ -129,7 +129,7 @@ def delete(booking_id):
         db.session.commit()
         return booking.as_json()
     else:
-        return None
+        return jsonify({"message": "Booking not found"}), 404
 
 @booking_api.route("/bookings/user/<int:user_id>", methods=["GET"])
 def get_by_user(user_id):

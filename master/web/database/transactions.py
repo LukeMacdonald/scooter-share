@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from master.database.models import Transaction
 from master.database.database_manager import db
 
@@ -28,7 +28,7 @@ def get(transaction_id):
     if transaction:
         return transaction.as_json()
     else:
-        return None
+        return jsonify({"message": "Transaction not found"}), 404
 
 @transaction_api.route("/transaction", methods=["POST"])
 def post():

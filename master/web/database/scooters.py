@@ -117,7 +117,7 @@ def update(scooter_id):
         return scooter.as_json()
      
     else:
-        return None
+        return jsonify({"message": "Scooter not found"}), 404
 
 @scooter_api.route("/scooter/status/<int:scooter_id>", methods=["PUT"])
 def update_status(scooter_id):
@@ -132,13 +132,14 @@ def update_status(scooter_id):
     """
     scooter = Scooter.query.get(scooter_id)
     data = request.json
+    print(data["status"])
     if scooter:
         scooter.status = data["status"]
         db.session.commit()
         return scooter.as_json()
      
     else:
-        return None
+        return jsonify({"message": "Scooter not found"}), 404
 
 @scooter_api.route("/scooter/<int:scooter_id>", methods=["DELETE"])
 def delete(scooter_id):

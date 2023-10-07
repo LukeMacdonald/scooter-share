@@ -116,7 +116,11 @@ def edit_customer(user_id):
     Returns:
         str: Rendered template for editing user information.
     """
-    customer = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5).json() 
+    response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)
+    if response.status_code == 400:
+        pass
+    
+    customer = response.json()
     # customer = user_api.get(user_id)
     print(customer)
     
@@ -133,11 +137,15 @@ def update_customer():
     """
     try:
         user_id = request.form.get('user_id')
-        user = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5).json()
+        response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)
+        if response.status_code == 400:
+            return {"error": "User Not Found"} 
+        user = response.json()
+            
         user["first_name"] = request.form.get('first_name')
         user["last_name"] = request.form.get('last_name')  
         user["phone_number"] = request.form.get('phone_number')
-        updated_user = requests.put(f"{API_BASE_URL}/user", json=user, timeout=5).json()
+        updated_user = requests.put(f"{API_BASE_URL}/user/{user_id}", json=user, timeout=5).json()
         # user_api.update(user_id, user)
         return redirect(url_for("admin.home")) 
     except Exception as error:
@@ -189,8 +197,10 @@ def edit_scooter(scooter_id):
              If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
-        scooter = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
-        # scooter = scooters_api.get(scooter_id)
+        response = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5)
+        if response.status_code == 404:
+            return {"error": "Scooter Not Found"}
+        scooter = response.json()
         return render_template("admin/pages/edit_scooter.html", data=scooter)
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -208,15 +218,19 @@ def scooter_update():
     """
     try:
         scooter_id = request.form.get('scooter_id')
-        scooter = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
+        response = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5)
+        if response.status_code == 404:
+            return {"error": "Scooter Not Found"}
+       
+        scooter = response.json()
         scooter["colour"] = request.form.get("colour")
         scooter["make"] = request.form.get('make')
         scooter["cost_per_time"] = float(request.form.get('cost'))
         scooter["remaining_power"] = float(request.form.get('charge'))
         scooter["longitude"] = float(request.form.get('longitude'))
         scooter["latitude"] = float(request.form.get('latitude'))
+        
         updated_scooter = requests.put(f"{API_BASE_URL}/scooter/id/{scooter_id}", json=scooter, timeout=5).json() 
-        #scooters_api.update(scooter_id, scooter)
         return redirect(url_for("admin.home")) 
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -302,8 +316,7 @@ def report_scooter():
     try:
         repair_id = request.form.get('repair_id')
         data = {"status": RepairStatus.ACTIVE.value}
-        updated_repair = requests.put(f"{API_BASE_URL}/repair/status/{repair_id}", json=data, timeout=5).json()  
-         
+        updated_repair = requests.put(f"{API_BASE_URL}/repair/status/{repair_id}", json=data, timeout=5).json()      
         # Send notifications to engineers
         notify_engineers(updated_repair["scooter_id"],updated_repair["report"])
     
