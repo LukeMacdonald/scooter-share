@@ -14,6 +14,12 @@ def post():
         JSON response with the newly created scooter object or an error message if the data is invalid.
     """
     data = request.json
+   
+
+    # Validate the required fields
+    if 'make' not in data or 'longitude' not in data or 'latitude' not in data or 'remaining_power' not in data or 'cost_per_time' not in data or 'status' not in data:
+        return jsonify({'message': 'Invalid data provided'}), 400
+    
     make = data['make']
     longitude = data['longitude']
     latitude = data['latitude']
@@ -21,10 +27,6 @@ def post():
     cost_per_time = data['cost_per_time']
     colour = data['colour']
     status = ScooterStatus.AVAILABLE.value
-
-    # Validate the required fields
-    if not make or not longitude or not latitude or not remaining_power or not cost_per_time or not status:
-        return jsonify({'message': 'Invalid data provided'}), 400
 
     # Create a new scooter object
     new_scooter = Scooter(
@@ -69,7 +71,7 @@ def get(scooter_id):
     if scooter:
         return scooter.as_json()
     else:
-        return jsonify({'message': 'Scooter not found'})
+        return jsonify({'message': 'Scooter not found'}), 404
 
 @scooter_api.route("/scooters/status/<string:status>", methods=["GET"])
 def get_by_status(status):
@@ -113,6 +115,7 @@ def update(scooter_id):
         scooter.remaining_power = data["remaining_power"]
         scooter.cost_per_time = data["cost_per_time"]
         scooter.colour = data["colour"]
+        scooter.status = data["status"]
         db.session.commit()
         return scooter.as_json()
      
@@ -132,7 +135,10 @@ def update_status(scooter_id):
     """
     scooter = Scooter.query.get(scooter_id)
     data = request.json
-    print(data["status"])
+    
+    # Validate the 'status' field against ScooterStatus enum
+    if 'status' in data and data['status'] not in [status.value for status in ScooterStatus]:
+        return jsonify({'message': 'Invalid status provided'}), 400
     if scooter:
         scooter.status = data["status"]
         db.session.commit()

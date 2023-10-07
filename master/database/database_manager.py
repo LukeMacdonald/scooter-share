@@ -22,7 +22,6 @@ def init_db(app, testing):
     """
     # Load configuration
     if HOST is None or testing:
-        print("No DB_HOST provided, using an in-memory database.")
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
     else:
         app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://{USER}:{PASSWORD}@{HOST}/{NAME}"

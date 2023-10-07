@@ -2,12 +2,13 @@ import unittest
 from datetime import datetime
 from master.database.database_manager import db
 from master.web.app import create_master_app
-from master.database.models import Booking, User, UserType
+from master.database.models import Booking, User, UserType, Scooter, ScooterStatus
 
-class BookingAPITestCase(unittest.TestCase):
+class APITestCase(unittest.TestCase):
     """
     Test case for the booking API endpoints.
     """
+    #todo: Refractor Unit Testing for API
     def setUp(self):
         """
         Set up the test environment before each test case.
@@ -38,7 +39,8 @@ class BookingAPITestCase(unittest.TestCase):
         """
         db.session.remove()
         db.drop_all()
-    
+
+    # Booking API Unit Tests 
     def test_get_all_bookings(self):
         """
         Test the endpoint for retrieving all bookings from the database.
@@ -276,6 +278,7 @@ class BookingAPITestCase(unittest.TestCase):
         expected_response = []
         self.assertEqual(response.json, expected_response)
     
+    # User API Unit Tests
     def test_get_all_users_nonexist(self):
         response = self.client.get('/users')
         self.assertEqual(response.status_code, 200)
@@ -482,3 +485,165 @@ class BookingAPITestCase(unittest.TestCase):
         emails = response.json
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(emails), 0)
+
+    # Scooter API Unit T
+    def test_create_scooter_successful(self):
+        scooter_data = {
+            'make': 'ScooterX',
+            'longitude': 123.456,
+            'latitude': 78.910,
+            'cost_per_time': 5.0,
+            'colour': 'Red',
+            'remaining_power':75.0,
+            'status': ScooterStatus.AVAILABLE.value
+        }
+
+        response = self.client.post('/scooter', json=scooter_data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json['make'], scooter_data['make'])
+        self.assertEqual(response.json['longitude'], scooter_data['longitude'])
+        self.assertEqual(response.json['latitude'], scooter_data['latitude'])
+        self.assertEqual(response.json['cost_per_time'], scooter_data['cost_per_time'])
+        self.assertEqual(response.json['colour'], scooter_data['colour'])
+        self.assertEqual(response.json['status'], ScooterStatus.AVAILABLE.value)
+    
+    def test_create_scooter_invalid_data(self):
+        scooter_data = {
+            'make': 'ScooterX',
+            'longitude': 123.456,
+            'cost_per_time': 5.0,
+            'colour': 'Red'
+        }
+
+        response = self.client.post('/scooter', json=scooter_data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_all_scooters(self):
+        scooter1 = Scooter(make='ScooterX', longitude=123.456, latitude=78.910, remaining_power=100.0,
+                           cost_per_time=5.0, status=ScooterStatus.AVAILABLE.value, colour='Red')
+        scooter2 = Scooter(make='ScooterY', longitude=45.678, latitude=90.123, remaining_power=80.0,
+                           cost_per_time=4.0, status=ScooterStatus.OCCUPYING.value, colour='Blue')
+
+        db.session.add_all([scooter1, scooter2])
+        db.session.commit()
+
+        response = self.client.get('/scooters/all')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 2)
+        self.assertEqual(response.json[0]['make'], 'ScooterX')
+        self.assertEqual(response.json[1]['make'], 'ScooterY')
+
+    def test_get_scooter_by_id_successful(self):
+        scooter = Scooter(make='ScooterX', longitude=123.456, latitude=78.910, remaining_power=100.0,
+                          cost_per_time=5.0, status=ScooterStatus.AVAILABLE.value, colour='Red')
+        db.session.add(scooter)
+        db.session.commit()
+
+        response = self.client.get('/scooter/id/1')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['make'], 'ScooterX')
+
+    def test_get_scooter_by_id_failure(self):
+        response = self.client.get('/scooter/id/1')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json['message'], 'Scooter not found')
+
+    def test_get_scooters_by_status(self):
+        scooter1 = Scooter(make='ScooterX', longitude=123.456, latitude=78.910, remaining_power=100.0,
+                           cost_per_time=5.0, status=ScooterStatus.AVAILABLE.value, colour='Red')
+        scooter2 = Scooter(make='ScooterY', longitude=45.678, latitude=90.123, remaining_power=80.0,
+                           cost_per_time=4.0, status=ScooterStatus.OCCUPYING.value, colour='Blue')
+
+        db.session.add_all([scooter1, scooter2])
+        db.session.commit()
+
+        response = self.client.get(f'/scooters/status/{ScooterStatus.AVAILABLE.value}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.json[0]['make'], 'ScooterX')
+
+    def test_get_scooters_by_invalid_status(self):
+        response = self.client.get('/scooters/status/INVALID_STATUS')
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_scooter_successful(self):
+        original_scooter_data = {
+            'make': 'ScooterX',
+            'longitude': 123.456,
+            'latitude': 78.910,
+            'remaining_power': 80.0,
+            'cost_per_time': 4.0,
+            'status': ScooterStatus.AVAILABLE.value,
+            'colour': 'Blue'
+        }
+     
+        scooter = Scooter(make=original_scooter_data['make'], longitude=original_scooter_data['longitude'], latitude=original_scooter_data['latitude'], remaining_power=original_scooter_data['remaining_power'],
+                          cost_per_time=original_scooter_data['cost_per_time'], status=original_scooter_data['status'], colour=original_scooter_data['colour'])
+        
+        db.session.add(scooter)
+        
+        db.session.commit()
+
+        updated_scooter_data = {
+            'longitude': 45.678,
+            'latitude': 90.123,
+            'remaining_power': 80.0,
+            'status': ScooterStatus.OCCUPYING.value,
+        }
+        
+        scooter_data = self.client.get("/scooter/id/1").json
+   
+    
+        scooter_data['status'] = updated_scooter_data['status']
+        scooter_data['longitude'] = updated_scooter_data['longitude']
+        scooter_data['latitude'] = updated_scooter_data['latitude']
+        scooter_data['remaining_power'] = updated_scooter_data['remaining_power']
+        
+        response = self.client.put('/scooter/id/1', json=scooter_data)
+        print(response.json)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['make'], original_scooter_data['make'])
+        self.assertEqual(response.json['longitude'], updated_scooter_data['longitude'])
+        self.assertEqual(response.json['latitude'], updated_scooter_data['latitude'])
+        self.assertEqual(response.json['remaining_power'], updated_scooter_data['remaining_power'])
+        self.assertEqual(response.json['cost_per_time'], original_scooter_data['cost_per_time'])
+        self.assertEqual(response.json['status'], updated_scooter_data['status'])
+        self.assertEqual(response.json['colour'], original_scooter_data['colour'])
+
+    def test_update_scooter_failure(self):
+        updated_scooter_data = {
+            'make': 'ScooterY',
+            'longitude': 45.678,
+            'latitude': 90.123,
+            'remaining_power': 80.0,
+            'cost_per_time': 4.0,
+            'status': ScooterStatus.OCCUPYING.value,
+            'colour': 'Blue'
+        }
+
+        response = self.client.put('/scooter/id/1', json=updated_scooter_data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json['message'], 'Scooter not found')
+
+    def test_update_scooter_status_successful(self):
+        scooter = Scooter(make='ScooterX', longitude=123.456, latitude=78.910, remaining_power=100.0,
+                          cost_per_time=5.0, status=ScooterStatus.AVAILABLE.value, colour='Red')
+        db.session.add(scooter)
+        db.session.commit()
+
+        updated_status_data = {
+            'status': ScooterStatus.OCCUPYING.value
+        }
+
+        response = self.client.put('/scooter/status/1', json=updated_status_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['status'], ScooterStatus.OCCUPYING.value)
+
+    def test_update_scooter_status_failure(self):
+        updated_status_data = {
+            'status': 'INVALID_STATUS'
+        }
+
+        response = self.client.put('/scooter/status/1', json=updated_status_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json['message'], 'Invalid status provided')
