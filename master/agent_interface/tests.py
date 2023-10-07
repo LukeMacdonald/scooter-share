@@ -1,3 +1,4 @@
+import logging
 import master.agent_interface.app as app
 import master.agent_interface.comms as comms
 import master.database.config as config
@@ -5,10 +6,17 @@ from master.web.app import create_master_app
 import threading
 import unittest
 
+# Disable logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
+# Start server
 app.app = create_master_app()
 thread = threading.Thread(target=lambda: app.app.run(host="localhost", port=5000, threaded=True))
 thread.daemon = True
 thread.start()
+
+# comms library unit tests
 
 @comms.action("hello", ["start"])
 def hello(handler, request):
@@ -36,6 +44,8 @@ class TestComms(unittest.TestCase):
         handler = MockHandler()
         self.assertTrue("error" in comms.handle(handler, {"name": "barf"}))
 
+# Master server tests
+
 class TestApp(unittest.TestCase):
     def test_unauthorised(self):
         handler = MockHandler()
@@ -48,3 +58,27 @@ class TestApp(unittest.TestCase):
         handler = MockHandler()
         comms.handle(handler, {"name": "login", "email": "john@john.com", "password": "1111"})
         self.assertEqual("start", handler.state)
+    def test_register(self):
+        handler = MockHandler()
+        resp = comms.handle(handler,
+                            {"name": "register",
+                             "role": "customer",
+                             "email": "bob@bob.com",
+                             "username": "bob",
+                             "password": "1111",
+                             "phone_number": "0412345678",
+                             "first_name": "Bob",
+                             "last_name": "Bobsson"})
+        self.assertTrue("user" in resp)
+    def test_existing_register(self):
+        handler = MockHandler()
+        resp = comms.handle(handler,
+                            {"name": "register",
+                             "role": "customer",
+                             "email": "customer1@gmail.com",
+                             "username": "bob",
+                             "password": "1111",
+                             "phone_number": "0412345678",
+                             "first_name": "Bob",
+                             "last_name": "Bobsson"})
+        self.assertTrue("error" in resp)
