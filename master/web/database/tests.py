@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime
 from master.database.database_manager import db
 from master.web.app import create_master_app
-from master.database.models import Booking
+from master.database.models import Booking, User, UserType
 
 class BookingAPITestCase(unittest.TestCase):
     """
@@ -275,3 +275,210 @@ class BookingAPITestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         expected_response = []
         self.assertEqual(response.json, expected_response)
+    
+    def test_get_all_users_nonexist(self):
+        response = self.client.get('/users')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(len(response.json) == 0)
+    
+    def test_get_all_users(self):
+        customer = User(username='customer1', password='password', email='customer@example.com',
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        engineer = User(username='engineer1', password='password', email='engineer@example.com',
+                    first_name='Engineer', last_name='User', role=UserType.ENGINEER.value,phone_number="0429825982",balance=0.0)
+        admin = User(username='admin1', password='password', email='admin@example.com',
+                    first_name='Admin', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        db.session.add_all([customer,engineer, admin])
+        db.session.commit()
+        response = self.client.get('/users')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(len(response.json) == 3)
+    
+    def test_get_user_by_id_successful(self):
+        customer = User(username='customer1', password='password', email='customer@example.com',
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add(customer)
+        db.session.commit()
+
+        response = self.client.get(f'/user/id/1')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['username'], 'customer1')
+    
+    def test_get_user_by_email_successful(self):
+        email = 'customer@example.com'
+        customer = User(username='customer1', password='password', email=email,
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add(customer)
+        db.session.commit()
+
+        response = self.client.get(f'/user/email/{email}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['username'], 'customer1')
+    
+    def test_get_user_by_email_failure(self):
+        
+        email = 'customer@example.com'
+        customer = User(username='customer1', password='password', email=email,
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add(customer)
+        db.session.commit()
+        
+        incorrect_email = 'customer1@example.com'
+
+
+        response = self.client.get(f'/user/email/{incorrect_email}')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json['message'], 'User not found')
+
+    def test_get_user_by_role_engineer(self):
+        engineer = User(username='engineer1', password='password', email='engineer1@example.com',
+                    first_name='Customer', last_name='User', role=UserType.ENGINEER.value, phone_number="0429825982",balance=0.0)
+        engineer2 = User(username='engineer2', password='password', email='engineer2@example.com',
+                    first_name='Engineer', last_name='User', role=UserType.ENGINEER.value,phone_number="0429825982",balance=0.0)
+        engineer3 = User(username='engineer3', password='password', email='engineer3@example.com',
+                    first_name='Admin', last_name='User', role=UserType.ENGINEER.value, phone_number="0429825982",balance=0.0)
+        admin = User(username='admin1', password='password', email='admin@example.com',
+                    first_name='Admin', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        customer = User(username='customer1', password='password', email='customer@example.com',
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add_all([engineer,engineer2, engineer3, admin, customer])
+        db.session.commit()
+        
+        response = self.client.get(f'/user/role/{UserType.ENGINEER.value}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 3)
+     
+    def test_get_user_by_role_customer(self):
+        engineer = User(username='engineer1', password='password', email='engineer1@example.com',
+                    first_name='Customer', last_name='User', role=UserType.ENGINEER.value, phone_number="0429825982",balance=0.0)
+        engineer2 = User(username='engineer2', password='password', email='engineer2@example.com',
+                    first_name='Engineer', last_name='User', role=UserType.ENGINEER.value,phone_number="0429825982",balance=0.0)
+       
+        admin = User(username='admin1', password='password', email='admin@example.com',
+                    first_name='Admin', last_name='User', role=UserType.ADMIN.value, phone_number="0429825982",balance=0.0)
+        
+        customer = User(username='customer1', password='password', email='customer@example.com',
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        customer2 = User(username='customer2', password='password', email='customer2@example.com',
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add_all([engineer,engineer2, customer2, admin, customer])
+        db.session.commit()
+        
+        response = self.client.get(f'/user/role/{UserType.CUSTOMER.value}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 2)
+    
+    def test_get_user_by_role_admin(self):
+        engineer = User(username='engineer1', password='password', email='engineer1@example.com',
+                    first_name='Customer', last_name='User', role=UserType.ENGINEER.value, phone_number="0429825982",balance=0.0)
+        engineer2 = User(username='engineer2', password='password', email='engineer2@example.com',
+                    first_name='Engineer', last_name='User', role=UserType.ENGINEER.value,phone_number="0429825982",balance=0.0)
+       
+        admin = User(username='admin1', password='password', email='admin@example.com',
+                    first_name='Admin', last_name='User', role=UserType.ADMIN.value, phone_number="0429825982",balance=0.0)
+        
+        customer = User(username='customer1', password='password', email='customer@example.com',
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        customer2 = User(username='customer2', password='password', email='customer2@example.com',
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add_all([engineer,engineer2, customer2, admin, customer])
+        db.session.commit()
+        
+        response = self.client.get(f'/user/role/{UserType.ADMIN.value}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 1)
+        
+    def test_get_user_by_id_failure(self):
+        response = self.client.get('/user/id/999')
+        self.assertEqual(response.status_code, 404)
+
+    def test_create_user_successful(self):
+        user_data = {
+          'username':'engineer1', 
+          'password':'password', 
+          'email':'engineer@example.com',
+          'first_name':'Engineer', 
+          'last_name':'User', 
+          'role':UserType.ENGINEER.value,
+          'phone_number':"0429825982",
+          'balance': 0.0
+        }
+        response = self.client.post('/user', json=user_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['username'], 'engineer1')
+
+    def test_update_user_successful(self):
+        email = 'customer@example.com'
+        customer = User(username='customer1', password='password', email=email,
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add(customer)
+        db.session.commit()
+        
+        
+        user = self.client.get(f"/user/email/{email}")
+        
+        user_json = user.json
+
+        user_json['first_name'] = 'Updated'
+        user_json['last_name'] = 'NewLastName'
+        
+        response = self.client.put(f'/user/{ user_json["id"]}', json= user_json)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['first_name'], user_json['first_name'])
+        self.assertEqual(response.json['last_name'], user_json['last_name'])
+        self.assertEqual(response.json['role'], UserType.CUSTOMER.value)
+
+    def test_delete_user_successful(self):
+        email = 'customer@example.com'
+        customer = User(username='customer1', password='password', email=email,
+                    first_name='Customer', last_name='User', role=UserType.CUSTOMER.value, phone_number="0429825982",balance=0.0)
+        
+        db.session.add(customer)
+        db.session.commit()
+        
+        user = self.client.get(f"/user/email/{email}").json
+        
+    
+
+        response = self.client.delete(f'/user/{user["id"]}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['username'], 'customer1')
+
+    def test_delete_user_failure(self):
+        response = self.client.delete('/user/999')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json['message'], 'User not found')
+
+    def test_get_engineer_emails(self):
+        engineer = User(username='engineer1', password='password', email='engineer1@example.com',
+                    first_name='Customer', last_name='User', role=UserType.ENGINEER.value, phone_number="0429825982",balance=0.0)
+        engineer2 = User(username='engineer2', password='password', email='engineer2@example.com',
+                    first_name='Engineer', last_name='User', role=UserType.ENGINEER.value,phone_number="0429825982",balance=0.0)
+        engineer3 = User(username='engineer3', password='password', email='engineer3@example.com',
+                    first_name='Admin', last_name='User', role=UserType.ENGINEER.value, phone_number="0429825982",balance=0.0)
+
+        db.session.add_all([engineer,engineer2, engineer3])
+        db.session.commit()
+        
+        response = self.client.get('/users/engineers/emails')
+        emails = response.json
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(emails), 3)
+        self.assertEqual(emails[0], 'engineer1@example.com')
+        self.assertEqual(emails[1], 'engineer2@example.com')
+        self.assertEqual(emails[2], 'engineer3@example.com')
+    
+    def test_get_engineer_emails_nonexist(self):
+        response = self.client.get('/users/engineers/emails')
+        emails = response.json
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(emails), 0)
