@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify
 from master.database.database_manager import db
 from master.database.models import Scooter, ScooterStatus, Repairs, Booking
 import master.database.queries as queries
+from master.web.blueprint import Blueprint, RequestException
 
 scooter_api = Blueprint("scooter_api", __name__)
 
@@ -23,7 +23,7 @@ def post(data):
 
     # Validate the required fields
     if not make or not longitude or not latitude or not remaining_power or not cost_per_time or not status:
-        return jsonify({'message': 'Invalid data provided'}), 400
+        raise RequestException("Invalid data provided", 400)
 
     # Create a new scooter object
     new_scooter = Scooter(
@@ -41,6 +41,8 @@ def post(data):
     db.session.commit()
 
     return new_scooter.as_json(), 201
+
+@scooter_api.route("/scooters", methods=["GET"])
 def get_all():
     """
     Get a list of all scooters.
@@ -51,6 +53,7 @@ def get_all():
     scooters = Scooter.query.all()
     return [scooter.as_json() for scooter in scooters]
 
+@scooter_api.route("/scooters/<int:scooter_id>", methods=["GET"])
 def get(scooter_id):
     """
     Get a scooter by its ID.
@@ -65,8 +68,9 @@ def get(scooter_id):
     if scooter:
         return scooter.as_json()
     else:
-        return jsonify({'message': 'Scooter not found'})
+        raise RequestException("Scooter not found", 404)
 
+@scooter_api.route("/scooters/status/<string:status>", methods=["GET"])
 def get_by_status(status):
     """
     Get a list of scooters by their status.
@@ -78,16 +82,12 @@ def get_by_status(status):
         JSON response with a list of scooters with the specified status.
     """
     if status not in [status.value for status in ScooterStatus]:
-        
-        return jsonify({'message': 'Invalid status provided'}), 400
+        raise RequestException("Invalid status provided", 400)
 
     scooters = Scooter.query.filter_by(status=status).all()
-    if scooters:
-        
-        return [scooter.as_json() for scooter in scooters]
-    else:
-        return []
+    return [scooter.as_json() for scooter in scooters]
 
+@scooter_api.route("/scooters/<int:scooter_id>", methods=["PUT"])
 def update(scooter_id, data):
     """
     Update a scooter by its ID.
@@ -108,10 +108,10 @@ def update(scooter_id, data):
         scooter.colour = data["colour"]
         db.session.commit()
         return scooter.as_json()
-     
     else:
-        return None
+        raise RequestException("Scooter not found", 404)
 
+@scooter_api.route("/scooters/<int:scooter_id>", methods=["PUT"])
 def update_status(scooter_id, status):
     """
     Update a scooter by its ID.
@@ -127,10 +127,10 @@ def update_status(scooter_id, status):
         scooter.status = status
         db.session.commit()
         return scooter.as_json()
-     
     else:
-        return None
+        raise RequestException("Scooter not found", 404)
 
+@scooter_api.route("/scooters/<int:scooter_id>", methods=["DELETE"])
 def delete(scooter_id):
     """
     Delete a scooter by its ID.
@@ -147,10 +147,11 @@ def delete(scooter_id):
         Repairs.query.filter_by(scooter_id=scooter_id).delete()
         db.session.delete(scooter)
         db.session.commit()
-        return jsonify({'message': 'Scooter deleted successfully'})
+        return {'message': 'Scooter deleted successfully'}
     else:
-        return jsonify({'message': 'Scooter not found'}), 404
+        raise RequestException("Scooter not found", 404)
 
+@scooter_api.route("/scooters/awaiting-repairs", methods=["GET"])
 def get_scooters_awaiting_repairs():
     """
     Get a list of scooters with the status set to "awaiting repair" and their first repair request with status "active" if available.
@@ -158,8 +159,9 @@ def get_scooters_awaiting_repairs():
     Returns:
         JSON response with a list of scooters and their first repair request or a "No data found" message.
     """
-    return jsonify(queries.scooters_awaiting_repairs())
+    return queries.scooters_awaiting_repairs()
 
+@scooter_api.route("/scooters/fixed/<int:scooter_id>/<int:repair_id>", methods=["PUT"])
 def scooter_fixed(scooter_id, repair_id):
     """
     Mark a scooter as fixed and complete the corresponding repair.
@@ -171,5 +173,4 @@ def scooter_fixed(scooter_id, repair_id):
     Returns:
         JSON response with a success message or error message if the scooter or repair is not found.
     """
-    message, status = queries.fix_scooter(scooter_id, repair_id)
-    return jsonify(message), status
+    return queries.fix_scooter(scooter_id, repair_id)
