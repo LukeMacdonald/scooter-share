@@ -4,24 +4,28 @@ import cv2
 import os
 import face_recognition
 import imutils
+import numpy as np
+import json
+import pickle
+import base64
 from datetime import datetime
 from imutils.video import VideoStream
+from agent.web.connection import get_connection
 
 
 
-
-class facial_recognition():
-    def __init__(self, user:str) -> None:
+class FacialRecognition():
+    def __init__(self, scooter_id) -> None:
+        self.scooter_id = scooter_id
         self.camera = cv2.VideoCapture(0)
         self.camera.set(3, 640)
         self.camera.set(4, 480)
-        self.user = user
 
     
     def __delattr__(self, __name: str) -> None:
         self.camera.release()
 
-    def get_photo(self):
+    def get_photo(self, user_id):
 
         ret, frame = self.camera.read()
         if not ret:
@@ -35,74 +39,74 @@ class facial_recognition():
 
         if len(face) == 0:
             print(f'No face detected, restarting')
-            self.get_photo()
+            self.get_photo(user_id)
             exit()
         
         print('got face')
         
         for x, y, w, h in face:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            image_name = f'{self.user}_{datetime.now()}.jpg'
 
 
-        self.image = frame
-        self.encode_photo()
+        self.encode_photo(user_id, frame)
 
-    def encode_photo(self):
-        print('encoding')
+    def encode_photo(self, user_id, image):
 
-        rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
-        boxes = face_recognition.face_locations(self.image)
+        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        boxes = face_recognition.face_locations(image)
         encodings = face_recognition.face_encodings(rgb, boxes)
 
-        for encoding in encodings:
-            self.add_encoding(encoding)
+        encodings_str = base64.b64encode(pickle.dumps(encodings)).decode() # This cringe af but it's the only thing that i could get working
+
+        self.add_encoding(user_id, encodings_str)
 
 
     def recognize(self):
+        self.camera.release()
         stream = VideoStream(src=0).start()
+        
         data = self.get_encodings()
+        if data == []:
+            print('No faces available')
+            return -1
 
         while True:
 
             frame = stream.read()
 
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            rgb = imutils.resize(frame, width=240)
-
-            boxes = face_recognition.face_location(rgb, model='hog')
+            boxes = face_recognition.face_locations(rgb, model='hog')
             encodings = face_recognition.face_encodings(rgb, boxes)
             users = []
 
             for encoding in encodings:
-                matches = face_recognition.compare_faces(data['encodings'], encoding)
-                user = ''
+                for i in range(len(data)):
+                    matches = face_recognition.compare_faces(pickle.loads(base64.b64decode(data[i]['face'])), encoding)
+                    if True in matches:
+                        user = data[i]['user_id']
+                        
 
-                if True in matches:
-                    matchedIdxs = [i for (i, b) in enumerate(matches) if b]
-                    counts = {}
-
-                    for i in matchedIdxs:
-                        user = data['user'][i]
-                        counts[user] = counts.get(user, 0) + 1
-                    stream.stop()
-                    return max(counts, key=counts.get)
+                        stream.stop()
+                        return user
 
 
-    def add_encoding(self, e):
+
+    def add_encoding(self, user_id, e):
         '''
             add user and encoding data to database
         '''
-        print(e)
+        get_connection().send({
+                'user_id': user_id,
+                'face': e,
+                'name': 'create-face'
+            })
+        print('added face to db')
 
     def get_encodings(self):
         '''
             get user and encoding data from database
         '''
+        return get_connection().send({
+            'name': 'get-faces'
+        })
         
-
-if __name__ == '__main__':
-    recognizer = facial_recognition('name')
-    recognizer.get_photo()
-    del recognizer.camera
-    recognizer.encode_photo()
