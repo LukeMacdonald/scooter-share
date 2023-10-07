@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}" rel="stylesheet" media="screen">
         <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}" charset="utf-8"></script>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
         <title>Login</title> 
     </head>
     <body style="background-color: #222831">
@@ -18,26 +18,26 @@
                     <h1 class="display-4 login-header">Welcome Back</h1>
                     <form method="POST" action="{{ url_for('user.signup_post') }}">
                         <div class="form-group">
-                            <input class="form-control" id="username" name="username" placeholder="Username" value="" required>
+                            <input class="form-control login-form-control" id="username" name="username" placeholder="Username" value="" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" id="email" name="email" placeholder="Email Address" value="" required>
+                            <input class="form-control login-form-control" id="email" name="email" placeholder="Email Address" value="" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" id="password" name="password" type="password" placeholder="Enter Password" value="" required>
+                            <input class="form-control login-form-control" id="password" name="password" type="password" placeholder="Enter Password" value="" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" id="first_name" name="first_name" placeholder="First Name" value="">
+                            <input class="form-control login-form-control" id="first_name" name="first_name" placeholder="First Name" value="">
                         </div>
                         <div class="form-group">
-                            <input class="form-control" id="last_name" name="last_name" placeholder="Last Name" value="">
+                            <input class="form-control login-form-control" id="last_name" name="last_name" placeholder="Last Name" value="">
                         </div>
                         <div class="form-group">
-                            <input class="form-control" id="phone_number" name="phone_number" placeholder="Phone Number" value="">
+                            <input class="form-control login-form-control" id="phone_number" name="phone_number" placeholder="Phone Number" value="">
                         </div>
                         <div class="form-group">
                             <label for="role">Select Role:</label>
-                            <select class="form-control" id="role" name="role">
+                            <select class="form-control login-form-control" id="role" name="role">
                                 <option value="customer">Customer</option>
                                 <option value="engineer">Engineer</option>
                             </select>

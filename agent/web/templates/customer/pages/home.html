@@ -22,25 +22,25 @@
         <table style="width: 98%;">
             <thead>
                 <tr>
-                    <th>Scooter</th>
-                    <th>Make</th>
-                    <th>Colour</th>
-                    <th>Location</th>
-                    <th>Remaining Power</th>
-                    <th>Cost Per Time</th>
-                    <th>Book</th>
+                    <th class='custom-th'>Scooter</th>
+                    <th class='custom-th'>Make</th>
+                    <th class='custom-th'>Colour</th>
+                    <th class='custom-th'>Location</th>
+                    <th class='custom-th'>Remaining Power</th>
+                    <th class='custom-th'>Cost Per Time</th>
+                    <th class='custom-th'>Book</th>
                 </tr>
             </thead>
             <tbody>
                 {% for scooter in scooters %}
                 <tr>
-                    <td>{{ scooter.scooter_id }}</td>
-                    <td>{{ scooter.make }}</td>
-                    <td>Colour...</td>
-                    <td>Location...</td>
-                    <td>{{ scooter.remaining_power }}%</td>
-                    <td>${{ scooter.cost_per_time }}</td>
-                    <td><a href="{{ url_for('user.make_booking', scooter_id=scooter.scooter_id, balance=customer.balance, cost_per_time=scooter.cost_per_time) }}">Book</a></td>
+                    <td class='custom-td'>{{ scooter.scooter_id }}</td>
+                    <td class='custom-td'>{{ scooter.make }}</td>
+                    <td class='custom-td'>Colour...</td>
+                    <td class='custom-td'>Location...</td>
+                    <td class='custom-td'>{{ scooter.remaining_power }}%</td>
+                    <td class='custom-td'>${{ scooter.cost_per_time }}</td>
+                    <td class='custom-td'><a href="{{ url_for('user.make_booking', scooter_id=scooter.scooter_id, balance=customer.balance, cost_per_time=scooter.cost_per_time) }}">Book</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -52,17 +52,17 @@
             <table style="width: 100%;">
                 <thead>
                     <tr>
-                        <th>Scooter</th>
-                        <th>Time</th>
-                        <th>Status</th>
+                        <th class='custom-th'>Scooter</th>
+                        <th class='custom-th'>Time</th>
+                        <th class='custom-th'>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for booking in bookings %}
                     <tr>
-                        <td>{{ booking.scooter_id }}</td>
-                        <td>{{ booking.start_time }}</td>
-                        <td>
+                        <td class='custom-td'>{{ booking.scooter_id }}</td>
+                        <td class='custom-td'>{{ booking.start_time }}</td>
+                        <td class='custom-td'>
                             {% if booking.status == 'active' %}
                                 🟢 Active
                             {% elif booking.status == 'cancelled' %}
@@ -73,7 +73,7 @@
                                 Status is Unknown
                             {% endif %}
                         </td>
-                        <td> 
+                        <td class='custom-td'> 
                             {% if booking.status == 'active' %}
                             <form method="POST" action="{{ url_for('user.cancel_booking') }}" onsubmit="return confirmCancel()">
                                 <input type="hidden" name="booking_id" value="{{ booking.id }}">
@@ -89,7 +89,7 @@
                             </script>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class='custom-td'>
                             <form method="POST" action="{{ url_for('user.report_issue', scooter_id=booking.scooter_id) }}" onsubmit="return reportIssue()">
                                 {% if booking.status == 'active' %}
                                 <div class="report-issue-container">
