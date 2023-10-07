@@ -257,6 +257,30 @@ def top_up_balance(handler, request):
         return {"error": str(error)}
     except Exception as error: 
         return {"error": "Internal Server Error"}
+    
+
+@comms.action("get-scooter-by-id", ['start'])
+def fetch_scooters_by_id(handler, request):
+    """
+    Fetch a list of scooters.
+
+    Returns:
+        dict: A dictionary containing the fetched data or an error message.
+    """
+    try:
+        scooter_id = int(request.get("scooter_id"))
+        if scooter_id is None:
+            raise ValueError("ScooterID not found passed!")
+        
+        scooters = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
+        data = scooters
+        
+        return data
+
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error:
+        return {"error": 'internal server error'}
 
 def run_agent_server(master):
     global app
