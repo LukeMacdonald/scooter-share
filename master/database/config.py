@@ -12,4 +12,3 @@ HOST = os.getenv("DB_HOST")
 USER = os.getenv("DB_USER")
 PASSWORD = os.getenv("DB_PASSWORD")
 NAME = os.getenv("DB_NAME")
-IN_MEMORY = os.getenv("USE_MEMORY_DB") is not None

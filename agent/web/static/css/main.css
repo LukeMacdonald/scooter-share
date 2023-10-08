@@ -32,8 +32,7 @@
     color: red; 
     font-weight:500; 
 }
-
-.custom-nav-item{
+.nav-item{
     margin-top: 1rem;
 }
 .nav-link {
@@ -66,31 +65,3 @@
     color: white; /* Text color */
     border-radius: 5px 0 0 5px;
 }
-
-
-.custom-table {
-    margin: 1rem auto;
-    border-collapse: collapse;
-    width:100%
-}
-
-.custom-th, .custom-td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-    width: max-content; 
-}
-
-.custom-thead {
-    background-color: cadetblue; 
-    color: white; 
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-}
-
-.status {
-    border-radius: 10px;
-    padding: 6px;
-}
-
-

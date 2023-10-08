@@ -5,155 +5,32 @@
 {% block content %}
 <style>
 
-    table {
-        border-collapse: collapse;
-        min-width:80%
-    }
 
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-     
-        width: max-content; 
-    }
 
-    thead {
-        background-color: cadetblue; 
-        color: white; 
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
-    }
-
-    .status {
-        border-radius: 10px;
-        padding: 6px;
-     
-    }
-
-    div {
-        padding-bottom: 50px;
-    }
 </style>
 <div style="width:90%; margin:0 auto; text-align:left">
     <h1 style="color:black; font-size:3rem">Welcome Back</h1>
     <hr/>
-    <div>
-        <iframe width="300" height="225" src="https://lookerstudio.google.com/embed/reporting/51acd2a2-e06a-465e-b54a-f5a67015758f/page/p_h1ew3v7had" frameborder="0" style="border:0" allowfullscreen></iframe>
-        <iframe width="300" height="225" src="https://lookerstudio.google.com/embed/reporting/432d478b-a6f1-4861-b1c2-78c21822c2e7/page/74heD" frameborder="0" style="border:0" allowfullscreen></iframe>
-        <h3>Scooter usage history:</h3>
-        <table>
-            <thead>
-                <th>Scooter</th>
-                <th>Date</th>
-                <th>Duration</th>
-                <th>Status</th>
-            </thead>
-            <tbody>
-                {% for booking in bookings %}
-                {% if booking.status == 'completed' %}
-                <tr>
-                    <td>{{ booking.id }}</td>
-                    <td>{{ booking.date }}</td>
-                    <td>{{ booking.duration }}</td>
-                    <td class="status" style="color: green;">{{ booking.status }}</td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div>
-        <h3>Scooter history:</h3>
-        <table>
-            <thead>
-                <th>Scooter</th>
-                <th>Date</th>
-                <th>Duration</th>
-                <th>Status</th>
-            </thead>
-            <tbody>
-                {% for booking in bookings %}
-                <tr>
-                    <td>{{ booking.id }}</td>
-                    <td>{{ booking.date }}</td>
-                    <td>{{ booking.duration }}</td>
-                    {% if booking.status == 'active' %}
-                    <td class="status" style="color: orange;">{{ booking.status }}</td>
-                    {% elif booking.status == 'completed' %}
-                    <td class="status" style="color: green;">{{ booking.status }}</td>
-                    {% elif booking.status == 'cancelled' %}
-                    <td class="status" style="color: red;">{{ booking.status }}</td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div>
-        <h3>Scooters:</h3>
-        <table>
-            <thead>
-                <th>ID</th>
-                <th>Make</th>
-                <th>Colour</th>
-                <th>Location</th>
-                <th>Charge</th>
-                <th>Cost</th>
-                <th>Status</th>
-                <th>Edit</th>
-            </thead>
-            <tbody>
-                {% for scooter in scooters %}
-                <tr>
-                    <td>{{ scooter.scooter_id }}</td>
-                    <td>{{ scooter.make }}</td>
-                    <td>{{ scooter.colour }}</td>
-                    <td>{{ scooter.location }}</td>
-                    <td>{{ scooter.remaining_power }}%</td>
-                    <td>${{ scooter.cost_per_time }}</td>
-                    {% if scooter.status == 'occupying' %}
-                    <td class="status" style="color: orange;">{{ scooter.status }}</td>
-                    {% elif scooter.status == 'available' %}
-                    <td class="status" style="color: green;">{{ scooter.status }}</td>
-                    {% elif scooter.status == 'awaiting repair' %}
-                    <td class="status" style="color: red;">{{ scooter.status }}</td>
-                    {% elif scooter.status == 'pending' %}
-                    <td class="status" style="color: blue;">{{ scooter.status }}</td>
-                    {% endif %}
-                    <td>
-                        <a href="{{ url_for('admin.edit_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-secondary"><i class="fa fa-pen-to-square"></i></a>
-                        <a href="{{ url_for('admin.delete_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-danger"><i class="fa fa-trash"></i></a>
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td colspan="8" class="text-center">
-                        <a href="{{ url_for('admin.add_scooter') }}" class="btn btn-outline-success" style="width:8rem"><i class="fa fa-plus"></i></a>
-                    </td>
-            </tbody>
-        </table>
-    </div>
-    <div>
-        <h3>Customers:</h3>
-        <table>
-            <thead>
-                <th>First name</th>
-                <th>Last name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Balance</th>
-                <th>Edit</th>
+    <div style="margin-top: 2rem">
+        <h3>All Customers</h3>
+        <table class="custom-table">
+            <thead class="custom-thead">
+                <th class="custom-th">First name</th>
+                <th class="custom-th">Last name</th>
+                <th class="custom-th">Phone</th>
+                <th class="custom-th">Email</th>
+                <th class="custom-th">Balance</th>
+                <th class="custom-th">Edit</th>
             </thead>
             <tbody>
                 {% for customer in customers %}
                 <tr>
-                    <td>{{ customer.first_name }}</td>
-                    <td>{{ customer.last_name }}</td>
-                    <td>{{ customer.phone_number }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>{{ customer.balance }}</td>
-                    <td>
+                    <td class="custom-td">{{ customer.first_name }}</td>
+                    <td class="custom-td">{{ customer.last_name }}</td>
+                    <td class="custom-td">{{ customer.phone_number }}</td>
+                    <td class="custom-td">{{ customer.email }}</td>
+                    <td class="custom-td">{{ customer.balance }}</td>
+                    <td class="custom-td">
                         <a href="{{ url_for('admin.edit_customer', user_id=customer.id) }}" class="btn btn-outline-secondary">
                             <i class="fa fa-pen-to-square"></i>
                         </a>
@@ -165,7 +42,56 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div> 
+    <div style="margin-top: 2rem">
+        <h3>All Scooters:</h3>
+        <table class="custom-table">
+            <thead class="custom-thead">
+                <th class="custom-th">ID</th>
+                <th class="custom-th" style="max-width: 100px;">Make</th>
+                <th class="custom-th" style="max-width: 50px;">Colour</th>
+                <th class="custom-th" style="max-width: 200px;">Location</th>
+                <th class="custom-th">Charge</th>
+                <th class="custom-th">Cost</th>
+                <th class="custom-th">Status</th>
+                <th class="custom-th">Edit</th>
+            </thead>
+            <tbody>
+                {% for scooter in scooters %}
+                <tr>
+                    <td class="custom-td">{{ scooter.scooter_id }}</td>
+                    <td class="custom-td">{{ scooter.make }}</td>
+                    <td class="custom-td">{{ scooter.colour }}</td>
+                    <td class="custom-td" style="max-width: 200px;">{{ scooter.location }}</td>
+                    <td class="custom-td">{{ scooter.remaining_power }}%</td>
+                    <td class="custom-td">${{ scooter.cost_per_time }}</td>
+                    {% if scooter.status == 'occupying' %}
+                    <td class="status custom-td" style="color: orange;">{{ scooter.status }}</td>
+                    {% elif scooter.status == 'available' %}
+                    <td class="status custom-td" style="color: green;">{{ scooter.status }}</td>
+                    {% elif scooter.status == 'awaiting repair' %}
+                    <td class="status custom-td" style="color: red;">{{ scooter.status }}</td>
+                    {% elif scooter.status == 'pending' %}
+                    <td class="status custom-td" style="color: blue;">{{ scooter.status }}</td>
+                    {% endif %}
+                    <td class="custom-td">
+                        <a href="{{ url_for('admin.edit_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-secondary">
+                            <i class="fa fa-pen-to-square"></i>
+                        </a>
+                        <a href="{{ url_for('admin.delete_scooter', scooter_id=scooter.scooter_id ) }}" class="btn btn-outline-danger">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="8" class="text-center custom-td">
+                        <a href="{{ url_for('admin.add_scooter') }}" class="btn btn-outline-success" style="width:8rem"><i class="fa fa-plus"></i></a>
+                    </td>
+            </tbody>
+        </table>
     </div>
+    
 </div>
 {% endblock %}
 

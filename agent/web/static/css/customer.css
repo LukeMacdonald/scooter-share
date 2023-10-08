@@ -1,93 +1,16 @@
-
-.home-section{
-    width: 75%;
-    margin: 2rem auto;
-}
-.login-header{
-    margin: 2rem 0 3rem 0;
-}
-.login-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: rgb(238, 238, 238);
-    border-radius: 5px;
-    height: 100vh;
-}
-.form-container{
-    width: 100%;
-    text-align: center;
-
-}
-.button-custom {
-    width: 60%;
-    height: 3rem;
-    margin: 2rem auto 3rem auto;
-}
-
-.form-control {
-    width: 70%;
-    height: 3rem; 
-    margin: 0 auto;
-    margin-bottom: 2rem; /* Add some spacing */
-}
-.error-message{
-    color: red; 
-    font-weight: bold; 
-    font-style: italic; 
-    font-size: 0.9rem
-}
-#gmp-map {
-    height: 80vh;   
-}
-.nav-link {
-    text-decoration: none;
-    color: white;
-}
-.nav-link.active {
-    background-color: #1ea3f6; /* Highlight color */
-    color: white; /* Text color */
-    border-radius: 5px 0 0 5px;
-}
-.nav-link.active:hover {
-    background-color: #1ea3f6; /* Highlight color */
-    color: white; /* Text color */
-    border-radius: 5px 0 0 5px;
-}
-.sidebar-container{
-    min-height: 100vh; 
-    background-color: #1B262C; 
-    color: white; 
-    padding-right:0;
-    padding-left:0;
-}
-.sidebar-link-container{
-    margin-left: 2rem;
-    margin-top: 2rem
-}
-.nav-link:hover {
-    background-color: #6baad1; /* Highlight color */
-    color: white; /* Text color */
-    border-radius: 5px 0 0 5px;
-}
-.current-location{
-    margin-top: 1rem;
-}
-
 .center {
     margin: auto;
     width: 100%;
     padding: 10px;
 }
 
-td {
+.custom-td {
     text-align: center;
     padding-right: 20px;
     padding-bottom: 10px;
 }
 
-th {
+.custom-th {
     text-align: center;
     padding-right: 20px;
 }
@@ -99,7 +22,7 @@ th {
     border-radius: 15px;
     padding: 5px;
     width: 98%;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .container {
@@ -165,4 +88,41 @@ th {
 
 .submit-button:hover {
     background-color: #0056b3;
+}
+
+.custom-input{
+    width: 100%;
+    height: 3rem; 
+    margin-bottom: 2rem;
+}
+.back{
+    text-decoration: none;
+
+}
+
+.booking-body {
+    font-family: Arial, sans-serif;
+}
+
+.booking-h2 {
+    text-align: center;
+    color: #333;
+    margin-top: 2rem;
+}
+
+.booking-form {
+    width: 50%;
+    margin: 5rem auto;
+    background-color: #fff;
+    padding: 2rem 4rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.top-up{
+    margin: 2rem auto;
+    width: 50%;
+    padding: 2rem 4rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    background-color: #fff;
 }

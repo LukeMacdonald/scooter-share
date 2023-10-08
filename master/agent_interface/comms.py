@@ -25,6 +25,9 @@ def action(name, states):
         return wrapper
     return inner
 
+def handle(handler, message):
+    return _actions[message["name"]](handler, message)
+
 class Handler(socketserver.StreamRequestHandler):
     """
     A handler has a state associated with it, in order to perform authentication.
@@ -51,7 +54,7 @@ class Handler(socketserver.StreamRequestHandler):
             except json.decoder.JSONDecodeError:
                 return
             if message["name"] in _actions:
-                response = _actions[message["name"]](self, message)
+                response = handle(self, message)
                 if TRACE:
                     print(f"M->A: {response}")
                 self.wfile.write(json.dumps(response).encode() + b"\n")

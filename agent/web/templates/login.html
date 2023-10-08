@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}" rel="stylesheet" media="screen">
         <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}" charset="utf-8"></script>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
         <title>Login</title> 
     </head>
     <body style="background-color: #222831">
@@ -18,12 +18,17 @@
                     <h1 class="display-4 login-header">Welcome Back</h1>
                     <form method="POST" action="{{ url_for('user.login_post') }}">
                         <div class="form-group">
-                            <input class="form-control" id="email" name="email" placeholder="Email Address" value="" required>
+                            <input class="form-control login-form-control " id="email" name="email" placeholder="Email Address" value="" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" id="password" name="password" type="password" placeholder="Enter Password" value="" required>
+                            <input class="form-control login-form-control " id="password" name="password" type="password" placeholder="Enter Password" value="" required>
                         </div>
-                        <span class="error error-message">{{ error_message }}</span>
+                        {% with error_message = get_flashed_messages(category_filter=['login_error']) %}
+                            {% if error_message %}
+                                <span class="error error-message">{{ error_message[0]  }}</span>
+                                <br>
+                            {% endif %}
+                        {% endwith %}
                         <button class="btn btn-primary button-custom shadow" type="submit">Login</button>
                     </form>
                     <p>Don't have an account? <a href="{{ url_for('user.signup') }}">Sign up here</a></p>

@@ -9,15 +9,15 @@ from flask import Flask
 from master.database.database_manager import init_db
 from master.database.seed import seed_data
 from master.web.admin_site import admin
+from master.web.database.faces import face_api
 from master.web.database.users import users_api
 from master.web.database.scooters import scooter_api
 from master.web.database.bookings import booking_api
 from master.web.database.repairs import repairs_api
 from master.web.database.transactions import transaction_api
 from master.web.mail import init_mail
-from master.database.seed import seed_data
 
-def create_master_app():
+def create_master_app(testing=False):
     """
     Create and configure the Flask application.
 
@@ -28,15 +28,17 @@ def create_master_app():
     
     app.secret_key = 'abc123'
     
-    init_db(app)
+    init_db(app, testing)
     init_mail(app)
    
     with app.app_context():
-        seed_data()
+        if not testing:
+            seed_data()
    
     blueprints = [
         admin,
         users_api,
+        face_api,
         scooter_api,
         booking_api,
         repairs_api,

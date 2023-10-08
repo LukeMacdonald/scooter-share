@@ -6,11 +6,11 @@ It establishes a connection to the MySQL database and creates the necessary data
 
 """
 from flask_sqlalchemy import SQLAlchemy
-from master.database.config import HOST, USER, PASSWORD, NAME, IN_MEMORY
+from master.database.config import HOST, USER, PASSWORD, NAME
 
 db = SQLAlchemy()
 
-def init_db(app):
+def init_db(app, testing):
     """
     Initialize the SQLAlchemy extension and configure it with the provided Flask app.
 
@@ -21,7 +21,7 @@ def init_db(app):
         None
     """
     # Load configuration
-    if IN_MEMORY:
+    if HOST is None or testing:
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
     else:
         app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://{USER}:{PASSWORD}@{HOST}/{NAME}"

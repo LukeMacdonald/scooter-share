@@ -1,17 +1,24 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from master.database.database_manager import db
 from master.database.models import Scooter, ScooterStatus, Repairs, Booking
 import master.database.queries as queries
 
 scooter_api = Blueprint("scooter_api", __name__)
 
-def post(data):
+@scooter_api.route("/scooter", methods=["POST"])
+def post():
     """
     Create a new scooter record.
 
     Returns:
         JSON response with the newly created scooter object or an error message if the data is invalid.
     """
+    data = request.json
+   
+
+    # Validate the required fields
+    if 'make' not in data or 'longitude' not in data or 'latitude' not in data or 'remaining_power' not in data or 'cost_per_time' not in data or 'status' not in data:
+        return jsonify({'message': 'Invalid data provided'}), 400
     
     make = data['make']
     longitude = data['longitude']
@@ -20,10 +27,6 @@ def post(data):
     cost_per_time = data['cost_per_time']
     colour = data['colour']
     status = ScooterStatus.AVAILABLE.value
-
-    # Validate the required fields
-    if not make or not longitude or not latitude or not remaining_power or not cost_per_time or not status:
-        return jsonify({'message': 'Invalid data provided'}), 400
 
     # Create a new scooter object
     new_scooter = Scooter(
@@ -41,6 +44,8 @@ def post(data):
     db.session.commit()
 
     return new_scooter.as_json(), 201
+
+@scooter_api.route("/scooters/all", methods=["GET"])
 def get_all():
     """
     Get a list of all scooters.
@@ -51,6 +56,7 @@ def get_all():
     scooters = Scooter.query.all()
     return [scooter.as_json() for scooter in scooters]
 
+@scooter_api.route("/scooter/id/<int:scooter_id>", methods=["GET"])
 def get(scooter_id):
     """
     Get a scooter by its ID.
@@ -65,8 +71,9 @@ def get(scooter_id):
     if scooter:
         return scooter.as_json()
     else:
-        return jsonify({'message': 'Scooter not found'})
+        return jsonify({'message': 'Scooter not found'}), 404
 
+@scooter_api.route("/scooters/status/<string:status>", methods=["GET"])
 def get_by_status(status):
     """
     Get a list of scooters by their status.
@@ -88,7 +95,8 @@ def get_by_status(status):
     else:
         return []
 
-def update(scooter_id, data):
+@scooter_api.route("/scooter/id/<int:scooter_id>", methods=["PUT"])
+def update(scooter_id):
     """
     Update a scooter by its ID.
 
@@ -99,6 +107,7 @@ def update(scooter_id, data):
         JSON response with the updated scooter object or a "Scooter not found" message.
     """
     scooter = Scooter.query.get(scooter_id)
+    data = request.json
     if scooter:
         scooter.make = data["make"]
         scooter.longitude = data["longitude"]
@@ -106,13 +115,15 @@ def update(scooter_id, data):
         scooter.remaining_power = data["remaining_power"]
         scooter.cost_per_time = data["cost_per_time"]
         scooter.colour = data["colour"]
+        scooter.status = data["status"]
         db.session.commit()
         return scooter.as_json()
      
     else:
-        return None
+        return jsonify({"message": "Scooter not found"}), 404
 
-def update_status(scooter_id, status):
+@scooter_api.route("/scooter/status/<int:scooter_id>", methods=["PUT"])
+def update_status(scooter_id):
     """
     Update a scooter by its ID.
 
@@ -123,14 +134,20 @@ def update_status(scooter_id, status):
         JSON response with the updated scooter object or a "Scooter not found" message.
     """
     scooter = Scooter.query.get(scooter_id)
+    data = request.json
+    
+    # Validate the 'status' field against ScooterStatus enum
+    if 'status' in data and data['status'] not in [status.value for status in ScooterStatus]:
+        return jsonify({'message': 'Invalid status provided'}), 400
     if scooter:
-        scooter.status = status
+        scooter.status = data["status"]
         db.session.commit()
         return scooter.as_json()
      
     else:
-        return None
+        return jsonify({"message": "Scooter not found"}), 404
 
+@scooter_api.route("/scooter/<int:scooter_id>", methods=["DELETE"])
 def delete(scooter_id):
     """
     Delete a scooter by its ID.
@@ -151,6 +168,7 @@ def delete(scooter_id):
     else:
         return jsonify({'message': 'Scooter not found'}), 404
 
+@scooter_api.route("/scooters/awaiting", methods=["GET"])
 def get_scooters_awaiting_repairs():
     """
     Get a list of scooters with the status set to "awaiting repair" and their first repair request with status "active" if available.
@@ -160,6 +178,7 @@ def get_scooters_awaiting_repairs():
     """
     return jsonify(queries.scooters_awaiting_repairs())
 
+@scooter_api.route("/scooter/fixed/<int:scooter_id>/<int:repair_id>", methods=["GET"])
 def scooter_fixed(scooter_id, repair_id):
     """
     Mark a scooter as fixed and complete the corresponding repair.

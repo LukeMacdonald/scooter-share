@@ -2,18 +2,16 @@
 Blueprint for Admin Routes
 
 """
-from datetime import datetime
+import requests
 from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
 from flask import Blueprint, render_template, redirect, url_for, request, session
 from master.agent_interface import helpers
 from master.web.mail import send_email
-from master.database.models import User, RepairStatus, UserType
-import master.web.database.bookings as bookings_api
-import master.web.database.repairs as repairs_api
-import master.web.database.scooters as scooters_api
-import master.web.database.users as user_api
+from master.database.models import User, RepairStatus, UserType, BookingState
 from master.web.login import admin_login_req
+
+API_BASE_URL = "http://localhost:5000"
 
 admin = Blueprint("admin", __name__)
 
@@ -55,19 +53,14 @@ def home():
     Returns:
         Flask response: The admin home page.
     """
-    scooters = scooters_api.get_all()
-    bookings = bookings_api.get_all()
-    customers = user_api.get_all_by_role(UserType.CUSTOMER.value)
+    scooters =  requests.get(f"{API_BASE_URL}/scooters/all", timeout=5).json() 
+    customers = requests.get(f"{API_BASE_URL}/user/role/{UserType.CUSTOMER.value}", timeout=5).json() 
     
     for scooter in scooters:
         scooter['location'] = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
-    for booking in bookings:
-        start_time = datetime.strptime(booking["start_time"], "%a %d %b, %H:%M, %Y")
-        end_time = datetime.strptime(booking["end_time"], "%a %d %b, %H:%M, %Y")
-        time_difference = (end_time - start_time).total_seconds()/60
-        booking['duration'] = str(time_difference)
+ 
     
-    return render_template("admin/pages/home.html", scooters=scooters, bookings=bookings, customers=customers)
+    return render_template("admin/pages/home.html", scooters=scooters, customers=customers)
 
 @admin.route("/scooter/bookings")
 @admin_login_req
@@ -78,7 +71,13 @@ def bookings():
     Returns:
         Flask response: The scooter bookings page.
     """
-    return render_template("admin/pages/bookings.html")
+    bookings = requests.get(f"{API_BASE_URL}/bookings/status/{BookingState.COMPLETED.value}", timeout=5).json()
+    
+    for booking in bookings:
+        booking["start_time"] = helpers.convert_time_format(booking["start_time"])
+        
+        
+    return render_template("admin/pages/bookings.html", bookings=bookings)
 
 @admin.route("/scooters/usage")
 @admin_login_req
@@ -89,18 +88,11 @@ def scooter_usage():
     Returns:
         Flask response: The scooter usage statistics page.
     """
-    return render_template("admin/pages/home.html")
-
-@admin.route("/customers/manage")
-@admin_login_req
-def manage_customers():
-    """
-    Display the admin page for managing customers.
-
-    Returns:
-        Flask response: The customer management page.
-    """
-    return render_template("admin/pages/home.html")
+    bookings = requests.get(f"{API_BASE_URL}/bookings/status/{BookingState.COMPLETED.value}", timeout=5).json()
+    for booking in bookings:
+        booking["duration"] = helpers.calculate_duration(booking["start_time"], booking["end_time"])
+        booking["start_time"] = helpers.convert_time_format(booking["start_time"])
+    return render_template("admin/pages/usage.html", bookings=bookings)
 
 @admin.route("/customers/edit/<int:user_id>")
 @admin_login_req
@@ -114,9 +106,9 @@ def edit_customer(user_id):
     Returns:
         str: Rendered template for editing user information.
     """
-    customer = user_api.get(user_id)
-    print(customer)
-    
+    response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)   
+    customer = response.json()
+
     return render_template("admin/pages/edit_user.html", data=customer)
 
 @admin.route("/customer/update", methods=['POST'])
@@ -130,11 +122,15 @@ def update_customer():
     """
     try:
         user_id = request.form.get('user_id')
-        user = user_api.get(user_id)
+        response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)
+        if response.status_code == 400:
+            return {"error": "User Not Found"} 
+        user = response.json()
+            
         user["first_name"] = request.form.get('first_name')
         user["last_name"] = request.form.get('last_name')  
         user["phone_number"] = request.form.get('phone_number')
-        user_api.update(user_id, user)
+        updated_user = requests.put(f"{API_BASE_URL}/user/{user_id}", json=user, timeout=5).json()
         return redirect(url_for("admin.home")) 
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -153,7 +149,7 @@ def delete_customer(user_id):
         response: Redirect to the admin home page if successful, or error message with status code 500 if there is an error.
     """
     try:
-        user_api.delete(user_id)
+        requests.delete(f"{API_BASE_URL}/user/{user_id}", timeout=5).json()
         return redirect(url_for("admin.home"))
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -184,7 +180,10 @@ def edit_scooter(scooter_id):
              If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
-        scooter = scooters_api.get(scooter_id)
+        response = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5)
+        if response.status_code == 404:
+            return {"error": "Scooter Not Found"}
+        scooter = response.json()
         return render_template("admin/pages/edit_scooter.html", data=scooter)
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -202,14 +201,19 @@ def scooter_update():
     """
     try:
         scooter_id = request.form.get('scooter_id')
-        scooter = scooters_api.get(scooter_id)
+        response = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5)
+        if response.status_code == 404:
+            return {"error": "Scooter Not Found"}
+       
+        scooter = response.json()
         scooter["colour"] = request.form.get("colour")
         scooter["make"] = request.form.get('make')
         scooter["cost_per_time"] = float(request.form.get('cost'))
         scooter["remaining_power"] = float(request.form.get('charge'))
         scooter["longitude"] = float(request.form.get('longitude'))
         scooter["latitude"] = float(request.form.get('latitude'))
-        scooters_api.update(scooter_id, scooter)
+        
+        updated_scooter = requests.put(f"{API_BASE_URL}/scooter/id/{scooter_id}", json=scooter, timeout=5).json() 
         return redirect(url_for("admin.home")) 
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -229,7 +233,8 @@ def delete_scooter(scooter_id):
                  If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
-        scooters_api.delete(scooter_id)
+        requests.delete(f"{API_BASE_URL}/scooter/{scooter_id}", timeout=5).json() 
+        #scooters_api.delete(scooter_id)
         return redirect(url_for("admin.home"))
     except Exception as error:
         print(f"Error during API request: {error}")
@@ -252,19 +257,8 @@ def submit_scooter():
         "latitude": request.form.get('latitude'),
         "longitude": request.form.get('longitude')
     }
-    scooters_api.post(data)
+    scooter = requests.post(f"{API_BASE_URL}/scooter", json=data, timeout=5).json() 
     return redirect(url_for("admin.home")) 
-
-@admin.route("/customers/info")
-@admin_login_req
-def customers_info():
-    """
-    Display the admin page for customer information.
-
-    Returns:
-        Flask response: The customer information page.
-    """
-    return render_template("admin/pages/home.html")
 
 @admin.route("/admin/repairs")
 @admin_login_req
@@ -276,8 +270,8 @@ def confirm_reports():
         str: Rendered HTML template containing pending repair reports.
     """
     try:
-        repairs = repairs_api.get_pending_repairs()
-        return render_template("admin/pages/scooter_repairs.html", repairs_data=repairs)
+        repairs = requests.get(f"{API_BASE_URL}/repairs/pending", timeout=5).json()  
+        return render_template("admin/pages/repairs.html", repairs_data=repairs)
     except Exception as error:
         print(f"Error during repairs API request: {error}")
         return {"error": "Internal Server Error"}, 500
@@ -293,9 +287,8 @@ def report_scooter():
     """
     try:
         repair_id = request.form.get('repair_id')
-        
-        updated_repair = repairs_api.update_status(repair_id, RepairStatus.ACTIVE.value)     
-        
+        data = {"status": RepairStatus.ACTIVE.value}
+        updated_repair = requests.put(f"{API_BASE_URL}/repair/status/{repair_id}", json=data, timeout=5).json()      
         # Send notifications to engineers
         notify_engineers(updated_repair["scooter_id"],updated_repair["report"])
     
@@ -313,7 +306,7 @@ def notify_engineers(scooter_id, report):
     """
     try: 
         
-        scooter = scooters_api.get(scooter_id)
+        scooter = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
         steet_address = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
         # Currently only setting engineer email to personal account to prevent sending randoms people emails
         # engineer_emails = user_api.get_engineer_emails()
