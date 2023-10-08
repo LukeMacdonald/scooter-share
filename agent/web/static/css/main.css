@@ -32,7 +32,9 @@
     color: red; 
     font-weight:500; 
 }
-
+.nav-item{
+    margin-top: 1rem;
+}
 .nav-link {
     text-decoration: none;
     color: white;

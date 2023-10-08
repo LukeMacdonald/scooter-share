@@ -48,9 +48,9 @@
         <table class="custom-table">
             <thead class="custom-thead">
                 <th class="custom-th">ID</th>
-                <th class="custom-th">Make</th>
-                <th class="custom-th">Colour</th>
-                <th class="custom-th">Location</th>
+                <th class="custom-th" style="max-width: 100px;">Make</th>
+                <th class="custom-th" style="max-width: 50px;">Colour</th>
+                <th class="custom-th" style="max-width: 200px;">Location</th>
                 <th class="custom-th">Charge</th>
                 <th class="custom-th">Cost</th>
                 <th class="custom-th">Status</th>
@@ -62,7 +62,7 @@
                     <td class="custom-td">{{ scooter.scooter_id }}</td>
                     <td class="custom-td">{{ scooter.make }}</td>
                     <td class="custom-td">{{ scooter.colour }}</td>
-                    <td class="custom-td">{{ scooter.location }}</td>
+                    <td class="custom-td" style="max-width: 200px;">{{ scooter.location }}</td>
                     <td class="custom-td">{{ scooter.remaining_power }}%</td>
                     <td class="custom-td">${{ scooter.cost_per_time }}</td>
                     {% if scooter.status == 'occupying' %}
