@@ -3,20 +3,15 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 from googleapiclient.discovery import build
-import pytz
 from tzlocal import get_localzone
 from google.auth.transport.requests import Request
-
 from google.oauth2.credentials import Credentials
-import datetime
-
 
 class GoogleCalendar:
 
     def __init__(self):
         # Assuming you have the user's credentials
-
-       
+        
         SCOPES = "https://www.googleapis.com/auth/calendar"
         
         store = file.Storage("token.json")

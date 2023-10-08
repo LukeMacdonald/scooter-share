@@ -11,8 +11,10 @@ from agent.web.google_api import calendar
 from datetime import datetime, date, timedelta
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, session
 from agent.web.login import user_login_req
+import os
 
-calendar = calendar.GoogleCalendar()
+cal = None
+
 user = Blueprint("user", __name__)
 
 @user.route("/")
@@ -44,6 +46,8 @@ def login_post():
     # communicate with the master
     response = get_connection().send(data)
     if "user" in response:
+        global cal
+        cal = calendar.GoogleCalendar()
         if response["user"]["role"] == "customer":
             session['user_info'] = response["user"]
             return redirect(url_for('user.customer_home'))
@@ -83,10 +87,13 @@ def signup_post():
 
     response = get_connection().send(data)
     if "user" in response:
-        session["user_info"] = response["user"]
+        global cal
+        cal = calendar.GoogleCalendar()
         if response["user"]["role"] == "customer":
+            session["user_info"] = response["user"]
             return redirect(url_for('user.customer_home'))
         elif response["user"] == "engineer":
+            session['eng_info'] = response["user"]
             return redirect(url_for('engineer.home'))
         else:
             raise ValueError("wat")
@@ -133,7 +140,7 @@ def make_booking_post(scooter_id):
     Display the page for booking a scooter.
 
     Returns:
-        Flask response: The make-booking page.
+        Flask response: post request for make-booking, returns homepage.
     """
 
     # add new booking to the database
@@ -156,7 +163,7 @@ def make_booking_post(scooter_id):
         "summary": f"Scooter {scooter_id} booking!"
     }
 
-    event_id = calendar.insert(calendar_info)
+    event_id = cal.insert(calendar_info)
 
     data = {
         "data": {
@@ -179,6 +186,15 @@ def make_booking_post(scooter_id):
 @user.route('/cancel-booking', methods=["POST"])
 @user_login_req
 def cancel_booking():
+    """
+    Cancel a booking.
+
+    Sends a request to cancel a booking to the server, removes the associated
+    calendar event, and redirects the user to the customer home page.
+
+    Returns:
+        Flask response: A redirect response to the customer home page.
+    """
     get_connection().send({"name" : "cancel-booking", "booking-id" : request.form.get("booking_id")})
 
     calendar.remove(request.form.get("event_id"))
@@ -187,6 +203,18 @@ def cancel_booking():
 
 @user.route('/report-issue/<int:scooter_id>', methods=["POST"])
 def report_issue(scooter_id):
+    """
+    Report an issue with a scooter.
+
+    Sends a report issue request to the server for a specific scooter and redirects
+    the user to the customer home page.
+
+    Args:
+        scooter_id (int): The ID of the scooter for which the issue is being reported.
+
+    Returns:
+        Flask response: A redirect response to the customer home page.
+    """
     response = get_connection().send({"name" : "report-issue", "scooter-id" : scooter_id, "report": request.form.get("issue_description")})
 
     return redirect(url_for('user.customer_home'))
@@ -218,5 +246,22 @@ def top_up_balance_post():
 
 @user.route('/logout')
 def logout():
+    """
+    Log out the user.
+
+    Clears the current user's session, deletes a specific local file (if it exists),
+    and redirects the user to the login page.
+
+    Returns:
+        Flask response: A redirect response to the login page.
+    """
     session.clear()
+
+    file_path = "token.json"
+
+    try:
+        os.remove(file_path)
+        print(f"File {file_path} has been successfully deleted.")
+    except OSError as e:
+        print(f"Error deleting file {file_path}: {e}")
     return redirect(url_for('user.login'))
