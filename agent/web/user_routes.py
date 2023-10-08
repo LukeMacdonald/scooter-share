@@ -239,8 +239,11 @@ def report_issue(scooter_id):
     response = get_connection().send({"name" : "cancel-booking", "booking-id" : request.form.get("booking_id")})
     if "error" in response:
         return redirect(url_for('user.error',message=response['error'] ))
+    response = get_connection().send({"name" : "report-issue", "scooter-id" : scooter_id, "report": request.form.get("issue_description")})
+    if "error" in response:
+        return redirect(url_for('user.error',message=response['error'] ))
     else:
-        calendar.remove(request.form.get("event_id"))
+        cal.remove(request.form.get("event_id"))
         return redirect(url_for('user.customer_home'))
 
 @user.route('/top-up-balance')

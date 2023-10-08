@@ -18,9 +18,8 @@
 </div>
 <div>
 <h2 style="padding-left: 10px;">Available scooters:</h2>
-    <div class="content-container">
         <table style="width: 98%;">
-            <thead>
+            <thead class="custom-thead">
                 <tr>
                     <th class='custom-th'>Scooter</th>
                     <th class='custom-th'>Make</th>
@@ -29,6 +28,7 @@
                     <th class='custom-th'>Remaining Power</th>
                     <th class='custom-th'>Cost Per Time</th>
                     <th class='custom-th'>Book</th>
+                    <th>
                 </tr>
             </thead>
             <tbody>
@@ -45,16 +45,15 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
     <div>
         <h2 style="padding-left: 10px; padding-top: 30px;">History:</h2>
-        <div class="content-container" style="width: 80%;">
+        <div style="width: 80%;">
             <table style="width: 100%;">
-                <thead>
+                <thead class="custom-thead">
                     <tr>
                         <th class='custom-th'>Scooter</th>
                         <th class='custom-th'>Time</th>
-                        <th class='custom-th'>Status</th>
+                        <th colspan="3" class='custom-th'>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,6 +91,7 @@
                         <td class='custom-td'>
                             <form method="POST" action="{{ url_for('user.report_issue', scooter_id=booking.scooter_id) }}" onsubmit="return reportIssue()">
                                 {% if booking.status == 'active' %}
+                                <input type="hidden" name="booking_id" value="{{ booking.id }}">
                                 <div class="report-issue-container">
                                     <button type="button" class="issue-button" onclick="showIssueInput()">🚩 Report issue</button>
                                     <textarea name="issue_description" id="issue-description" placeholder="Describe the issue (255 characters max)" maxlength="255" style="display: none;" required></textarea>
