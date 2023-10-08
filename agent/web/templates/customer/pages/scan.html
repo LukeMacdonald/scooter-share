@@ -1,0 +1,21 @@
+{% extends "customer/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1> {{ title }} </h1>
+
+<p> Scan the QR code on the scooter. </p>
+
+<video id="preview"> </video>
+
+<script src="{{ url_for('static', filename='js/qr.js') }}"> </script>
+<script>
+  function handler(result) {
+      console.log(result.data);
+      window.location = "/{{ then }}/" + result.data;
+  }
+  const scanner = new QrScanner(document.getElementById("preview"), handler, {});
+  scanner.start();
+</script>
+{% endblock %}

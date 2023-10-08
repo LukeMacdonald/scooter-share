@@ -18,6 +18,7 @@ class UserType(Enum):
 class ScooterStatus(Enum):
     AVAILABLE = 'available'
     OCCUPYING = 'occupying'
+    UNLOCKED = 'unlocked'
     AWAITING_REPAIR = 'awaiting repair'
     
 class BookingState(Enum):
@@ -84,7 +85,10 @@ class Scooter(db.Model):
     latitude = db.Column(db.Float(precision=6), nullable=False)  
     remaining_power = db.Column(db.Float(precision=2), nullable=False)
     cost_per_time = db.Column(db.Float(precision=2), nullable=False)
-    status = db.Column(db.Enum(ScooterStatus.AVAILABLE.value,ScooterStatus.AWAITING_REPAIR.value,ScooterStatus.OCCUPYING.value), 
+    status = db.Column(db.Enum(ScooterStatus.AVAILABLE.value,
+                               ScooterStatus.AWAITING_REPAIR.value,
+                               ScooterStatus.OCCUPYING.value,
+                               ScooterStatus.UNLOCKED.value),
                        nullable=False)
     colour = db.Column(db.String(100), nullable=False)
 

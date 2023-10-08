@@ -36,8 +36,8 @@
                 <tr>
                     <td class='custom-td'>{{ scooter.scooter_id }}</td>
                     <td class='custom-td'>{{ scooter.make }}</td>
-                    <td class='custom-td'>Colour...</td>
-                    <td class='custom-td'>Location...</td>
+                    <td class='custom-td'>{{ scooter.colour }}</td>
+                    <td class='custom-td'><a href="https://www.google.com/maps/place/{{ scooter.latitude }},{{ scooter.longitude }}">View on map</a></td>
                     <td class='custom-td'>{{ scooter.remaining_power }}%</td>
                     <td class='custom-td'>${{ scooter.cost_per_time }}</td>
                     <td class='custom-td'><a href="{{ url_for('user.make_booking', scooter_id=scooter.scooter_id, balance=customer.balance, cost_per_time=scooter.cost_per_time) }}">Book</a></td>
