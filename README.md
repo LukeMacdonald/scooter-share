@@ -33,3 +33,14 @@ Connect to `http://localhost:5000` to use the master software
 - Luke MacDonald: Master server, agent app, testing
 - Damon O'Malley: Agent protocol, agent app, testing
 - Bailey Vogt: Master server, scooter control software
+
+
+## Enchancements
+
+Crash Detection:
+    Our Scooters utilize crash detection, it works by
+    utilizing the accelorometer on the sensehat, if the
+    accel detects a force greater then 5g, which is typically
+    considered the limit a human can handle on one moment,
+    after the Scooter detects a crash it locks up the scooter
+    and requests repair from the engineers.
