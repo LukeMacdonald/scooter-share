@@ -26,6 +26,15 @@ Connect to `http://localhost:5000` to use the master software
 (See `master/database/seed.py`.)
 
 ## Trello Screenshots
+![Trello usage 1](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Trello%201.png)
+
+![Trello usage 2](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Trello%202.png)
+
+![Trello usage 3](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Trello%203.png)
+
+![Trello usage 4](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Trello%204.png)
+
+![Trello usage 5](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Trello%205.png)
 
 ## Contributions
 
@@ -46,5 +55,11 @@ Crash Detection:
     and requests repair from the engineers.
 
 ### Github Usage
+![Github usage 1](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Github%20usage%201.png)
+
+![Github usage 2](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Github%20usage%202.png)
+
+![Github usage 3](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Github%20usage%203.png)
 
 ### Project Structure
+![Project Structure](https://github.com/COSC2764-2755/assignment-2-scooter-share-application-team-7/blob/main/Images/Structure.png)
