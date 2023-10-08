@@ -171,3 +171,22 @@ class Transaction(db.Model):
             "user_id": self.user_id,
             "amount": self.amount
         }
+
+class Face(db.Model):
+    """
+        Represents a users face
+    """
+    __tablename__ = 'face'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    face = db.Column(db.String(4096), nullable=False)
+
+    user = relationship('User')
+
+    def as_json(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "face": self.face,
+        }
