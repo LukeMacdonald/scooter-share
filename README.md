@@ -44,3 +44,7 @@ Crash Detection:
     considered the limit a human can handle on one moment,
     after the Scooter detects a crash it locks up the scooter
     and requests repair from the engineers.
+
+### Github Usage
+
+### Project Structure
