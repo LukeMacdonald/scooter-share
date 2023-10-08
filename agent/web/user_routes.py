@@ -120,7 +120,13 @@ def customer_home():
         "name": "customer-homepage"
     }
 
-    response = get_connection().send(data) 
+    response = get_connection().send(data)
+    if "error" in response:
+        if response["error"] == "Unauthorised":
+            error_message = 'Internal Server Error! Please Login Again!'
+            return redirect(url_for('user.logout', error_message=error_message))
+        return redirect(url_for('user.error',message=response['error'] ))
+    
     return render_template("customer/pages/home.html",
                            scooters=response["scooters"],
                            customer=response["user_details"],
@@ -230,7 +236,7 @@ def top_up_balance_post():
     response = get_connection().send({"user-id": session.get('user_info')['id'], 
                                       "amount": request.form.get("amount"), "name": "top-up-balance"})
     if "error" in response:
-        return redirect(url_for('user.error',message=response['error'] ))
+        return redirect(url_for('user.error',message=response['error']))
     else:
         return redirect(url_for('user.customer_home'))
 
@@ -241,5 +247,9 @@ def error(message):
 
 @user.route('/logout')
 def logout():
+    # Retrieve the error_message from the query parameters of the URL
+    error_message = request.args.get('error_message')
     session.clear()
+    if error_message:
+        flash(error_message, category='login_error')
     return redirect(url_for('user.login'))
