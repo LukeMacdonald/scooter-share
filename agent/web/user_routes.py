@@ -207,11 +207,34 @@ def report_issue(scooter_id):
     else: 
         return redirect(url_for('user.customer_home'))
 
-@user.route('/scan')
+@user.route('/unlock')
 @user_login_req
-def scan():
-    return render_template("customer/pages/scan.html", then="unlock")
-    
+def scan_to_unlock():
+    return render_template("customer/pages/scan.html", title="Scan to unlock scooter", then="unlock")
+
+@user.route('/unlock/<int:id>')
+@user_login_req
+def unlock_scooter(id):
+    response = get_connection().send({"name": "unlock-scooter", "scooter_id": id, "user_id": session["user_info"]["id"]})
+    if "error" in response:
+        return redirect(url_for('user.error',message=response['error'] ))
+    else: 
+        return redirect(url_for('user.customer_home'))
+
+@user.route('/return')
+@user_login_req
+def scan_to_return():
+    return render_template("customer/pages/scan.html", title="Scan to return scooter", then="return")
+
+@user.route('/return/<int:id>')
+@user_login_req
+def return_scooter(id):
+    response = get_connection().send({"name": "lock-scooter", "scooter_id": id, "user_id": session["user_info"]["id"]})
+    if "error" in response:
+        return redirect(url_for('user.error',message=response['error'] ))
+    else: 
+        return redirect(url_for('user.customer_home'))
+
 @user.route('/top-up-balance')
 @user_login_req
 def top_up_balance():

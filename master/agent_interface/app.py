@@ -353,23 +353,21 @@ def create_face(handler, request):
 @comms.action("get-faces", ['start'])
 def get_faces(handler, request):
     """
-        add a face to the registry
+    Get all the faces in the registry.
 
     Returns:
         dict: A dictionary containing the fetched data or an error message.
     """
     try:
-        
         response = requests.get(f"{API_BASE_URL}/face/all", timeout=5).json()
         return response
-
     except ValueError as error:
         return {"error": str(error)}
     except Exception as error:
         return {"error": str(error)}
 
 
-@comms.action('unlock-scooter', ['start'])
+@comms.action('unlock-scooter', ['customer'])
 def unlock_scooter(handler, request):
 
     data = {
@@ -382,7 +380,7 @@ def unlock_scooter(handler, request):
     return {"message": "Scooter Successfully Unlocked"}
 
 
-@comms.action('lock-scooter', ['start'])
+@comms.action('lock-scooter', ['customer'])
 def lock_scooter(handler, request):
 
     data = {
@@ -421,7 +419,7 @@ def check_booking(handler, request):
     if response.status_code == 404:
         return {'message': 'You don\'t have any bookings'}
     if response['user_id'] != data['user_id']:
-        return {'message': 'This scooter isn\t booked by you'}
+        return {'message': 'This scooter isn\'t booked by you'}
     else:
         return {'message': 'Unlocking Scooter'}
 
