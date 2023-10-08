@@ -283,29 +283,6 @@ def fetch_scooters_by_id(handler, request):
         return {"error": 'internal server error'}
 
 
-@comms.action("create-face", ['start'])
-def create_face(handler, request):
-    """
-        add a face to the registry
-
-    Returns:
-        dict: A dictionary containing the fetched data or an error message.
-    """
-    try:
-
-        data = {
-            'user_id': request.get('user_id'),
-            'face': request.get('face')
-        }
-        
-        requests.post(f"{API_BASE_URL}/face", json=data, timeout=5).json() 
-
-    except ValueError as error:
-        return {"error": str(error)}
-    except Exception as error:
-        return {"error": 'internal server error'}
-
-
 @comms.action("get-faces", ['start'])
 def get_faces(handler, request):
     """
@@ -396,25 +373,13 @@ def get_faces(handler, request):
 def unlock_scooter(handler, request):
 
     data = {
-        'scooter_id': request.get('scooter_id'),
-        'user_id': request.get('user_id')
+        'scooter_id': request.get('scooter_id')
     }
 
-    user_info = requests.get(f"{API_BASE_URL}/user/id/{data['user_id']}", timeout=5).json()
     scooter_info = requests.get(f"{API_BASE_URL}/scooter/id/{data['scooter_id']}", timeout=5).json()
-
-    if scooter_info['status'] != ScooterStatus.AVAILABLE.value:
-        return {"message": "Scooter Not Available"}
-
-    if user_info['balance'] < scooter_info['cost_per_time']:
-        return {"message": "insufficient funds"}
-    else:
-        user_info['balance'] -= scooter_info['cost_per_time']
-        scooter_update = {"status": ScooterStatus.OCCUPYING.value}
-        print(user_info)
-        requests.put(f"{API_BASE_URL}/user/{data['user_id']}", json=user_info, timeout=5).json()
-        requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
-        return {"message": "Scooter Successfully Booked"}
+    scooter_update = {'status': ScooterStatus.UNLOCKED.value}
+    requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
+    return {"message": "Scooter Successfully Unlocked"}
 
 
 @comms.action('lock-scooter', ['start'])
@@ -422,9 +387,14 @@ def lock_scooter(handler, request):
 
     data = {
         'scooter_id': request.get('scooter_id'),
+        'user_id': request.get('user_id')
     }
+    response = requests.get(f"{API_BASE_URL}/booking/user/{data['user_id']}").json()
 
+    booking_update = {'status': BookingState.COMPLETED.value}
     scooter_update = {'status': ScooterStatus.AVAILABLE.value}
+
+    requests.put(f"{API_BASE_URL}/booking/status/{response['booking_id']}", json=booking_update, timeout=5).json()
     requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
     return {"message": "Scooter Successfully Returned"}
 
@@ -439,6 +409,36 @@ def request_repair(handler, request):
     scooter_update = {'status': ScooterStatus.AWAITING_REPAIR.value}
     requests.put(f"{API_BASE_URL}/scooter/status/{data['scooter_id']}", json=scooter_update, timeout=5).json()
     return {"message": "Scooter Waiting for Repair"}
+
+@comms.action('check-booking', ['start'])
+def check_booking(handler, request):
+    data = {
+        'scooter_id': request.get('scooter_id'),
+        'user_id': request.get('user_id')
+    }
+
+    response = requests.get(f"{API_BASE_URL}/booking/user/{data['user_id']}")
+    if response.status_code == 404:
+        return {'message': 'You don\'t have any bookings'}
+    if response['user_id'] != data['user_id']:
+        return {'message': 'This scooter isn\t booked by you'}
+    else:
+        return {'message': 'Unlocking Scooter'}
+
+@comms.action('get-user-by-email', ['start'])
+def get_user(handler, request):
+    data = {
+        'email': request.get('email')
+    }
+
+    response = requests.get(f"{API_BASE_URL}/user/email/{data['email']}")
+    if response.status_code == 404:
+        return {'message': 'invalid email', 'user_id': 0}
+    else:
+        response = response.json()
+        print(response)
+        return {'message': 'user found', 'user_id': response['id']}
+
 
 def run_agent_server(master):
     global app

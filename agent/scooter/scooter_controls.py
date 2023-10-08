@@ -15,6 +15,19 @@ class ScooterInterface():
         self.scooter_id = scooter_id
 
 
+    def check_booking(self, user_id):
+        message = get_connection().send({
+            'scooter_id': self.scooter_id,
+            'user_id': user_id,
+            'name': 'check-booking'
+        })
+        if message['message'] == 'Unlocking Scooter':
+            self.activate_scooter(user_id)
+        else:
+            print(message['message'])
+            self.run_facial_recognition()
+
+
     def activate_scooter(self, user_id):
         message = get_connection().send({
             'scooter_id': self.scooter_id,
@@ -22,7 +35,7 @@ class ScooterInterface():
             'name': 'unlock-scooter'
         })
         print(message['message'])
-        if message['message'] == 'Scooter Successfully Booked':
+        if message['message'] == 'Scooter Unlocked':
             being_used = True
             self.crash_detection_thread = threading.Thread(target=self.crash_detection.starting_detection)
             self.crash_detection_thread.start()
@@ -55,15 +68,36 @@ class ScooterInterface():
         while not scanning:
             for event in self.sense.stick.get_events():
                 if event.action == 'pressed':
-                    scanning = True
-                    break
-        face_recog = FacialRecognition(self.scooter_id)
-        user_id = face_recog.recognize()
-        if user_id == -1:
-            print('An internal server error has occured')
-            self.run_facial_recognition()
-            exit()
-        self.activate_scooter(user_id)
+                    if event.direction == 'middle':
+                        scanning = True
+                        face_recog = FacialRecognition(self.scooter_id)
+                        user_id = face_recog.recognize()
+                        if user_id == -1:
+                            print('An internal server error has occured')
+                            self.run_facial_recognition()
+                            exit()
+                        break
+                    elif event.direction == 'down':
+                        scanning = True
+                        valid_user = False
+                        while not valid_user:
+                            print('Please Enter your email: ', end='')
+                            email = input()
+                            if email == 'return':
+                                self.run_facial_recognition()
+                                exit()
+                            response = get_connection().send({
+                                'email': email,
+                                'name': 'get-user-by-email'
+                            })
+                            if response['message'] == 'invalid email':
+                                print(response['message'])
+                                continue
+                            else:
+                                valid_user = True
+                                user_id = response['user_id']
+                        break
+        self.check_booking(user_id)
         
 
     def scooter_startup(self):

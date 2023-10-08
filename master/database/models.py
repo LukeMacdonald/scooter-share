@@ -18,6 +18,7 @@ class UserType(Enum):
 class ScooterStatus(Enum):
     AVAILABLE = 'available'
     OCCUPYING = 'occupying'
+    UNLOCKED = 'unlocked'
     AWAITING_REPAIR = 'awaiting repair'
     
 class BookingState(Enum):
