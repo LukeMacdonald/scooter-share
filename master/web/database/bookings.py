@@ -50,7 +50,6 @@ def post():
         dict: A dictionary representing the newly created booking object in JSON format.
     """
     data = request.json
-    print(data)
     new_booking = Booking(
         user_id=data["user_id"],
         scooter_id=data["scooter_id"],
@@ -146,5 +145,10 @@ def get_by_user(user_id):
         list: A list of booking objects in JSON format associated with the specified user.
     """
     bookings = Booking.query.filter_by(user_id=user_id)
+    return [booking.as_json() for booking in bookings]
+
+@booking_api.route("/bookings/status/<string:status>", methods=["GET"])
+def get_by_status(status):
+    bookings = Booking.query.filter_by(status=status)
     return [booking.as_json() for booking in bookings]
 

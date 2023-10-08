@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 
 def get_street_address(latitude, longitude):
     """
@@ -71,3 +72,19 @@ def get_email_body(scooter_id,report, location, subject):
         </body>
         </html>
     '''
+
+def convert_time_format(time_string):
+    """
+    Convert time string to a different format.
+    """
+    time_obj = datetime.strptime(time_string, "%a %d %b, %H:%M, %Y")
+    return time_obj.strftime("%I:%M %p")
+
+def calculate_duration(start_time, end_time):
+    """
+    Calculate duration in minutes.
+    """
+    start_time_obj = datetime.strptime(start_time, "%a %d %b, %H:%M, %Y")
+    end_time_obj = datetime.strptime(end_time, "%a %d %b, %H:%M, %Y")
+    duration_minutes = (end_time_obj - start_time_obj).total_seconds() / 60
+    return str(duration_minutes)

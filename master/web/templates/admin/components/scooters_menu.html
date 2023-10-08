@@ -4,15 +4,16 @@
     </a>
     <div class="collapse show" id="manageScootersDropdown">
         <ul class="nav flex-column" style="margin-left: 3rem;">
-            <li class="nav-item">
-                <a class="nav-link {% if request.path == url_for('admin.confirm_reports') %}active{% endif %}" href="{{ url_for('admin.confirm_reports') }}">Manage Scooters</a>
-            </li> 
+           
             <li class="nav-item">
                 <a class="nav-link {% if request.path == url_for('admin.bookings') %}active{% endif %}" href="{{ url_for('admin.bookings') }}">View Booking History</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.path == url_for('admin.scooter_usage') %}active{% endif %}" href="{{ url_for('admin.home') }}">View Usage History</a>
+                <a class="nav-link {% if request.path == url_for('admin.scooter_usage') %}active{% endif %}" href="{{ url_for('admin.scooter_usage') }}">View Usage History</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == url_for('admin.confirm_reports') %}active{% endif %}" href="{{ url_for('admin.confirm_reports') }}">Submitted Repairs</a>
+            </li> 
         </ul>
     </div>
 </li>
