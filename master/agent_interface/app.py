@@ -28,8 +28,6 @@ def put_request(endpoint, check_status=True, **kwargs):
         request.raise_for_status()
     return request
 
-# todo: Add validation to all functions
-
 app = None
 
 def app_context(func):
@@ -59,7 +57,7 @@ def register(handler, request):
         if not re.match(phone_regex, phone_number):
             raise ValueError("Invalid phone number format.")
         
-        user = post_request(f"/user", json=request).json()
+        user = post_request("/user", json=request).json()
         handler.state = role
         return {"user": user, "response": "yes"}
     except ValueError as error:
@@ -138,7 +136,7 @@ def fetch_available_scooters(handler, request):
     except ValueError as error:
         return {"error": str(error)}
     except Exception as error:
-        return {"error": "Internal Server Error."}
+        return {"error": str(error)}
     
 @comms.action("make-booking", ["customer"])
 @app_context
@@ -158,19 +156,21 @@ def make_booking(handler, request):
         if booking_data is None:
             raise ValueError("Booking data not passed!")
         
-        booking = post_request(f"/bookings", json=booking_data).json()
+        booking = post_request("/bookings", json=booking_data).json()
         scooter_id = booking.get("scooter_id")
         
         if scooter_id:
             data = {"status":ScooterStatus.OCCUPYING.value}
-            updated_repair = put_request(f"/scooter/status/{scooter_id}", json=data).json()  
-            return {"message": "Booking created successfully."}
+            response = put_request(f"/scooter/status/{scooter_id}", json=data)
+            if response.status_code == 400 or response.status_code == 404:
+                return {"error": response.json['message']}
+            return {"message":"Booking successfuly made"}
         else:
             raise ValueError("Invalid scooter ID in the booking data.")
     except ValueError as error:
         return {"error": str(error)}
     except Exception as error: 
-        return {"error": "Internal Server Error."}
+        return {"error": str(error)}
 
 @comms.action("cancel-booking", ["customer"])
 @app_context
@@ -188,9 +188,13 @@ def cancel_booking(handler, request):
         if response.status_code != 404:
             booking = response.json()
             scooter_id = booking["scooter_id"]
+            
             data = {"status":ScooterStatus.AVAILABLE.value}
-            updated_repair = put_request(f"/scooter/status/{scooter_id}", json=data).json()
-            return {"message": "Booking successfully cancelled."}
+            response = put_request(f"/scooter/status/{scooter_id}", json=data)
+            
+            if response.status_code in [400, 404]:
+                return {"error": response.json['message']}
+            return {"message":"Booking successfuly cancelled"}
         else:
             return {"error": "Booking not found."}
     except Exception as e:
@@ -219,14 +223,21 @@ def submit_repair_request(handler, request):
             "status": RepairStatus.PENDING.value
         }
         
-        repair = post_request(f"/repair", json=data).json()
+        response = post_request("/repair", json=data)
+        
+        if response.status_code in [400, 404]:
+           return {"error": response.json['message']}
+       
         data = {"status":ScooterStatus.AWAITING_REPAIR.value}
-        updated_repair = put_request(f"/scooter/status/{scooter_id}", json=data).json()   
+        response = put_request(f"/scooter/status/{scooter_id}", json=data)
+        if response.status_code in [400, 404]:
+           return {"error": response.json['message']} 
+        
         return {"message": "Repair request submitted successfully."}
-    except ValueError as e:
-        return {"error": str(e)}
-    except Exception as e:
-        return {"error": "Internal Server Error."}
+    except ValueError as error:
+        return {"error": str(error)}
+    except Exception as error:
+        return {"error": str(error)}
     
 @comms.action("top-up-balance", ["customer"])
 @app_context
@@ -251,12 +262,12 @@ def top_up_balance(handler, request):
             raise ValueError("Update user failed!") 
         
         data = {"user_id": user_id, "amount":amount}
-        post_request(f"/transaction", json=data)
+        post_request("/transaction", json=data)
         return {"new_balance": user["balance"]}
     except ValueError as error:
         return {"error": str(error)}
     except Exception as error: 
-        return {"error": "Internal Server Error"}
+        return {"error": str(error)}
     
 
 @comms.action("get-scooter-by-id", ['start'])
@@ -280,7 +291,7 @@ def fetch_scooters_by_id(handler, request):
     except ValueError as error:
         return {"error": str(error)}
     except Exception as error:
-        return {"error": 'internal server error'}
+        return {"error": str(error)}
 
 def run_agent_server(master):
     global app

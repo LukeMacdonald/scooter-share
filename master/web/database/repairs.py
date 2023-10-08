@@ -63,6 +63,9 @@ def post():
         JSON response with the added repair record or an error message if the record could not be added.
     """
     data = request.json
+    if not all(key in data for key in ("scooter_id", "report", "status")):
+        return jsonify({"error": "Invalid data format"}), 400
+    
     new_repair = Repairs(
         scooter_id=data["scooter_id"],
         report=data["report"],
