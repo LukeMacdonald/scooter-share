@@ -218,7 +218,7 @@ def cancel_booking():
     """
     get_connection().send({"name" : "cancel-booking", "booking-id" : request.form.get("booking_id")})
 
-    calendar.remove(request.form.get("event_id"))
+    cal.remove(request.form.get("event_id"))
 
     return redirect(url_for('user.customer_home'))
 
