@@ -207,6 +207,11 @@ def report_issue(scooter_id):
     else: 
         return redirect(url_for('user.customer_home'))
 
+@user.route('/scan')
+@user_login_req
+def scan():
+    return render_template("customer/pages/scan.html", then="unlock")
+    
 @user.route('/top-up-balance')
 @user_login_req
 def top_up_balance():
