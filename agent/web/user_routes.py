@@ -290,9 +290,6 @@ def logout():
 
     file_path = "token.json"
 
-    try:
-        os.remove(file_path)
-        print(f"File {file_path} has been successfully deleted.")
-    except OSError as e:
-        print(f"Error deleting file {file_path}: {e}")
+    os.remove(file_path)
+    
     return redirect(url_for('user.login'))
