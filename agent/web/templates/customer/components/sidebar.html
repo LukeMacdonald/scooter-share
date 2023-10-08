@@ -1,0 +1,31 @@
+<h2 style="margin: 2rem 0 0 3rem">Customer Portal</h2>
+<hr style="border-top: 1px solid #fff;">
+<div class="sidebar-link-container">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == url_for('user.customer_home') %}active{% endif %}" href="{{ url_for('user.customer_home') }}" style="font-size: 1.25rem; color: white;">
+                <i class="fa-solid fa-house" style="margin-right: 1rem;"></i> Home
+            </a>     
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == url_for('user.top_up_balance') %}active{% endif %}" href="{{ url_for('user.top_up_balance') }}" style="font-size: 1.25rem; color: white;">
+                <i class="fa-solid fa-money-bill-trend-up" style="margin-right: 1rem; width: 1em;"></i> Top up balance
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == url_for('user.scan_to_unlock') %}active{% endif %}" href="{{ url_for('user.scan_to_unlock') }}" style="font-size: 1.25rem; color: white;">
+                <i class="fa-solid fa-unlock" style="margin-right: 1rem; width: 1em;"></i> Unlock scooter
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == url_for('user.scan_to_return') %}active{% endif %}" href="{{ url_for('user.scan_to_return') }}" style="font-size: 1.25rem; color: white;">
+                <i class="fa-solid fa-rotate-left" style="margin-right: 1rem; width: 1em;"></i> Return scooter
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('user.logout') }}" style="font-size: 1.25rem; color: white;">
+                <i class="fa-solid fa-sign-out" style="margin-right: 1rem; width: 1em;"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>

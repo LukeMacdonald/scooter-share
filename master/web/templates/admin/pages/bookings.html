@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div style="width:90%; margin:0 auto; text-align:left">
+    <h1 style="color:black; font-size:3rem">Booking history</h1>
+    <hr/> 
+    <div> 
+        <table class="custom-table">
+            <thead class="custom-thead">
+                <th class="custom-th">Booking ID</th>
+                <th class="custom-th">Scooter ID</th>
+                <th class="custom-th">User ID</th>
+                <th class="custom-th">Date</th>
+                <th class="custom-th">Start Time</th> 
+                <th class="custom-th">Status</th>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td class="custom-td">{{ booking.id }}</td>
+                    <td class="custom-td">{{ booking.scooter_id }}</td>
+                    <td class="custom-td">{{ booking.user_id }}</td>
+                    <td class="custom-td">{{ booking.date }}</td>
+                    <td class="custom-td">{{ booking.start_time }}</td>
+                    {% if booking.status == 'active' %}
+                    <td class="status custom-td" style="color: orange;">{{ booking.status }}</td>
+                    {% elif booking.status == 'completed' %}
+                    <td class="status custom-td" style="color: green;">{{ booking.status }}</td>
+                    {% elif booking.status == 'cancelled' %}
+                    <td class="status custom-td" style="color: red;">{{ booking.status }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

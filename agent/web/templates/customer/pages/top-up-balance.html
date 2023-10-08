@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+{% extends "customer/base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <div class="top-up">
+        <h2>Top-Up Your Balance</h2>
+        <form method="POST" action="{{ url_for('user.top_up_balance') }}" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="amount">Enter Amount:</label>
+                <input class="form-control custom-input" type="number" id="amount" name="amount" min="0.01" step="0.01" required>
+            </div>
+            <div style="text-align:center">
+            <input type="submit" class="btn btn-primary" value="Top Up" style="width:40%">
+            </div>
+        </form>
+    </div>
+    <script>
+        function validateForm() {
+            var amount = parseFloat(document.getElementById('amount').value);
+            
+            // Check if the amount is a number and greater than 0
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount greater than 0.');
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
+{% endblock %}

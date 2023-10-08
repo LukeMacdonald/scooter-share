@@ -8,7 +8,7 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
         <title>Login</title> 
     </head>
-    <body>
+    <body style="background-color: #222831">
         <div class="main-section">
             <div class="row">
                 <div class="col-lg-6">
@@ -16,12 +16,12 @@
                 <div class="col-lg-6 login-container shadow">
                     <div class="form-container">
                     <h1 class="display-4 login-header">Admin Portal</h1>
-                    <form method="POST" action="/login">
+                    <form method="POST" action="{{ url_for('admin.login') }}">
                         <div class="form-group">
-                            <input class="form-control" id="email" name="email" placeholder="Email Address" value="" required>
+                            <input class="form-control login-form-control" id="email" name="email" placeholder="Email Address" value="" required>
                         </div>
                         <div class="form-group">
-                            <input class="form-control" id="password" name="password" type="password" placeholder="Enter Password" value="" required>
+                            <input class="form-control login-form-control" id="password" name="password" type="password" placeholder="Enter Password" value="" required>
                         </div>
                         <span class="error error-message">{{ error_message }}</span>
                         <button class="btn btn-primary button-custom shadow" type="submit">Login</button>

@@ -5,6 +5,7 @@ import socketserver
 import threading
 
 _actions = {}
+TRACE = True
 
 def action(name, states):
     """
@@ -15,11 +16,17 @@ def action(name, states):
         @functools.wraps(function)
         def wrapper(handler, message):
             if handler.state not in states:
-                raise ValueError(f"Handler should be in one of the states in {states}, not {handler.state}.")
-            return function(handler, message)
+                return {"error": "Unauthorised"}
+            try:
+                return function(handler, message)
+            except Exception as e:
+                return {"error": str(e)}
         _actions[name] = wrapper
         return wrapper
     return inner
+
+def handle(handler, message):
+    return _actions[message["name"]](handler, message)
 
 class Handler(socketserver.StreamRequestHandler):
     """
@@ -42,15 +49,25 @@ class Handler(socketserver.StreamRequestHandler):
                 # (If we want to send a newline, the encoder should
                 # emit \n anyway.)
                 message = json.loads(self.rfile.readline())
+                if TRACE:
+                    print(f"A->M: {message}")
             except json.decoder.JSONDecodeError:
                 return
             if message["name"] in _actions:
-                response = _actions[message["name"]](self, message)
+                response = handle(self, message)
+                if TRACE:
+                    print(f"M->A: {response}")
                 self.wfile.write(json.dumps(response).encode() + b"\n")
                 self.wfile.flush()
             else:
                 return
 
+class ReusingThreadingTCPServer(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+
 def run(port):
-    server = socketserver.ThreadingTCPServer(("0.0.0.0", port), Handler)
-    server.serve_forever()
+    server = ReusingThreadingTCPServer(("0.0.0.0", port), Handler)
+    try:
+        server.serve_forever()
+    finally:
+        server.shutdown()
