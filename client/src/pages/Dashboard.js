@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import Layout from '../components/Layout'
 import Sidebar from '../components/Sidebar'
 import MapComponent from '../components/Map'
-import { customerData } from '../api/api'
-import { findOnMap, routeTo } from '../api/google'
+import { findOnMap } from '../api/google'
 import { Outlet } from 'react-router-dom'
 import useCustomerData from '../hooks/useCustomerData'
 
