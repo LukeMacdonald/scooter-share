@@ -1,5 +1,32 @@
+import ApiCalendar from "react-google-calendar-api";
+
+const config = {
+    clientId: "478230805713-ct65d4t7gerlrdbtsmauf12oovuv3380.apps.googleusercontent.com",
+    apiKey: "AIzaSyAelKc5RD-wq7MwdrH8n2KR-6jIwD-AR7Q",
+    scope: "https://www.googleapis.com/auth/calendar",
+    discoveryDocs: [
+      "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+    ],
+};
+
+export const apiCalendar = new ApiCalendar(config);
 
 
+export const createEvent = async () => {
+    const eventFromNow = {
+        summary: "Poc Dev From Now",
+        time: 480,
+      };
+      
+      apiCalendar
+        .createEventFromNow(eventFromNow)
+        .then((result) => {
+          console.log(result);
+        })
+        .catch((error) => {
+            console.log(error);
+          });
+}
 export const findOnMap = (mapRef, longitude, latitude) => {
     
     const location = { lat: latitude, lng: longitude };

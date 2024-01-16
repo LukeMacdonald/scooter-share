@@ -12,6 +12,7 @@ def scooters_awaiting_repairs():
     query = db.session.query(
         Scooter.id.label("scooter_id"),
         Scooter.make.label("make"),
+        Scooter.colour.label("colour"),
         Scooter.longitude.label("longitude"),
         Scooter.latitude.label("latitude"),
         Scooter.remaining_power.label("remaining_power"),
@@ -33,6 +34,7 @@ def scooters_awaiting_repairs():
             scooter_data = {
                 "scooter_id": row.scooter_id,
                 "make": row.make,
+                "colour": row.colour,
                 "longitude": row.longitude,
                 "latitude": row.latitude,
                 "remaining_power": row.remaining_power,

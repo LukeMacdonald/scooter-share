@@ -3,12 +3,13 @@ import MapComponent from '../../components/Map'
 import { useParams } from 'react-router-dom';
 import { scooterData } from '../../api/api';
 import { routeTo } from '../../api/google';
+import useGeolocation from '../../hooks/useGeolocation';
 
 const RouteTo = () => {
     
     const mapRef = useRef(null);
     
-    const centerRef = useRef(null);
+    const { center } = useGeolocation();
     
     const [scooter, setScooter] = useState([]);
   
@@ -28,15 +29,15 @@ const RouteTo = () => {
     }, [scooterID]);
   
     useEffect(() => {
-      if (scooter.length > 0 && centerRef.current) {
-        console.log(scooter[0], centerRef.current)
-        routeTo(centerRef.current, { lat: scooter[0].latitude, lng: scooter[0].longitude }, mapRef);
+      if (scooter.length > 0 && center) {
+        console.log(center, scooter[0])
+        routeTo(center, { lat: scooter[0].latitude, lng: scooter[0].longitude }, mapRef);
       }
-      console.log(scooter[0], centerRef.current)
-    }, [scooter, centerRef]);
+   
+    }, [scooter, center]);
   
     return (
-      <MapComponent className='w-full h-full p-10' scooters={scooter} mapRef={mapRef} centerRef={centerRef} />
+      <MapComponent className='w-full h-full p-10' scooters={scooter} mapRef={mapRef} center={center} />
     );
   };
   

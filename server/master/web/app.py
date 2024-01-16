@@ -6,6 +6,7 @@ It initializes the database and registers blueprints for the admin site and data
 
 """
 from flask import Flask
+from flask_cors import CORS
 from database.database_manager import init_db
 from database.seed import seed_data
 from web.admin_site import admin
@@ -26,6 +27,8 @@ def create_master_app(testing=False):
     """
     app = Flask(__name__)
     
+    CORS(app)
+    
     app.secret_key = 'abc123'
     
     init_db(app, testing)
@@ -36,7 +39,6 @@ def create_master_app(testing=False):
             seed_data()
    
     blueprints = [
-        admin,
         users_api,
         face_api,
         scooter_api,
@@ -47,5 +49,7 @@ def create_master_app(testing=False):
   
     for blueprint in blueprints:
         app.register_blueprint(blueprint)
+        
+    app.register_blueprint(admin, url_prefix='/admin')
   
     return app

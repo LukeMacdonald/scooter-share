@@ -2,6 +2,7 @@
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
+    "./node_modules/tw-elements/dist/js/**/*.js",
   ],
   theme: {
     extend: {
@@ -11,6 +12,11 @@ module.exports = {
         primary: "#00888f", // 240,86,199
         primaryDark: "#e62958", // 80,230,217
       },
+      fontFamily: {
+        'montserrat': ['Montserrat'],
+        'lato': ['Lato'],
+        'garamond': ['Garamond']
+     }
     },
     screens: {
       "2xl": { max: "1535px" },
@@ -32,6 +38,6 @@ module.exports = {
       // => @media (max-width: 479px) { ... }
   },
   },
-  plugins: [],
+  plugins: [require("tw-elements/dist/plugin.cjs")],
 }
 

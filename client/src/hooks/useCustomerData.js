@@ -5,12 +5,14 @@ const useCustomerData = () => {
     
     const [scooters, setScooters] = useState([])
     const [bookings, setBookings] = useState([])
+    const [user, setUser] = useState({})
 
     const fetchData = async () => {
         try {
-          const { scooters, bookings } = await customerData();
+          const { scooters, bookings, user_details } = await customerData();
           setScooters(scooters);
           setBookings(bookings);
+          setUser(user_details);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
@@ -20,7 +22,7 @@ const useCustomerData = () => {
         fetchData();
       }, []);
 
-  return {scooters, bookings}
+  return {scooters, bookings, user}
 }
 
 export default useCustomerData

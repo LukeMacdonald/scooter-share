@@ -14,11 +14,12 @@ def post():
         JSON response with the newly created scooter object or an error message if the data is invalid.
     """
     data = request.json
-   
-
+    
     # Validate the required fields
-    if 'make' not in data or 'longitude' not in data or 'latitude' not in data or 'remaining_power' not in data or 'cost_per_time' not in data or 'status' not in data:
+    if 'make' not in data or 'longitude' not in data or 'latitude' not in data or 'cost_per_time' not in data or 'colour' not in data:
         return jsonify({'message': 'Invalid data provided'}), 400
+    
+
     
     make = data['make']
     longitude = data['longitude']

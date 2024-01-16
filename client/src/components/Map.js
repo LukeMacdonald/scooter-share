@@ -1,13 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
-import useGeolocation from '../hooks/useGeolocation'; 
 import { useMarkerMapping } from '../hooks/useMarkerMapping';
 
-const MapComponent = ({ scooters, className, mapRef, centerRef }) => {
+const MapComponent = ({ scooters, className, mapRef, center }) => {
   
   const [markers, setMarkers] = useState([]);
 
-  const { center, error: geolocationError } = useGeolocation();
+  // const { center, error: geolocationError } = useGeolocation();
   
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: 'AIzaSyCI9KBPlHOzx9z7dp41LNbzpYaVn3qqgNY',
@@ -20,13 +19,13 @@ const MapComponent = ({ scooters, className, mapRef, centerRef }) => {
 
   useEffect(() => {
     setMarkers(markerMapping);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scooters]);
 
   const onLoad = (map) => {
     mapRef.current = map; // Save the map instance to the ref
     const bounds = new window.google.maps.LatLngBounds();
     markers.forEach(({ lat, lng }) => bounds.extend(new window.google.maps.LatLng(lat, lng)));
-    
     map.fitBounds(bounds);
   };
 
@@ -35,6 +34,7 @@ const MapComponent = ({ scooters, className, mapRef, centerRef }) => {
     if (center && isLoaded) {
       mapRef.current.panTo(center); // Pan the map to the center
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [center, isLoaded]);
 
   return (
@@ -45,16 +45,11 @@ const MapComponent = ({ scooters, className, mapRef, centerRef }) => {
         <div>Error loading map: {loadError}</div>
       ) : (
         <GoogleMap mapContainerClassName='w-full h-full rounded-lg' center={center} zoom={10} onLoad={onLoad}>
-          {geolocationError ? (
-            <div>Error obtaining location: {geolocationError}</div>
-          ) : (
-            <>
-              {markers.map((marker, index) => (
-                <Marker key={index} position={marker} icon={marker.icon} />
+            {markers.map((marker, index) => (
+                <Marker key={index} position={marker} icon={customIcon} />
               ))}
               {center && <Marker position={center} icon={customUserIcon} />}
-            </>
-          )}
+            
         </GoogleMap>
       )}
     </div>

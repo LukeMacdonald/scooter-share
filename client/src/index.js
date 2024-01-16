@@ -1,21 +1,34 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import Signup from './pages/Signup';
+import Bookings from './pages/customer/Bookings';
+import RouteTo from './pages/customer/Route';
+import Profile from './pages/customer/Profile';
+import Booking from './pages/customer/Booking';
+import Login from './pages/Login';
+
+import { CustomerDashboard, CustomerLayout } from './pages/customer/Dashboard';
+import { EngineerDashboard, EngineerLayout } from './pages/engineer/Dashboard';
+import { AdminLayout, AdminDashboard } from './pages/admin/Dashboard';
+
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
   RouterProvider,
 } from "react-router-dom";
-import Login from './pages/Login';
-import {CustomerDashboard, EngineerDashboard, AdminDashboard, CustomerLayout} from './pages/Dashboard';
-import Signup from './pages/Signup';
-import Bookings from './pages/customer/Bookings';
-import RouteTo from './pages/customer/Route';
-import Profile from './pages/customer/Profile';
-import Booking from './pages/customer/Booking';
+
+import './index.css';
+import EditProfile from './pages/admin/EditProfile';
+import EditScooter from './pages/admin/EditScooter';
+import AddScooter from './pages/admin/AddScooter';
+import DamagedScooter from './pages/admin/DamagedScooter';
+
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,20 +42,26 @@ const router = createBrowserRouter(
         <Route path='profile' element={<Profile/>}/>
         <Route path='booking/:scooterID' element={<Booking/>}/>
       </Route>
-      <Route path='engineer' element={<EngineerDashboard />} />
-      <Route path='admin' element={<AdminDashboard />} />
+      <Route path='admin' element={< AdminLayout/>}>
+        <Route index element={<AdminDashboard />} />
+        <Route path='edit/customer/:userId' element={<EditProfile/>}/>
+        <Route path='edit/scooter/:scooterId' element={<EditScooter/>}/>
+        <Route path='add/scooter' element={<AddScooter/>}/>
+        <Route path='scooter/pending' element={<DamagedScooter/>}/>
+      </Route>
+      <Route path='engineer' element={< EngineerLayout/>}>
+        <Route index element={<EngineerDashboard />} />
+      </Route>
     </Route>
   )
 );
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <RouterProvider router={router} />
+    </LocalizationProvider>
   </React.StrictMode>
 )
 
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

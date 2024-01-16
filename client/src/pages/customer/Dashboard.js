@@ -1,10 +1,10 @@
 import React, { useRef } from 'react'
-import Layout from '../components/Layout'
-import Sidebar from '../components/Sidebar'
-import MapComponent from '../components/Map'
-import { findOnMap } from '../api/google'
+import { Sidebar } from '../../components/Sidebar'
+import MapComponent from '../../components/Map'
+import { findOnMap } from '../../api/google'
 import { Outlet } from 'react-router-dom'
-import useCustomerData from '../hooks/useCustomerData'
+import useCustomerData from '../../hooks/useCustomerData'
+import useGeolocation from '../../hooks/useGeolocation'
 
 
 export const CustomerLayout = ({children}) => {
@@ -25,12 +25,13 @@ export const CustomerDashboard = () => {
   const {scooters} = useCustomerData();
 
   const mapRef = useRef(null);
-  const centerRef = useRef(null);  
+  
+  const { center } = useGeolocation();
 
   return (
     <>
       
-      <MapComponent className='w-full h-2/3 p-10' scooters={scooters} mapRef={mapRef} centerRef={centerRef} />
+      <MapComponent className='w-full h-2/3 p-10' scooters={scooters} mapRef={mapRef} center={center} />
           <div className='w-full p-10 !pt-0'>
           <h1 className='text-xl font-semibold'>Available Scooters</h1>
           <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -64,22 +65,5 @@ export const CustomerDashboard = () => {
           </div>
 
     </>
-  )
-}
-
-
-export const EngineerDashboard = () => {
-  return (
-    <main className='w-full h-screen max-h-screen'>
-      <Layout>
-        <div>Engineer Dashboard</div>
-      </Layout>
-    </main>
-  )
-}
-
-export const AdminDashboard = () => {
-  return (
-    <div>Admin Dashboard</div>
   )
 }

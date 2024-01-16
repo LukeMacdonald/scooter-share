@@ -3,51 +3,17 @@ Blueprint for Admin Routes
 
 """
 import requests
-from passlib.hash import sha256_crypt
 from requests.exceptions import RequestException
-from flask import Blueprint, render_template, redirect, url_for, request, session
+from flask import Blueprint, request, jsonify
 from agent_interface import helpers
 from web.mail import send_email
-from database.models import User, RepairStatus, UserType, BookingState
-from web.login import admin_login_req
+from database.models import RepairStatus, UserType, BookingState, ScooterStatus
 
 API_BASE_URL = "http://localhost:5000"
 
 admin = Blueprint("admin", __name__)
 
-@admin.route("/")
-def index():
-    """
-    Display the login page for admin.
-
-    Returns:
-        Flask response: The login page.
-    """
-    return render_template("login.html")
-
-@admin.route("/admin/login", methods=['POST'])
-def login():
-    """
-    Handle the admin login form submission.
-
-    Perform login logic and redirect to the admin home page.
-
-    Returns:
-        Flask response: Redirect to the admin home page.
-    """
-    ip_address = request.headers.get('X-Forwarded-For', request.headers.get('X-Real-IP', request.remote_addr))
-    print(f'Your IP address is {ip_address}')
-    admin = User.query.filter_by(role='admin', email=request.form.get("email")).first()
-
-    if admin is not None:
-        password = request.form.get("password")
-        if sha256_crypt.verify(password, admin.password):
-            session['admin_info'] = admin.email
-            return redirect(url_for('admin.home'))
-    return redirect("/")
-
-@admin.route("/home")
-@admin_login_req
+@admin.route("/data")
 def home():
     """
     Display the admin home page.
@@ -60,12 +26,16 @@ def home():
     
     for scooter in scooters:
         scooter['location'] = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
- 
+        
+    data = {
+        'scooters': scooters,
+        'customers': customers
+    }
     
-    return render_template("admin/pages/home.html", scooters=scooters, customers=customers)
+    return jsonify(data), 200
+ 
 
 @admin.route("/scooter/bookings")
-@admin_login_req
 def bookings():
     """
     Display the admin page for scooter bookings.
@@ -73,16 +43,16 @@ def bookings():
     Returns:
         Flask response: The scooter bookings page.
     """
-    bookings = requests.get(f"{API_BASE_URL}/bookings/status/{BookingState.COMPLETED.value}", timeout=5).json()
     
-    for booking in bookings:
+    completed_bookings = requests.get(f"{API_BASE_URL}/bookings/status/{BookingState.COMPLETED.value}", timeout=5).json()
+    
+    for booking in completed_bookings:
         booking["start_time"] = helpers.convert_time_format(booking["start_time"])
         
+    return jsonify(completed_bookings), 200
         
-    return render_template("admin/pages/bookings.html", bookings=bookings)
 
 @admin.route("/scooters/usage")
-@admin_login_req
 def scooter_usage():
     """
     Display the admin page for scooter usage statistics.
@@ -90,15 +60,15 @@ def scooter_usage():
     Returns:
         Flask response: The scooter usage statistics page.
     """
-    bookings = requests.get(f"{API_BASE_URL}/bookings/status/{BookingState.COMPLETED.value}", timeout=5).json()
-    for booking in bookings:
+    completed_bookings = requests.get(f"{API_BASE_URL}/bookings/status/{BookingState.COMPLETED.value}", timeout=5).json()
+    for booking in completed_bookings:
         booking["duration"] = helpers.calculate_duration(booking["start_time"], booking["end_time"])
         booking["start_time"] = helpers.convert_time_format(booking["start_time"])
-    return render_template("admin/pages/usage.html", bookings=bookings)
+        
+    return jsonify(completed_bookings), 200
 
-@admin.route("/customers/edit/<int:user_id>")
-@admin_login_req
-def edit_customer(user_id):
+@admin.route("/customer/get/<int:user_id>")
+def get_customer(user_id):
     """
     Edit customer information.
 
@@ -108,13 +78,12 @@ def edit_customer(user_id):
     Returns:
         str: Rendered template for editing user information.
     """
-    response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)   
+    response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5) 
     customer = response.json()
+    
+    return jsonify(customer), 200
 
-    return render_template("admin/pages/edit_user.html", data=customer)
-
-@admin.route("/customer/update", methods=['POST'])
-@admin_login_req
+@admin.route("/customer/update", methods=['PUT'])
 def update_customer():
     """
     Update customer information based on the form data.
@@ -123,23 +92,32 @@ def update_customer():
         response: Redirect to the admin home page if successful, or error message with status code 500 if there is an error.
     """
     try:
-        user_id = request.form.get('user_id')
+        req = request.get_json()
+        print(req);
+        user_id = req.get('id')
+        
         response = requests.get(f"{API_BASE_URL}/user/id/{user_id}", timeout=5)
+        
+        print(response.json())
+        
         if response.status_code == 400:
-            return {"error": "User Not Found"} 
+            return jsonify({"error": "User Not Found"}), 404
+        
         user = response.json()
             
-        user["first_name"] = request.form.get('first_name')
-        user["last_name"] = request.form.get('last_name')  
-        user["phone_number"] = request.form.get('phone_number')
+        user["first_name"] = req.get('first_name')
+        user["last_name"] = req.get('last_name')  
+        user["phone_number"] = req.get('phone_number')
+        
         updated_user = requests.put(f"{API_BASE_URL}/user/{user_id}", json=user, timeout=5).json()
-        return redirect(url_for("admin.home")) 
-    except Exception as error:
+        
+        return jsonify(updated_user), 200
+    
+    except RequestException as error:
         print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500
+        return jsonify({"error": "Internal Server Error"}), 500
 
 @admin.route("/customer/delete/<int:user_id>")
-@admin_login_req
 def delete_customer(user_id):
     """
     Delete a customer record.
@@ -151,48 +129,40 @@ def delete_customer(user_id):
         response: Redirect to the admin home page if successful, or error message with status code 500 if there is an error.
     """
     try:
+        #todo: Delete all entries of user in other tables aswell.
+        
         requests.delete(f"{API_BASE_URL}/user/{user_id}", timeout=5).json()
-        return redirect(url_for("admin.home"))
-    except Exception as error:
+        return jsonify({"message": "Account Deleted!"})
+        
+    except RequestException as error:
         print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500   
+        return jsonify({"error": "Internal Server Error"}), 500   
 
-@admin.route("/scooter/add")
-@admin_login_req
-def add_scooter():
+@admin.route("/scooter/get/<int:scooter_id>")
+def get_scooter(scooter_id):
     """
-    Render the template for adding a new scooter.
-
-    Returns:
-        str: Rendered template for adding a new scooter.
-    """
-    return render_template("admin/pages/add_scooter.html")
-
-@admin.route("/scooter/edit/<int:scooter_id>")
-@admin_login_req
-def edit_scooter(scooter_id):
-    """
-    Edit scooter information based on the provided scooter ID.
+    Delete a scooter record based on the provided scooter ID.
 
     Args:
-        scooter_id (int): The unique identifier for the scooter to be edited.
+        scooter_id (int): The unique identifier for the scooter to be deleted.
 
     Returns:
-        str: Rendered template for editing scooter information if successful.
-             If there is an error, returns a dictionary with an error message and status code 500.
+        response: Redirect to the admin home page if the deletion is successful.
+                 If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
+        
+        #todo: Delete all upcoming bookings with this scooter
+        
         response = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5)
-        if response.status_code == 404:
-            return {"error": "Scooter Not Found"}
         scooter = response.json()
-        return render_template("admin/pages/edit_scooter.html", data=scooter)
-    except Exception as error:
+        return jsonify(scooter), 200
+    
+    except RequestException as error:
         print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500 
+        return jsonify({"error": "Internal Server Error"}), 500  
 
-@admin.route("/scooter/update", methods=['POST'])
-@admin_login_req
+@admin.route("/scooter/update", methods=['PUT'])
 def scooter_update():
     """
     Update scooter information based on the form data provided via a POST request.
@@ -202,27 +172,28 @@ def scooter_update():
                  If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
-        scooter_id = request.form.get('scooter_id')
+        req = request.get_json()
+        scooter_id = req.get('scooter_id')
         response = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5)
         if response.status_code == 404:
             return {"error": "Scooter Not Found"}
        
         scooter = response.json()
-        scooter["colour"] = request.form.get("colour")
-        scooter["make"] = request.form.get('make')
-        scooter["cost_per_time"] = float(request.form.get('cost'))
-        scooter["remaining_power"] = float(request.form.get('charge'))
-        scooter["longitude"] = float(request.form.get('longitude'))
-        scooter["latitude"] = float(request.form.get('latitude'))
+        scooter["colour"] = req.get("colour")
+        scooter["make"] = req.get('make')
+        scooter["cost_per_time"] = float(req.get('cost_per_time'))
+        scooter["remaining_power"] = float(req.get('remaining_power'))
+        scooter["longitude"] = float(req.get('longitude'))
+        scooter["latitude"] = float(req.get('latitude'))
         
         updated_scooter = requests.put(f"{API_BASE_URL}/scooter/id/{scooter_id}", json=scooter, timeout=5).json() 
-        return redirect(url_for("admin.home")) 
-    except Exception as error:
+        
+        return jsonify(updated_scooter), 200
+    except RequestException as error:
         print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500 
+        return jsonify({"error": "Internal Server Error"}), 500 
         
 @admin.route("/scooter/delete/<int:scooter_id>")
-@admin_login_req
 def delete_scooter(scooter_id):
     """
     Delete a scooter record based on the provided scooter ID.
@@ -235,15 +206,17 @@ def delete_scooter(scooter_id):
                  If there is an error, returns a dictionary with an error message and status code 500.
     """
     try:
+        
+        #todo: Delete all upcoming bookings with this scooter
+        
         requests.delete(f"{API_BASE_URL}/scooter/{scooter_id}", timeout=5).json() 
-        #scooters_api.delete(scooter_id)
-        return redirect(url_for("admin.home"))
-    except Exception as error:
+        return jsonify({"message": "Scooter Deleted!"}), 200
+    
+    except RequestException as error:
         print(f"Error during API request: {error}")
-        return {"error": "Internal Server Error"}, 500  
+        return jsonify({"error": "Internal Server Error"}), 500  
       
 @admin.route("/scooter/submit", methods=['POST'])
-@admin_login_req
 def submit_scooter():
 
     """
@@ -252,18 +225,20 @@ def submit_scooter():
     Returns:
         response: Redirect to the admin home page if the submission is successful.
     """
+    
+    req = request.get_json()
     data = {
-        "make": request.form.get('make'),
-        "cost_per_time": request.form.get('cost'),
-        "colour": request.form.get('colour'),
-        "latitude": request.form.get('latitude'),
-        "longitude": request.form.get('longitude')
+        "make": req.get('make'),
+        "cost_per_time": req.get('cost'),
+        "colour": req.get('colour'),
+        "latitude": req.get('latitude'),
+        "longitude": req.get('longitude')
     }
-    scooter = requests.post(f"{API_BASE_URL}/scooter", json=data, timeout=5).json() 
-    return redirect(url_for("admin.home")) 
+    
+    scooter = requests.post(f"{API_BASE_URL}/scooter", json=data, timeout=5).json()
+    return jsonify(scooter), 200 
 
-@admin.route("/admin/repairs")
-@admin_login_req
+@admin.route("/repairs")
 def confirm_reports():
     """
     Endpoint to retrieve and display pending repair reports for admin confirmation.
@@ -272,14 +247,24 @@ def confirm_reports():
         str: Rendered HTML template containing pending repair reports.
     """
     try:
-        repairs = requests.get(f"{API_BASE_URL}/repairs/pending", timeout=5).json()  
-        return render_template("admin/pages/repairs.html", repairs_data=repairs)
-    except Exception as error:
+        scooters = []
+        repairs = requests.get(f"{API_BASE_URL}/repairs/pending", timeout=5).json()
+        for repair in repairs:
+            
+            response = requests.get(f"{API_BASE_URL}/scooter/id/{repair['scooter_id']}", timeout=5)
+            
+            scooter = response.json()
+            
+            repair['longitude'] = scooter['longitude']
+            repair['latitude'] = scooter['latitude']
+            
+            scooters.append(response.json())
+        return jsonify({'repairs':repairs, 'scooters': scooters}), 200  
+    except RequestException as error:
         print(f"Error during repairs API request: {error}")
-        return {"error": "Internal Server Error"}, 500
+        return jsonify({"error": "Internal Server Error"}), 500
    
-@admin.route("/admin/scooter/report", methods=['POST'])
-@admin_login_req
+@admin.route("/scooter/report", methods=['POST'])
 def report_scooter():
     """
     Endpoint to process scooter repair reports submitted by users.
@@ -288,20 +273,25 @@ def report_scooter():
         Response: Redirects admin to the confirm_reports endpoint after processing the report.
     """
     try:
-        repair_id = request.form.get('repair_id')
+        req = request.get_json()
+        repair_id = req.get('repair_id')
         data = {"status": RepairStatus.ACTIVE.value}
-        updated_repair = requests.put(f"{API_BASE_URL}/repair/status/{repair_id}", json=data, timeout=5).json()      
+        updated_repair = requests.put(f"{API_BASE_URL}/repair/status/{repair_id}", json=data, timeout=5).json()
+        
+        data = {"status": ScooterStatus.AWAITING_REPAIR.value}
+        
+        scooter = requests.put(f"{API_BASE_URL}/scooter/status/{updated_repair['scooter_id']}", json=data, timeout=5).json()
+        
         # Send notifications to engineers
         notify_engineers(updated_repair["scooter_id"],updated_repair["report"])
     
-        return redirect(url_for("admin.confirm_reports"))
+        return jsonify({'message': 'maintence request sent to engineers.'})
     
     except RequestException as error:
         print(f"Error during API request: {error}")
         return {"error": "Internal Server Error"}, 500  
     
 @admin.route("/admin/notify/<int:scooter_id>/<string:report>", methods=["GET"])
-@admin_login_req
 def notify_engineers(scooter_id, report):
     """
     Notifies engineers about a reported scooter repair request via email.
@@ -309,18 +299,22 @@ def notify_engineers(scooter_id, report):
     try: 
         
         scooter = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json() 
+        
         steet_address = helpers.get_street_address(scooter["latitude"], scooter["longitude"])
-        engineer_emails= requests.get(f"{API_BASE_URL}/users/engineers/emails", timeout=5).json() 
+        
+        engineer_emails= requests.get(f"{API_BASE_URL}/users/engineers/emails", timeout=5).json()
+        
         email_subject = 'URGENT: Scooter Repair Request'
+        
         email_body = helpers.get_email_body(scooter_id, report, steet_address, email_subject)
+        
         # Send the email
-        send_email(email_subject, engineer_emails, email_body)
-        return "Email sent successfully!", 200
-    except Exception as error:
+        # send_email(email_subject, engineer_emails, email_body)
+        
+        print("Sending Email");
+        
+        return jsonify({'message':"email sent successfully!"}), 200
+    
+    except RequestException as error:
         print(str(error))
-        return "Email sending failed", 500 
-
-@admin.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('admin.index'))
+        return jsonify({'error':"Email sending failed"}), 500
