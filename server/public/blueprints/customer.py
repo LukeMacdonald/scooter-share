@@ -197,3 +197,41 @@ def top_up_balance():
         return jsonify(response), 400
     else:
         return jsonify(response), 200
+
+
+@customer.route('/scooter/unlock/<int:scooter_id>/<int:user_id>', methods=["GET"])
+def unlock_scooter(scooter_id, user_id):
+    message = {
+        'method': 'UPDATE',
+        'uri': '/scooter/unlock',
+        'params': {
+            'user_id': int(user_id),
+            'scooter_id': int(scooter_id)
+        }
+    }
+
+    response = send_message(message)
+
+    if "error" in response:
+        return jsonify(response), 400
+
+    return jsonify(response), 200
+
+
+@customer.route('/scooter/lock/<int:scooter_id>/<int:user_id>', methods=["GET"])
+def lock_scooter(scooter_id, user_id):
+    message = {
+        'method': 'UPDATE',
+        'uri': '/scooter/lock',
+        'params': {
+            'user_id': int(user_id),
+            'scooter_id': int(scooter_id)
+        }
+    }
+
+    response = send_message(message)
+
+    if "error" in response:
+        return jsonify(response), 400
+
+    return jsonify(response), 200

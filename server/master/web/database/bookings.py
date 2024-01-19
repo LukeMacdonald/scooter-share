@@ -1,14 +1,18 @@
 import datetime
 from flask import Blueprint, request, jsonify
-from database.models import Booking
+from database.models import Booking, BookingState
 from database.database_manager import db
 
 booking_api = Blueprint("booking_api", __name__)
 
+
 def parse_datetime(date: str):
     return datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+
+
 def parse_date(date: str):
     return datetime.datetime.strptime(date, "%Y-%m-%d")
+
 
 @booking_api.route("/bookings", methods=["GET"])
 def get_all():
@@ -20,6 +24,7 @@ def get_all():
     """
     bookings = Booking.query.all()
     return [booking.as_json() for booking in bookings]
+
 
 @booking_api.route("/booking/<int:booking_id>", methods=["GET"])
 def get(booking_id):
@@ -37,6 +42,7 @@ def get(booking_id):
         return booking.as_json()
     else:
         return jsonify({"message": "Booking not found"}), 404
+
 
 @booking_api.route("/bookings", methods=["POST"])
 def post():
@@ -57,13 +63,14 @@ def post():
         start_time=parse_datetime(data["start_time"]),
         end_time=parse_datetime(data["end_time"]),
         status=data["status"],
-        event_id = data["event_id"]
+        event_id=data["event_id"]
     )
 
     db.session.add(new_booking)
     db.session.commit()
-    
+
     return new_booking.as_json()
+
 
 @booking_api.route("/booking/id/<int:booking_id>", methods=["PUT"])
 def update(booking_id):
@@ -81,15 +88,16 @@ def update(booking_id):
     booking = Booking.query.get(booking_id)
     if booking:
         booking.user_id = new_booking["user_id"]
-        booking.scooter_id =  new_booking["scooter_id"]
-        booking.start_time =  parse_datetime(new_booking["start_time"])
-        booking.end_time = parse_datetime( new_booking["end_time"])
-        booking.date =  parse_date(new_booking["date"])
-        booking.status =  new_booking["status"]
+        booking.scooter_id = new_booking["scooter_id"]
+        booking.start_time = parse_datetime(new_booking["start_time"])
+        booking.end_time = parse_datetime(new_booking["end_time"])
+        booking.date = parse_date(new_booking["date"])
+        booking.status = new_booking["status"]
         db.session.commit()
         return booking.as_json()
     else:
         return jsonify({"message": "Booking not found"}), 404
+
 
 @booking_api.route("/booking/status/<int:booking_id>", methods=["PUT"])
 def update_status(booking_id):
@@ -114,6 +122,7 @@ def update_status(booking_id):
     else:
         return jsonify({"message": "Booking not found"}), 404
 
+
 @booking_api.route("/booking/<int:booking_id>", methods=["DELETE"])
 def delete(booking_id):
     """
@@ -133,6 +142,7 @@ def delete(booking_id):
     else:
         return jsonify({"message": "Booking not found"}), 404
 
+
 @booking_api.route("/bookings/user/<int:user_id>", methods=["GET"])
 def get_by_user(user_id):
     """
@@ -147,8 +157,46 @@ def get_by_user(user_id):
     bookings = Booking.query.filter_by(user_id=user_id)
     return [booking.as_json() for booking in bookings]
 
+
 @booking_api.route("/bookings/status/<string:status>", methods=["GET"])
 def get_by_status(status):
     bookings = Booking.query.filter_by(status=status)
     return [booking.as_json() for booking in bookings]
 
+
+class BookingAPI:
+
+    def get_by_user_and_scooter(user_id: int, scooter_id: int):
+        booking = Booking.query.filter_by(
+            user_id=user_id,
+            scooter_id=scooter_id,
+            status=BookingState.ACTIVE.value
+        ).first()
+        return booking if booking else None
+
+    def update(booking_id: int, updated_booking: Booking):
+        """
+        Update an existing booking in the database.
+
+        Args:
+            booking_id (int): The ID of the booking to update.
+            updated_booking (dict): A dictionary containing updated booking data.
+
+        Returns:
+            dict: A dictionary representing the updated booking object in JSON format, or None if not found.
+        """
+
+        booking = Booking.query.get(booking_id)
+
+        if booking:
+            booking.user_id = updated_booking.user_id
+            booking.scooter_id = updated_booking.scooter_id
+            booking.start_time = updated_booking.start_time
+            booking.end_time = updated_booking.end_time
+            booking.date = updated_booking.date
+            booking.status = updated_booking.status
+            db.session.commit()
+
+            return booking
+        else:
+            return jsonify({"message": "Booking not found"}), 404

@@ -1,5 +1,7 @@
 import datetime
 from database.models import *
+
+
 def seed_data():
     """
     Seed data into the database if no data exists.
@@ -15,6 +17,7 @@ def seed_data():
     if not Transaction.query.first():
         transaction_data()
 
+
 def seed_model(model_class, data_list):
     """
     Seed data into a specific database model.
@@ -24,6 +27,7 @@ def seed_model(model_class, data_list):
             model = model_class(**data)
             db.session.add(model)
         db.session.commit()
+
 
 def scooter_data():
     """
@@ -45,7 +49,7 @@ def scooter_data():
             "longitude": 144.978,
             "make": "InMotion AIR Pro",
             "remaining_power": 85.0,
-            "status": ScooterStatus.OCCUPYING.value,
+            "status": ScooterStatus.UNAVAILABLE.value,
             "colour": "grey"
         },
         {
@@ -72,7 +76,7 @@ def scooter_data():
             "longitude": 144.965,
             "make": "Kaabo Wolf Warrior 11 GT",
             "remaining_power": 5.0,
-            "status": ScooterStatus.OCCUPYING.value,
+            "status": ScooterStatus.AVAILABLE.value,
             "colour": "black"
         },
         {
@@ -86,6 +90,7 @@ def scooter_data():
         }
     ]
     seed_model(Scooter, data)
+
 
 def user_data():
     """
@@ -110,7 +115,7 @@ def user_data():
             "last_name": "Macdonald",
             "role": UserType.ENGINEER.value,
             "phone_number": "0476543210",
-            "balance":0.0
+            "balance": 0.0
         },
         {
             "username": "admin",
@@ -120,10 +125,11 @@ def user_data():
             "last_name": "Joe",
             "role": UserType.ADMIN.value,
             "phone_number": "0496823921",
-            "balance": 0.0, 
+            "balance": 0.0,
         }
     ]
-    seed_model(User,data)
+    seed_model(User, data)
+
 
 def booking_data():
     """
@@ -136,7 +142,7 @@ def booking_data():
             "date": datetime.datetime(2023, 9, 29),
             "start_time": datetime.datetime(2023, 9, 29, 12, 0),
             "end_time": datetime.datetime(2023, 9, 29, 12, 30),
-            "status": BookingState.ACTIVE.value,
+            "status": BookingState.CANCELLED.value,
             "event_id": 1
         },
         {
@@ -149,7 +155,8 @@ def booking_data():
             "event_id": 2
         }
     ]
-    seed_model(Booking,data)
+    seed_model(Booking, data)
+
 
 def repair_data():
     """
@@ -157,22 +164,28 @@ def repair_data():
     """
     data = [
         {
+            "scooter_id": 2,
+            "report": "Handle is broken",
+            "status": RepairStatus.PENDING.value
+        },
+        {
             "scooter_id": 3,
             "report": "Damaged wheel",
             "status": RepairStatus.ACTIVE.value
         },
         {
-            "scooter_id": 4,  
+            "scooter_id": 4,
             "report": "Battery replacement",
             "status": RepairStatus.ACTIVE.value
         },
         {
-            "scooter_id": 1,  
+            "scooter_id": 1,
             "report": "Damaged Handle",
             "status": RepairStatus.COMPLETED.value
         },
     ]
-    seed_model(Repairs,data)
+    seed_model(Repairs, data)
+
 
 def transaction_data():
     """
@@ -180,13 +193,12 @@ def transaction_data():
     """
     data = [
         {
-            "user_id": 1,  
+            "user_id": 1,
             "amount": 50.0
         },
         {
-            "user_id": 2, 
+            "user_id": 2,
             "amount": 25.0
         },
     ]
     seed_model(Transaction, data)
-    

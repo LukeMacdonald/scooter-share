@@ -7,7 +7,7 @@ from requests.exceptions import RequestException
 from flask import Blueprint, request, jsonify
 from comms import helpers
 from database.models import RepairStatus, UserType, BookingState, ScooterStatus
-from comms.client import Client
+from comms.utils import message_scooter
 
 import os
 from dotenv import load_dotenv
@@ -18,12 +18,6 @@ load_dotenv()
 API_BASE_URL = "http://localhost:5000"
 
 admin = Blueprint("admin", __name__)
-
-
-def message_scooter(host, port, message):
-    client = Client(host=host, port=port)
-    return client.send_message(message)
-
 
 @admin.route("/data")
 def home():
@@ -345,27 +339,23 @@ def notify_engineers(scooter_id, report):
 
 @admin.route("/scooter/location/<int:scooter_id>", methods=["GET"])
 def scooter_location(scooter_id):
-    host = os.getenv(f"SCOOTER_HOST_{scooter_id}", "192.168.1.108")
-    port = int(os.getenv("SCOOTER_PORT"))
 
-    res = message_scooter(host, port, {"method": "LOCATION"})
+    res = message_scooter(scooter_id, {"method": "LOCATION"})
 
     return jsonify(res), 200
 
 
 @admin.route("/scooter/lock/<int:scooter_id>", methods=["GET"])
 def scooter_lock(scooter_id):
-    host = os.getenv(f"SCOOTER_HOST_{scooter_id}", "192.168.1.108")
-    port = int(os.getenv("SCOOTER_PORT"))
 
-    res = message_scooter(host, port, {"method": "LOCK"})
+    res = message_scooter(scooter_id, {"method": "LOCK"})
+
     return jsonify(res), 200
 
 
 @admin.route("/scooter/unlock/<int:scooter_id>", methods=["GET"])
 def scooter_unlock(scooter_id):
-    host = os.getenv(f"SCOOTER_HOST_{scooter_id}", "192.168.1.108")
-    port = int(os.getenv("SCOOTER_PORT"))
 
-    res = message_scooter(host, port, {"method": "UNLOCK"})
+    res = message_scooter(scooter_id, {"method": "UNLOCK"})
+
     return jsonify(res), 200

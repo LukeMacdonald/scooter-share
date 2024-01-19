@@ -193,3 +193,25 @@ def scooter_fixed(scooter_id, repair_id):
     """
     message, status = queries.fix_scooter(scooter_id, repair_id)
     return jsonify(message), status
+
+
+class ScooterAPI:
+    def get(scooter_id: int):
+        scooter = Scooter.query.get(scooter_id)
+        if scooter:
+            return scooter.as_json()
+        else:
+            return jsonify({'message': 'Scooter not found'}), 404
+    def update(scooter_id: int, updated_scooter: dict):
+        scooter = Scooter.query.get(scooter_id)
+        if scooter:
+            scooter.make = updated_scooter["make"]
+            scooter.longitude = updated_scooter["longitude"]
+            scooter.latitude = updated_scooter["latitude"]
+            scooter.remaining_power = updated_scooter["remaining_power"]
+            scooter.cost_per_time = updated_scooter["cost_per_time"]
+            scooter.colour = updated_scooter["colour"]
+            scooter.status = updated_scooter["status"]
+            db.session.commit()
+            return scooter.as_json()
+

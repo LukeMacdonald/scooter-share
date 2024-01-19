@@ -2,7 +2,15 @@ import re
 import requests
 from passlib.hash import sha256_crypt
 from database.models import RepairStatus, ScooterStatus, BookingState
+from comms.utils import message_scooter
 import database.queries as queries
+
+import datetime
+
+from web.database.bookings import BookingAPI
+from web.database.scooters import ScooterAPI
+from web.database.transactions import TransactionAPI
+from web.database.users import UserAPI
 
 API_BASE_URL = "http://localhost:5000"
 
@@ -200,7 +208,7 @@ def make_booking(booking_data: dict):
         scooter_id = booking.get("scooter_id")
 
         if scooter_id:
-            data = {"status": ScooterStatus.OCCUPYING.value}
+            data = {"status": ScooterStatus.BOOKED.value}
             response = put_request(f"/scooter/status/{scooter_id}", json=data)
             if response.status_code == 400 or response.status_code == 404:
                 return {"error": response.json['message']}
@@ -267,7 +275,8 @@ def submit_repair_request(scooter_id: int, report: str):
         if response.status_code in [400, 404]:
             return {"error": response.json['message']}
 
-        data = {"status": ScooterStatus.AWAITING_REPAIR.value}
+        data = {"status": ScooterStatus.UNAVAILABLE.value}
+
         response = put_request(f"/scooter/status/{scooter_id}", json=data)
         if response.status_code in [400, 404]:
             return {"error": response.json['message']}
@@ -331,24 +340,69 @@ def fetch_scooters_by_id(scooter_id: int):
         return {"error": str(error)}
 
 
-@update('/scooter/unlock', {'scooter_id': int})
-def unlock_scooter(scooter_id: int):
-    scooter_info = requests.get(f"{API_BASE_URL}/scooter/id/{scooter_id}", timeout=5).json()
+@update('/scooter/unlock', {'scooter_id': int, 'user_id': int})
+def unlock_scooter(scooter_id: int, user_id: int):
 
-    scooter_update = {'status': ScooterStatus.UNLOCKED.value}
-    requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=scooter_update, timeout=5).json()
+    # Send message to scooter to unlock
+    message_scooter(scooter_id, {'method': 'UNLOCK'})
+
+    # Update Scooter Status to Occupying
+    scooter = ScooterAPI.get(scooter_id)
+    scooter['status'] = ScooterStatus.OCCUPYING.value
+    ScooterAPI.update(scooter_id, scooter)
+
+    # Get Details of Current Booking
+    booking = BookingAPI.get_by_user_and_scooter(user_id=user_id, scooter_id=scooter_id)
+
+    # Mark the proper first start time used for cost calculation
+    booking.start_time = datetime.datetime.now()
+
+    BookingAPI.update(booking.id, booking)
+
     return {"message": "Scooter Successfully Unlocked"}
 
 
 @update('/scooter/lock', {'scooter_id': int, 'user_id': int})
 def lock_scooter(scooter_id: int, user_id: int):
-    response = requests.get(f"{API_BASE_URL}/booking/user/{user_id}").json()
 
-    booking_update = {'status': BookingState.COMPLETED.value}
-    scooter_update = {'status': ScooterStatus.AVAILABLE.value}
+    message_scooter(scooter_id, {'method': 'UNLOCK'})
 
-    requests.put(f"{API_BASE_URL}/booking/status/{response['booking_id']}", json=booking_update, timeout=5).json()
-    requests.put(f"{API_BASE_URL}/scooter/status/{scooter_id}", json=scooter_update, timeout=5).json()
+    booking = BookingAPI.get_by_user_and_scooter(user_id=user_id, scooter_id=scooter_id)
+
+    # Update Booking
+    booking.end_time = datetime.datetime.now()
+    booking.status = BookingState.COMPLETED.value
+
+    updated_booking = BookingAPI.update(booking.id, booking)
+
+    # Get Scooter Information
+    scooter = ScooterAPI.get(scooter_id)
+
+    # Update Scooter
+    location = message_scooter(scooter_id, {'method': 'LOCATION'})
+
+    scooter['status'] = ScooterStatus.AVAILABLE.value
+    scooter['longitude'] = float(location['lng'])
+    scooter['latitude'] = float(location['lat'])
+
+    ScooterAPI.update(scooter_id, scooter)
+
+    # Calculate Ride Cose
+    duration = (updated_booking.end_time - updated_booking.start_time).total_seconds() / 60
+
+    cost = duration * (scooter['cost_per_time'] / 60)
+
+    rounded_cost = round(cost, 2)
+
+    TransactionAPI.create({'user_id': user_id, 'amount': rounded_cost})
+
+    # Update User Balance
+
+    user = UserAPI.get_by_id(user_id)
+
+    user['balance'] = user['balance'] - rounded_cost
+
+    UserAPI.update(user_id,user)
 
     return {"message": "Scooter Successfully Returned"}
 
@@ -372,8 +426,7 @@ def check_booking(user_id: int):
 
 
 @get("/user", {'email': str})
-def get_user(email:str):
-
+def get_user(email: str):
     response = requests.get(f"{API_BASE_URL}/user/email/{email}")
     if response.status_code == 404:
         return {'message': 'invalid email', 'user_id': 0}

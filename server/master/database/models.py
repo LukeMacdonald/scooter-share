@@ -10,27 +10,33 @@ from sqlalchemy.orm import relationship
 from passlib.hash import sha256_crypt
 from database.database_manager import db
 
+
 class UserType(Enum):
     ADMIN = 'admin'
     ENGINEER = 'engineer'
     CUSTOMER = 'customer'
 
+
 class ScooterStatus(Enum):
     AVAILABLE = 'available'
     OCCUPYING = 'occupying'
-    UNLOCKED = 'unlocked'
+    BOOKED = 'booked'
     AWAITING_REPAIR = 'awaiting repair'
-    
+    UNAVAILABLE = 'unavailable'
+
+
 class BookingState(Enum):
     ACTIVE = 'active'
     CANCELLED = 'cancelled'
     COMPLETED = 'completed'
-    
+
+
 class RepairStatus(Enum):
     ACTIVE = 'active'
-    COMPLETED = 'completed' 
+    COMPLETED = 'completed'
     PENDING = 'pending'
-    
+
+
 class User(db.Model):
     """
     Represents a user in the system.
@@ -43,12 +49,13 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=False, unique=True)
     first_name = db.Column(db.String(255), nullable=False)
     last_name = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum(UserType.CUSTOMER.value,UserType.ENGINEER.value,UserType.ADMIN.value), 
+    role = db.Column(db.Enum(UserType.CUSTOMER.value, UserType.ENGINEER.value, UserType.ADMIN.value),
                      nullable=False, default=UserType.CUSTOMER.value)
     phone_number = db.Column(db.String(10))
     balance = db.Column(db.Float(precision=2), nullable=False)
-    
-    def __init__(self, username, password, email, first_name, last_name, role=UserType.CUSTOMER.value, phone_number=None, balance=0.0):
+
+    def __init__(self, username, password, email, first_name, last_name, role=UserType.CUSTOMER.value,
+                 phone_number=None, balance=0.0):
         self.username = username
         self.password = sha256_crypt.hash(password)
         self.email = email
@@ -73,6 +80,7 @@ class User(db.Model):
             'password': self.password
         }
 
+
 class Scooter(db.Model):
     """
     Represents a scooter in the system.
@@ -81,14 +89,15 @@ class Scooter(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     make = db.Column(db.String(100), nullable=False)
-    longitude = db.Column(db.Float(precision=6), nullable=False)  
-    latitude = db.Column(db.Float(precision=6), nullable=False)  
+    longitude = db.Column(db.Float(precision=6), nullable=False)
+    latitude = db.Column(db.Float(precision=6), nullable=False)
     remaining_power = db.Column(db.Float(precision=2), nullable=False)
     cost_per_time = db.Column(db.Float(precision=2), nullable=False)
     status = db.Column(db.Enum(ScooterStatus.AVAILABLE.value,
                                ScooterStatus.AWAITING_REPAIR.value,
                                ScooterStatus.OCCUPYING.value,
-                               ScooterStatus.UNLOCKED.value),
+                               ScooterStatus.BOOKED.value,
+                               ScooterStatus.UNAVAILABLE.value),
                        nullable=False)
     colour = db.Column(db.String(100), nullable=False)
 
@@ -105,6 +114,7 @@ class Scooter(db.Model):
             "colour": self.colour
         }
 
+
 class Booking(db.Model):
     """
     Represents a booking in the system.
@@ -117,7 +127,7 @@ class Booking(db.Model):
     date = db.Column(db.DateTime, nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.Enum(BookingState.ACTIVE.value,BookingState.CANCELLED.value,BookingState.COMPLETED.value), 
+    status = db.Column(db.Enum(BookingState.ACTIVE.value, BookingState.CANCELLED.value, BookingState.COMPLETED.value),
                        nullable=False)
     event_id = db.Column(db.String(100), nullable=False)
 
@@ -136,6 +146,7 @@ class Booking(db.Model):
             "date": self.date.strftime("%Y-%m-%d"),
         }
 
+
 class Repairs(db.Model):
     """
     Represents a repair record in the system.
@@ -145,7 +156,8 @@ class Repairs(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     scooter_id = db.Column(db.Integer, db.ForeignKey('scooters.id'), nullable=False)
     report = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.Enum(RepairStatus.ACTIVE.value,RepairStatus.COMPLETED.value, RepairStatus.PENDING.value), nullable=False)
+    status = db.Column(db.Enum(RepairStatus.ACTIVE.value, RepairStatus.COMPLETED.value, RepairStatus.PENDING.value),
+                       nullable=False)
 
     scooter = relationship('Scooter')
 
@@ -156,6 +168,7 @@ class Repairs(db.Model):
             "report": self.report,
             "status": self.status
         }
+
 
 class Transaction(db.Model):
     """
@@ -175,6 +188,7 @@ class Transaction(db.Model):
             "user_id": self.user_id,
             "amount": self.amount
         }
+
 
 class Face(db.Model):
     """

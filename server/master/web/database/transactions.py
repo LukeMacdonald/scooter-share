@@ -62,3 +62,15 @@ def get_by_user(user_id):
     """
     transactions = Transaction.query.filter_by(user_id=user_id).all()
     return [transaction.as_json() for transaction in transactions]
+
+
+class TransactionAPI:
+    def create(transaction: dict):
+        new_transaction = Transaction(
+            user_id=transaction["user_id"],
+            amount=transaction["amount"]
+        )
+
+        db.session.add(new_transaction)
+        db.session.commit()
+        return new_transaction.as_json()
