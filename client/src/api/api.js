@@ -264,3 +264,23 @@ export async function markScooterRepair(data){
             }
         });
 }
+
+
+
+
+
+export async function qr(scooterID, method, userID) {
+    console.log(method)
+    console.log(scooterID)
+    console.log(userID)
+    return axios.get(`http://localhost:5002/customer/scooter/${method}/${scooterID}/${userID}`)
+        .then(response => response.data.user)
+        .catch(error => {
+            if (error.response.data.error){
+                throw Error(error.response.data.error)
+            }
+            else{
+                throw error
+            }
+        });
+}

@@ -28,6 +28,8 @@ import EditScooter from './pages/admin/EditScooter';
 import AddScooter from './pages/admin/AddScooter';
 import DamagedScooter from './pages/admin/DamagedScooter';
 import { AuthProvider } from './context/AuthContext';
+import QRLogin from './pages/QRLogin';
+import QRCodes from './pages/admin/QRCode';
 
 
 
@@ -36,6 +38,7 @@ const router = createBrowserRouter(
     <Route>
       <Route index element={<Login />} />
       <Route path='signup' element={<Signup />} />
+      <Route path='qr/:method/:scooterID' element={<QRLogin/>}/>
       <Route path='customer' element={<CustomerLayout />}>
         <Route index element={<CustomerDashboard />} />
         <Route path='bookings' element={<Bookings />} />
@@ -49,6 +52,7 @@ const router = createBrowserRouter(
         <Route path='edit/scooter/:scooterId' element={<EditScooter/>}/>
         <Route path='add/scooter' element={<AddScooter/>}/>
         <Route path='scooter/pending' element={<DamagedScooter/>}/>
+        <Route path='scooter/qr/:scooterID' element = {<QRCodes/>}/>
       </Route>
       <Route path='engineer' element={< EngineerLayout/>}>
         <Route index element={<EngineerDashboard />} />

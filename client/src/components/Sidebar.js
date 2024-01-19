@@ -44,11 +44,11 @@ const SidebarItem = ({label, href, children}) => {
 
 export const Sidebar = () => {
   return (
-    <div className='w-80 h-dvh bg-white min-h-dvh border-r-2 flex flex-col justify-start items-start gap-3'>
-        <div className='w-full flex justify-between items-center px-3 pt-3'>
-            <img src={ScooterImg} alt='Logo' className='w-14 h-14'/>
-            <h1 className='text-2xl font-bold '><span className='text-primaryDark'>Scooter</span><span className='text-primary'>Share</span></h1>
-        </div>
+    <div className='w-3/12 lg:w-2/6 md:w-full h-dvh  bg-white min-h-dvh md:h-fit md:min-h-fit border-r-2 flex flex-col justify-start items-start gap-3'>
+    <div className='w-full flex justify-between items-center px-3 pt-3'>
+        <img src={ScooterImg} alt='Logo' className='w-14 h-14 lg:w-10 lg:h-10 md:h-16 md:w-16'/>
+        <h1 className='text-2xl lg:text-lg md:text-4xl font-bold'><span className='text-primaryDark'>Scooter</span><span className='text-primary'>Share</span></h1>
+    </div>
         
         <hr className='w-full'/>
         <SidebarItem label='Home' href='/customer'>
@@ -70,10 +70,10 @@ export const Sidebar = () => {
 
 export const AdminSidebar = () => {
     return (
-      <div className='w-80 h-dvh bg-white min-h-dvh border-r-2 flex flex-col justify-start items-start gap-3'>
+      <div className='w-3/12 lg:w-2/6 md:w-full h-dvh  bg-white min-h-dvh md:h-fit md:min-h-fit border-r-2 flex flex-col justify-start items-start gap-3'>
           <div className='w-full flex justify-between items-center px-3 pt-3'>
-              <img src={ScooterImg} alt='Logo' className='w-14 h-14'/>
-              <h1 className='text-2xl font-bold '><span className='text-primaryDark'>Scooter</span><span className='text-primary'>Share</span></h1>
+              <img src={ScooterImg} alt='Logo' className='w-14 h-14 lg:w-10 lg:h-10 md:h-16 md:w-16'/>
+              <h1 className='text-2xl lg:text-lg md:text-4xl font-bold'><span className='text-primaryDark'>Scooter</span><span className='text-primary'>Share</span></h1>
           </div>
           
           <hr className='w-full'/>
@@ -92,10 +92,10 @@ export const AdminSidebar = () => {
 
 export const EngineerSidebar = () => {
     return (
-      <div className='w-80 h-dvh bg-white min-h-dvh border-r-2 flex flex-col justify-start items-start gap-3'>
+      <div className='w-3/12 lg:w-2/6 md:w-full h-dvh  bg-white min-h-dvh md:h-fit md:min-h-fit border-r-2 flex flex-col justify-start items-start gap-3'>
           <div className='w-full flex justify-between items-center px-3 pt-3'>
-              <img src={ScooterImg} alt='Logo' className='w-14 h-14'/>
-              <h1 className='text-2xl font-bold '><span className='text-primaryDark'>Scooter</span><span className='text-primary'>Share</span></h1>
+              <img src={ScooterImg} alt='Logo' className='w-14 h-14 lg:w-10 lg:h-10 md:h-16 md:w-16'/>
+              <h1 className='text-2xl lg:text-lg md:text-4xl font-bold'><span className='text-primaryDark'>Scooter</span><span className='text-primary'>Share</span></h1>
           </div>
           
           <hr className='w-full'/>
