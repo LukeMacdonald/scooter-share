@@ -1,31 +1,42 @@
 from datetime import datetime, date, timedelta
-from flask import Blueprint,request, jsonify
-from connection import get_connection
+from flask import Blueprint, request, jsonify
+from common.client import Client
 
 customer = Blueprint("customer", __name__)
 
+
+def send_message(message: dict):
+    client = Client(host='127.0.0.1', port=54321)
+    return client.send_message(message)
+
+
 @customer.route('/data/<int:user_id>')
 def customer_data(user_id):
-    
-    data = {
-        "customer_id": user_id,
-        "name": "customer-homepage"
+    message = {
+        'method': 'GET',
+        'uri': '/customer/dashboard',
+        'params': {
+            "customer_id": user_id,
+        }
     }
-    
-    response = get_connection().send(data)
-            
+
+    response = send_message(message)
 
     return jsonify(response)
 
+
 @customer.route('/scooter/<int:scooter_id>')
 def scooter_data(scooter_id):
-    
-    data = {
-        "scooter_id": scooter_id,
-        "name": "get-scooter-by-id"
+    message = {
+        'method': 'GET',
+        'uri': '/scooter',
+        'params': {
+            'scooter_id': scooter_id
+        }
     }
-    
-    response = get_connection().send(data)
+
+    response = send_message(message)
+
     return jsonify(response)
 
 
@@ -37,45 +48,48 @@ def make_booking():
     Returns:
         Flask response: post request for make-booking, returns homepage.
     """
-    
+
     req = request.get_json()
-    
-    print(req)
 
     start_time = req.get('start_time')
-    
+
     duration = int(req.get('duration'))
-    
+
     user_id = req.get('user_id')
-    
+
     scooter_id = req.get('scooter_id')
-   
+
     # Combine the start time with today's date to create a datetime object
     start_datetime = datetime.combine(date.today(), datetime.strptime(start_time, "%H:%M").time())
-        
+
     end_datetime = start_datetime + timedelta(minutes=duration)
 
-    data = {
-        "data": {
-        "scooter_id": scooter_id,
-        "user_id": user_id,
-        "date": date.today().isoformat(),
-        "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-        "status": "active",
-        "event_id": "0"
-        },
-        "name": "make-booking"
+    message = {
+        'method': 'POST',
+        'uri': '/booking/create',
+        'params': {
+            'booking_data': {
+
+                "scooter_id": scooter_id,
+                "user_id": user_id,
+                "date": date.today().isoformat(),
+                "start_time": start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                "end_time": end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                "status": "active",
+                "event_id": "0"
+
+            }
+
+        }
     }
 
-    response = get_connection().send(data)
+    response = send_message(message)
+
     if "error" in response:
         return jsonify(response), 400
     else:
         return jsonify(response), 201
 
-
-from flask import request, jsonify
 
 @customer.route('/cancel-booking/<int:booking_id>', methods=["DELETE"])
 def cancel_booking(booking_id):
@@ -91,13 +105,21 @@ def cancel_booking(booking_id):
     Returns:
         Flask response: A JSON response indicating the success or failure of the cancellation.
     """
-    response = get_connection().send({"name": "cancel-booking", "booking-id": booking_id})
+
+    message = {
+        'method': 'UPDATE',
+        'uri': '/booking/cancel',
+        'params': {
+            'booking_id': booking_id
+        }
+    }
+
+    response = send_message(message)
 
     if "error" in response:
         return jsonify(response), 400
 
     return jsonify(response), 200
-
 
 
 @customer.route('/report', methods=["POST"])
@@ -114,14 +136,34 @@ def report_issue():
     Returns:
         Flask response: A redirect response to the customer home page.
     """
-    
+
     data = request.get_json()
-    
-    response = get_connection().send({"name" : "cancel-booking", "booking-id" : data.get("booking_id")})
+
+    message = {
+        'method': 'UPDATE',
+        'uri': '/booking/cancel',
+        'params': {
+            'booking_id': data.get("booking_id")
+        }
+    }
+
+    response = send_message(message)
+
     if "error" in response:
         return jsonify(response), 400
-    
-    response = get_connection().send({"name" : "report-issue", "scooter-id" : data.get("scooter_id"), "report": data.get("report")})
+
+    message = {
+        'method': 'POST',
+        'uri': '/scooter/damaged',
+        'params': {
+            'scooter_id': data.get("scooter_id"),
+            'report': data.get("report")
+        }
+
+    }
+
+    response = send_message(message)
+
     if "error" in response:
         return jsonify(response), 400
     else:
@@ -137,13 +179,21 @@ def top_up_balance():
     Returns:
         Flask response: The top-up-balance page.
     """
-    
+
     data = request.get_json()
-    
-    response = get_connection().send({"user-id": data.get('user_id'), 
-                                      "amount": data.get("amount"), "name": "top-up-balance"})
+
+    message = {
+        'method': 'UPDATE',
+        'uri': '/top-up',
+        'params': {
+            'user_id': int(data.get('user_id')),
+            'amount': float(data.get("amount"))
+        }
+    }
+
+    response = send_message(message)
+
     if "error" in response:
         return jsonify(response), 400
     else:
         return jsonify(response), 200
-    
