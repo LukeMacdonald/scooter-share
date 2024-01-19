@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 
+
 def get_street_address(latitude, longitude):
     """
     Get the street address from latitude and longitude using Google Maps Geocoding API.
@@ -16,13 +17,15 @@ def get_street_address(latitude, longitude):
                   "&location_type=ROOFTOP&key=AIzaSyCI9KBPlHOzx9z7dp41LNbzpYaVn3qqgNY"
     response = requests.get(address_url, timeout=5)
     address_data = response.json()
-    if 'results' in address_data and len(address_data['results']) > 0 and 'formatted_address' in address_data['results'][0]:
+    if 'results' in address_data and len(address_data['results']) > 0 and 'formatted_address' in \
+            address_data['results'][0]:
         result = address_data['results'][0]['formatted_address']
     else:
         result = f"Unable to Locate Street Address for ({latitude},{longitude})"
     return result
 
-def get_email_body(scooter_id,report, location, subject):
+
+def get_email_body(scooter_id, report, location, subject):
     return f'''
         <html>
         <head>
@@ -73,12 +76,14 @@ def get_email_body(scooter_id,report, location, subject):
         </html>
     '''
 
+
 def convert_time_format(time_string):
     """
     Convert time string to a different format.
     """
     time_obj = datetime.strptime(time_string, "%a %d %b, %H:%M, %Y")
     return time_obj.strftime("%I:%M %p")
+
 
 def calculate_duration(start_time, end_time):
     """
