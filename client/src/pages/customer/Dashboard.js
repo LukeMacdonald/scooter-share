@@ -1,10 +1,11 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import { Sidebar } from '../../components/Sidebar'
 import MapComponent from '../../components/Map'
 import { findOnMap } from '../../api/google'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import useCustomerData from '../../hooks/useCustomerData'
 import useGeolocation from '../../hooks/useGeolocation'
+import { useAuth } from '../../context/AuthContext'
 
 
 export const CustomerLayout = ({children}) => {
@@ -27,6 +28,21 @@ export const CustomerDashboard = () => {
   const mapRef = useRef(null);
   
   const { center } = useGeolocation();
+
+  const { handleLogout, isLoggedIn, authUser } = useAuth();
+  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoggedIn || authUser === null) {
+      handleLogout();
+      navigate("/");
+    }
+    if (isLoggedIn && authUser.role !== 'customer'){
+      navigate(`/${authUser.role}`);
+    }
+    
+  });
 
   return (
     <>

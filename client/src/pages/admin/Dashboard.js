@@ -1,4 +1,4 @@
-import React, { useRef } from "react"
+import React, { useRef, useEffect } from "react"
 import { Outlet, useNavigate } from "react-router-dom"
 import { AdminSidebar } from "../../components/Sidebar"
 import useGeolocation from "../../hooks/useGeolocation"
@@ -6,9 +6,8 @@ import useAdminData from "../../hooks/useAdminData"
 import { findOnMap } from "../../api/google"
 import MapComponent from "../../components/Map"
 import { deleteCustomer, deleteScooter } from "../../api/api"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { icon } from "@fortawesome/fontawesome-svg-core"
 
+import { useAuth } from "../../context/AuthContext"
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -60,8 +59,9 @@ const ScooterDetails = ({scooter, mapRef}) =>{
       </tr>
   
     )
-  }
-  const CustomerDetails = ({customer}) =>{
+}
+
+const CustomerDetails = ({customer}) =>{
 
     const navigate = useNavigate();
 
@@ -90,21 +90,35 @@ const ScooterDetails = ({scooter, mapRef}) =>{
       </tr>
   
     )
-  }
-
-export const AdminLayout = ({children}) => {
-
-    return(
-      <main className='w-full h-screen max-h-screen flex flex-col justify-start items-start'>
-        <div className='w-full h-full flex items-start justify-center'>
-          <AdminSidebar/>
-          <div className='w-full h-full'>
-            <Outlet/>
-          </div>
-        </div>
-      </main>
-    )
 }
+
+export const AdminLayout = ({ children }) => {
+  const { setAuthUser, setIsLoggedIn, isLoggedIn, authUser } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoggedIn || authUser === null) {
+      setIsLoggedIn(false);
+      setAuthUser(null);
+      navigate("/");
+    }
+    if (isLoggedIn && authUser.role !== 'admin'){
+      navigate(`/${authUser.role}`);
+    }
+
+  });
+
+  return (
+    <main className='w-full h-screen max-h-screen flex flex-col justify-start items-start'>
+      <div className='w-full h-full flex items-start justify-center'>
+        <AdminSidebar />
+        <div className='w-full h-full'>
+          <Outlet />
+        </div>
+      </div>
+    </main>
+  );
+};
 
 export const AdminDashboard = () => {
 
@@ -181,4 +195,5 @@ export const AdminDashboard = () => {
           </div>
       </>
     )
-  }
+  
+}

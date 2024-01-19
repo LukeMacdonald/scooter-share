@@ -2,12 +2,40 @@ import React from 'react'
 import ScooterImg from '../assets/imgs/scooter.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { icon } from '@fortawesome/fontawesome-svg-core/import.macro'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
+
+const LogoutButton = ({label, children}) => {
+
+    const { handleLogout } = useAuth();
+    const navigate = useNavigate()
+
+    const logout = (event) => {
+      event.preventDefault();
+      handleLogout();
+      navigate('/')
+    }
+
+    return(
+      <button 
+      className='w-full flex items-center justify-start px-5 py-3 text-md hover:bg-gray-300 border-l-4 border-transparent hover:border-primaryDark'
+      onClick={logout}
+    >
+      {children}
+      <p className='px-8'>{label}</p>
+    </button>
+      
+    )
+
+}
 
 const SidebarItem = ({label, href, children}) => {
+    
     return(
         <a 
           className='w-full flex items-center justify-start px-5 py-3 text-md hover:bg-gray-300 border-l-4 border-transparent hover:border-primaryDark'
-          href={href}>
+          href={href}
+          >
             {children}
             <p className='px-8'>{label}</p>
         </a>
@@ -32,11 +60,10 @@ export const Sidebar = () => {
         <SidebarItem label='Bookings' href='/customer/bookings'>
             <FontAwesomeIcon icon={icon({name: 'calendar'})} />
         </SidebarItem>
-        <SidebarItem label='Logout' href='/'>
+        <LogoutButton label='Logout'>
             <FontAwesomeIcon icon={icon({name: 'right-from-bracket'})} />
-        </SidebarItem>
+        </LogoutButton>
         
-   
     </div>
   )
 }
@@ -56,9 +83,9 @@ export const AdminSidebar = () => {
           <SidebarItem label='Scooters' href='/admin/scooter/pending'>
             <FontAwesomeIcon icon={icon({name: 'motorcycle'})} />
           </SidebarItem>
-          <SidebarItem label='Logout' href='/'>
+          <LogoutButton label='Logout'>
             <FontAwesomeIcon icon={icon({name: 'right-from-bracket'})} />
-          </SidebarItem>
+          </LogoutButton>
   </div>
     )
 }
@@ -78,9 +105,9 @@ export const EngineerSidebar = () => {
           <SidebarItem label='Profile' href='/engineer/profile'>
             <FontAwesomeIcon icon={icon({name: 'user'})} />
           </SidebarItem>
-          <SidebarItem label='Logout' href='/'>
+          <LogoutButton label='Logout'>
             <FontAwesomeIcon icon={icon({name: 'right-from-bracket'})} />
-          </SidebarItem>
+          </LogoutButton>
   </div>
     )
 }

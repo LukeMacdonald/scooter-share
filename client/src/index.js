@@ -27,6 +27,7 @@ import EditProfile from './pages/admin/EditProfile';
 import EditScooter from './pages/admin/EditScooter';
 import AddScooter from './pages/admin/AddScooter';
 import DamagedScooter from './pages/admin/DamagedScooter';
+import { AuthProvider } from './context/AuthContext';
 
 
 
@@ -58,9 +59,13 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <AuthProvider>
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <RouterProvider router={router} />
     </LocalizationProvider>
+
+    </AuthProvider>
+
   </React.StrictMode>
 )
 

@@ -5,6 +5,7 @@ import { signup } from '../api/api'
 import { useNavigate } from 'react-router-dom'
 import { CustomAuthInput } from '../components/CustomInputs'
 import ScooterImg from '../assets/imgs/scooter.png'
+import { useAuth } from '../context/AuthContext'
 
 const Signup = () => {
 
@@ -22,6 +23,18 @@ const Signup = () => {
 
     const navigate = useNavigate();
 
+    const {handleLogin, isLoggedIn, authUser} = useAuth();
+
+
+    if (isLoggedIn) {
+        if (authUser){
+            navigate(`/${authUser.role}`)
+        }
+        else{
+            isLoggedIn(false)
+        }
+    }
+
     const handleChange = (event) => {
         event.preventDefault();
         const { name, value } = event.target;
@@ -33,6 +46,7 @@ const Signup = () => {
     const handleClick = async () => {
         try {
             const user = await signup(fields);
+            handleLogin(user)
             navigate(`/${user.role}`);            
         } catch (error) {
             console.error('Login failed:', error);

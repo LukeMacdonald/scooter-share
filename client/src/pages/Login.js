@@ -5,6 +5,8 @@ import ScooterImg from '../assets/imgs/scooter.png'
 import { login } from '../api/api'
 import { useNavigate } from 'react-router-dom'
 
+import { useAuth } from '../context/AuthContext'
+
 const Login = () => {
 
     const [credentials, setCredentials] = useState({
@@ -16,6 +18,18 @@ const Login = () => {
 
     const navigate = useNavigate();
 
+    const {isLoggedIn, authUser, handleLogin} = useAuth();
+
+
+    if (isLoggedIn) {
+        if (authUser){
+            navigate(`/${authUser.role}`)
+        }
+        else{
+            isLoggedIn(false)
+        }
+    }
+
     const handleChange = (event) => {
         event.preventDefault();
         const { name, value } = event.target;
@@ -24,12 +38,13 @@ const Login = () => {
             [name]: value
         }));
     }
+
     const handleClick = async () => {
         try {
+            
             const user = await login(credentials.email, credentials.password);
-            console.log(user)
-            localStorage.setItem('user', user.id)
-            localStorage.setItem('userInfo', JSON.stringify(user))
+
+            handleLogin(user)
             
             navigate(`/${user.role}`);            
         } catch (error) {
